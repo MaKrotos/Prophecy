@@ -1,0 +1,34 @@
+/**
+ * Функции для обнаружения Telegram WebView окружения
+ */
+
+export function isInTelegramWebView() {
+  if (typeof window === "undefined") return false;
+  
+  const userAgent = navigator.userAgent.toLowerCase();
+  const isTelegramWebView = 
+    /telegram|webview/i.test(userAgent) ||
+    /telegram|tweb/i.test(navigator.userAgent) ||
+    !!window.TelegramWebviewProxy ||
+    !!window.Telegram?.WebApp;
+  
+  console.log("🔍 Telegram WebView detection:", {
+    userAgent: navigator.userAgent,
+    hasTelegramWebviewProxy: !!window.TelegramWebviewProxy,
+    hasTelegramWebApp: !!window.Telegram?.WebApp,
+    isTelegramWebView
+  });
+  
+  return isTelegramWebView;
+}
+
+export function isTelegramEnvironment() {
+  return isInTelegramWebView() && isValidTelegramWebApp();
+}
+
+export function requireTelegramWebApp() {
+  if (!isInTelegramWebView() || !isValidTelegramWebApp()) {
+    throw new Error("This application can only be used within Telegram");
+  }
+  return window.Telegram.WebApp;
+}

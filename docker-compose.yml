@@ -1,0 +1,59 @@
+﻿
+services:
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # image: ip/makrotos/prophecy:latest
+    restart: unless-stopped
+    pull_policy: always
+    container_name: frontend
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NODE_ENV=production
+      - DOMAIN=Prophecy.ru
+    networks:
+      - Prophecy-network
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+      - ./nginx/www:/var/www/certbot
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - Prophecy-network
+
+  frontend-dev-Prophecy:
+    image: node:lts-alpine
+    container_name: frontend-dev-Prophecy
+    command: sh -c "npm install debug@4.3.4 && npm ci --include=dev && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    working_dir: /app
+    volumes:
+      - ./Frontend:/app
+      - ./Frontend/tmp:/app/tmp
+    environment:
+      - NODE_ENV=development
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - Prophecy-network
+
+
+
+networks:
+  Prophecy-network:
+    driver: bridge
+
+volumes:
+  pgdata:

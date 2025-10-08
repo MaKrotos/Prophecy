@@ -1,0 +1,51 @@
+/* Глобальные CSS переменные для Telegram темы */
+:root {
+  /* Fallback значения */
+  --tg-theme-bg-color: #ffffff;
+  --tg-theme-text-color: #000000;
+  --tg-theme-hint-color: #999999;
+  --tg-theme-link-color: #2481cc;
+  --tg-theme-button-color: #2481cc;
+  --tg-theme-button-text-color: #ffffff;
+  --tg-theme-secondary-bg-color: #f1f1f1;
+  
+  /* Дополнительные переменные для консистентности */
+  --tg-background-color: var(--tg-theme-bg-color);
+  --tg-text-color: var(--tg-theme-text-color);
+  --tg-hint-color: var(--tg-theme-hint-color);
+  --tg-link-color: var(--tg-theme-link-color);
+  --tg-button-color: var(--tg-theme-button-color);
+  --tg-button-text-color: var(--tg-theme-button-text-color);
+  --tg-secondary-bg-color: var(--tg-theme-secondary-bg-color);
+}
+
+/* Стили для темной темы */
+.tg-theme-dark {
+  color-scheme: dark;
+}
+
+.tg-theme-dark body {
+  background-color: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
+}
+
+/* Стили для светлой темы */
+.tg-theme-light {
+  color-scheme: light;
+}
+
+.tg-theme-light body {
+  background-color: var(--tg-theme-bg-color);
+  color: var(--tg-theme-text-color);
+}
+
+/* Общие стили для элементов в Telegram среде */
+.telegram-env {
+  /* Убедитесь, что все элементы используют тему */
+  background: var(--tg-theme-bg-color) !important;
+  color: var(--tg-theme-text-color) !important;
+}
+
+.telegram-env * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
