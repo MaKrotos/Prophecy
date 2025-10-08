@@ -1,7 +1,7 @@
 #!/bin/sh
 
-SSL_CERT="/etc/letsencrypt/live/fullchain.pem"
-SSL_KEY="/etc/letsencrypt/live/privkey.pem"
+SSL_CERT="/etc/letsencrypt/live/prophecy.makrotos.ru/fullchain.pem"
+SSL_KEY="/etc/letsencrypt/live/prophecy.makrotos.ru/privkey.pem"
 
 # Удаляем все .conf кроме нужного
 rm -f /etc/nginx/conf.d/*.conf
