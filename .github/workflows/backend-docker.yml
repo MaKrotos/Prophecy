@@ -21,13 +21,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Allow insecure registry
-        run: |
-          echo '{ "insecure-registries":["${{ secrets.REGISTRY_URL }}"] }' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            image=moby/buildkit:buildx-stable-1
+          buildkitd-flags: --allow-insecure-entitlement security.insecure
 
       - name: Login to Private Registry
         uses: docker/login-action@v3
@@ -44,6 +43,8 @@ jobs:
           tags: ${{ secrets.REGISTRY_URL }}/makrotos/prophecy-backend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          insecure: true
+          allow: security.insecure
 
   test-backend:
     runs-on: ubuntu-latest
