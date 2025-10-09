@@ -15,7 +15,9 @@ on:
 jobs:
   build-and-push-frontend:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: |
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
+      !contains(github.event.head_commit.message, 'Backend/')
 
     steps:
       - name: Checkout code
@@ -46,7 +48,9 @@ jobs:
 
   test-frontend:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: |
+      github.event_name == 'pull_request' &&
+      !contains(github.event.pull_request.head.sha, 'Backend/')
 
     steps:
       - name: Checkout code
