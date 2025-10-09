@@ -23,15 +23,11 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            image=moby/buildkit:buildx-stable-1
-          buildkitd-flags: --allow-insecure-entitlement security.insecure
 
       - name: Configure insecure registry
         run: |
           echo '{"insecure-registries": ["${{ secrets.REGISTRY_URL }}"]}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl reload docker
+          sudo systemctl restart docker
           sleep 5
 
       - name: Login to Private Registry
@@ -50,8 +46,7 @@ jobs:
           tags: ${{ secrets.REGISTRY_URL }}/makrotos/prophecy-frontend:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          insecure: true
-          allow: security.insecure
+          insecure: true # Ключевое изменение
 
   test-frontend:
     runs-on: ubuntu-latest

@@ -31,7 +31,7 @@ jobs:
       - name: Configure insecure registry
         run: |
           echo '{"insecure-registries": ["${{ secrets.REGISTRY_URL }}"]}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl reload docker
+          sudo systemctl restart docker
           sleep 5
 
       - name: Login to Private Registry
