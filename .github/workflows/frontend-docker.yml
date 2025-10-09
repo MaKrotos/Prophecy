@@ -1,0 +1,64 @@
+name: Frontend Docker CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "Frontend/**"
+      - ".github/workflows/frontend-docker.yml"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "Frontend/**"
+  workflow_dispatch:
+
+jobs:
+  build-and-push-frontend:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Allow insecure registry
+        run: |
+          echo '{ "insecure-registries":["${{ secrets.REGISTRY_URL }}"] }' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Private Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ secrets.REGISTRY_URL }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push Frontend Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Frontend
+          target: prod
+          push: true
+          tags: ${{ secrets.REGISTRY_URL }}/makrotos/prophecy-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  test-frontend:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Frontend Docker image (test)
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Frontend
+          target: prod
+          tags: prophecy-frontend:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
