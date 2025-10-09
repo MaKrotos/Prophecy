@@ -14,10 +14,15 @@ export function isInTelegramWebView() {
     // Дополнительные проверки для Telegram WebApp
     (window.Telegram && typeof window.Telegram === "object") ||
     userAgent.includes("telegram") ||
-    userAgent.includes("tweb");
+    userAgent.includes("tweb") ||
+    // Проверка для веб-версии Telegram
+    userAgent.includes("electron") ||
+    // Проверка на наличие специфичных для Telegram объектов
+    (window.Telegram && window.Telegram.WebApp);
 
   console.log("🔍 Telegram WebView detection:", {
     userAgent: navigator.userAgent,
+    userAgentLower: userAgent,
     hasTelegramWebviewProxy: !!window.TelegramWebviewProxy,
     hasTelegramWebApp: !!window.Telegram?.WebApp,
     isTelegramWebView,

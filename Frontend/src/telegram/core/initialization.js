@@ -1,8 +1,8 @@
-import { isInTelegramWebView } from './detection.js';
-import { isValidTelegramWebApp } from './validation.js'
-import { applyThemeColors, setupThemeListeners } from '../theme/manager.js';
-import { extractAuthData, logAuthData } from '../auth/data.js';
-import { showTelegramOnlyMessage } from '../ui/messages.js';
+import { isInTelegramWebView } from "./detection.js";
+import { isValidTelegramWebApp } from "./validation.js";
+import { applyThemeColors, setupThemeListeners } from "../theme/manager.js";
+import { extractAuthData, logAuthData } from "../auth/data.js";
+import { showTelegramOnlyMessage } from "../ui/messages.js";
 
 /**
  * Основная функция инициализации Telegram WebApp
@@ -27,13 +27,34 @@ export function initTelegramWebApp(callbacks = {}) {
   // Проверяем, запущено ли в Telegram
   if (!isInTelegramWebView()) {
     console.warn("⚠️ App is not running in Telegram WebView");
+    console.log("🔍 Detailed detection info:", {
+      userAgent: navigator.userAgent,
+      hasTelegramObject: !!window.Telegram,
+      hasWebApp: !!window.Telegram?.WebApp,
+      hasWebviewProxy: !!window.TelegramWebviewProxy,
+    });
     onNotInTelegram();
     return;
   }
 
   // Если скрипт уже загружен
   if (window.Telegram?.WebApp) {
+    console.log("✅ Telegram WebApp SDK already loaded");
     initializeTelegramFeatures(callbacks);
+    return;
+  }
+
+  // Проверяем, может SDK уже доступен, но не в window.Telegram.WebApp
+  if (window.Telegram) {
+    console.log("✅ Telegram object found, initializing...");
+    // Небольшая задержка для уверенности
+    setTimeout(() => {
+      if (window.Telegram?.WebApp) {
+        initializeTelegramFeatures(callbacks);
+      } else {
+        loadTelegramSDK(callbacks);
+      }
+    }, 50);
     return;
   }
 
@@ -41,6 +62,31 @@ export function initTelegramWebApp(callbacks = {}) {
 }
 
 function loadTelegramSDK(callbacks) {
+  // Проверяем, может скрипт уже добавлен в DOM
+  const existingScript = document.querySelector(
+    'script[src="https://telegram.org/js/telegram-web-app.js"]'
+  );
+  if (existingScript) {
+    console.log("Telegram WebApp SDK script already exists in DOM");
+    if (window.Telegram?.WebApp) {
+      console.log("Telegram WebApp SDK already loaded, initializing...");
+      initializeTelegramFeatures(callbacks);
+      return;
+    }
+
+    // Добавляем обработчики к существующему скрипту
+    existingScript.onload = () => {
+      console.log("Telegram WebApp SDK loaded (existing script)");
+      initializeTelegramFeatures(callbacks);
+    };
+
+    existingScript.onerror = () => {
+      console.error("Failed to load Telegram WebApp SDK (existing script)");
+      callbacks.onError(new Error("Failed to load Telegram WebApp SDK"));
+    };
+    return;
+  }
+
   const script = document.createElement("script");
   script.src = "https://telegram.org/js/telegram-web-app.js";
   script.async = true;
@@ -76,13 +122,13 @@ function initializeTelegramFeatures(callbacks) {
 
     // Базовые настройки WebApp
     setupWebApp(webApp);
-    
+
     // Настройка темы
     setupThemeListeners(webApp, callbacks.onThemeChanged);
-    
+
     // Обработка auth данных
     processAuthData(webApp, callbacks);
-    
+
     // Логирование информации для отладки
     logDebugInfo(webApp);
 
@@ -101,9 +147,12 @@ function setupWebApp(webApp) {
 
 function processAuthData(webApp, callbacks) {
   const authData = extractAuthData(webApp);
-  
+
   if (authData.hash) {
-    console.log("🔐 Authentication HASH for server verification:", authData.hash);
+    console.log(
+      "🔐 Authentication HASH for server verification:",
+      authData.hash
+    );
     callbacks.onHashReceived(authData.hash, authData.initData);
   }
 
