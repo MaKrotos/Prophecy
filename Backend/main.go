@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"sync"
 
 	"prophecy/backend/config"
 	"prophecy/backend/database"
@@ -29,22 +30,32 @@ func main() {
 	// Регистрация маршрутов
 	routes.RegisterRoutes(router)
 
-	// Запуск сервера
-	port := ":" + cfg.ServerPort
+	var wg sync.WaitGroup
 
-	if cfg.UseHTTPS {
-		fmt.Println("Starting HTTPS server on port", cfg.ServerPort)
-		server := &http.Server{
-			Addr:    port,
-			Handler: router,
-		}
-		if err := server.ListenAndServeTLS(cfg.SSLCertPath, cfg.SSLKeyPath); err != nil {
-			log.Fatal("Failed to start HTTPS server:", err)
-		}
-	} else {
+	// Запуск HTTP сервера
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		httpPort := ":" + cfg.ServerPort
 		fmt.Println("Starting HTTP server on port", cfg.ServerPort)
-		if err := router.Run(port); err != nil {
-			log.Fatal("Failed to start HTTP server:", err)
+		if err := http.ListenAndServe(httpPort, router); err != nil {
+			log.Printf("HTTP server error: %v", err)
 		}
+	}()
+
+	// Запуск HTTPS сервера (если включен)
+	if cfg.UseHTTPS {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			httpsPort := ":8443" // используйте другой порт для HTTPS
+			fmt.Println("Starting HTTPS server on port 8443")
+			if err := http.ListenAndServeTLS(httpsPort, cfg.SSLCertPath, cfg.SSLKeyPath, router); err != nil {
+				log.Printf("HTTPS server error: %v", err)
+			}
+		}()
 	}
+
+	// Ожидаем завершения всех серверов
+	wg.Wait()
 }

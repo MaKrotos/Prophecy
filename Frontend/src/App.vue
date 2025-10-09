@@ -79,7 +79,6 @@ onMounted(async () => {
   console.log('🚀 App mounted, initializing...')
 
   // Даем время на инициализацию Telegram WebApp
-  setTimeout(async () => {
     isInitialized.value = true
     console.log('✅ App initialized:', {
       isTelegram: isTelegram.value,
@@ -109,7 +108,6 @@ onMounted(async () => {
         clearJWTToken() // Очищаем старый токен при ошибке
       }
     }
-  }, 5000)
 })
 
 // Обработчик глобальных ошибок
