@@ -79,6 +79,7 @@ const tryLater = () => {
     justify-content: center;
     padding: 20px;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow-y: auto;
 }
 
 .container {

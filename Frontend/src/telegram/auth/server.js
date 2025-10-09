@@ -2,7 +2,10 @@
  * Функции для взаимодействия с сервером
  */
 
-export async function sendAuthToServer(authData, endpoint = "/auth/telegram") {
+export async function sendAuthToServer(
+  authData,
+  endpoint = "/api/auth/telegram"
+) {
   if (!authData?.hash) {
     console.warn("No auth hash available");
     return null;
