@@ -83,7 +83,7 @@ export function useTelegramWebApp() {
     });
   };
 
-  const sendAuthToServer = async (endpoint = "/auth/telegram") => {
+  const sendAuthToServer = async (endpoint = "/api/auth/telegram") => {
     const currentAuthData = getTelegramAuthData();
     if (!currentAuthData?.hash) {
       console.warn("No auth hash available");

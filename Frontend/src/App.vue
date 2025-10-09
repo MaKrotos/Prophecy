@@ -93,7 +93,7 @@ onMounted(async () => {
       console.log('📡 Sending auth data to server...')
 
       try {
-        const result = await sendAuthToServer('/auth/telegram')
+        const result = await sendAuthToServer('/api/auth/telegram')
 
         if (result && result.token) {
           // Сохраняем JWT токен
@@ -130,7 +130,7 @@ const retryAuth = async () => {
 
   // Повторная попытка авторизации
   try {
-    const result = await sendAuthToServer('/auth/telegram')
+    const result = await sendAuthToServer('/api/auth/telegram')
 
     if (result && result.token) {
       saveJWTToken(result.token)
