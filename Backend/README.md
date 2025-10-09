@@ -134,3 +134,4 @@ Endpoint `GET /auth/verify` проверяет валидность JWT токе
 - `DB_PASSWORD` - Пароль базы данных (по умолчанию: password)
 - `DB_NAME` - Имя базы данных (по умолчанию: prophecy)
 - `JWT_SECRET` - Секретный ключ для подписи JWT токенов (по умолчанию: prophecy_jwt_secret_key)
+
