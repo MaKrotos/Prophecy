@@ -47,4 +47,4 @@ COPY --from=builder /app/migrations ./migrations
 EXPOSE 8080
 
 # Команда запуска приложения с миграциями
-CMD ["sh", "-c", "goose -dir ./migrations postgres \"host=$DB_HOST port=$DB_PORT user=$DB_USER password=$DB_PASSWORD dbname=$DB_NAME sslmode=disable\" up && ./main"]
+CMD ["sh", "-c", "goose -dir ./migrations postgres \"postgres://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME?sslmode=disable\" up && ./main"]
