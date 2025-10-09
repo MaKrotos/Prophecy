@@ -21,152 +21,121 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onErrorCaptured, computed } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
 import AuthErrorLayout from '/src/layouts/AuthErrorLayout.vue'
 import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp'
 
-// Используем хук Telegram WebApp
 const {
   telegramUser,
   isTelegram,
   authHash,
-  authData,
   themeParams,
-  isDarkTheme,
+  isTelegramReady,
   sendAuthToServer,
-  getAuthData,
-  refreshTheme
+  waitForTelegramReady
 } = useTelegramWebApp()
 
 const isInitialized = ref(false)
 const authError = ref(null)
 const loaderMessage = ref('Инициализация приложения...')
-const telegramBotLink = ref('https://t.me/your_bot_username') // Замените на реальную ссылку
+const telegramBotLink = ref('https://t.me/your_bot_username') // Добавляем обратно эту переменную
 
-// Проверяем наличие валидного JWT токена
 const hasValidToken = computed(() => {
   const token = localStorage.getItem('jwt_token')
   if (!token) return false
-
-  // Здесь можно добавить проверку срока действия токена
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
-    const currentTime = Math.floor(Date.now() / 1000)
-    return payload.exp > currentTime
-  } catch (e) {
-    console.error('Ошибка проверки токена:', e)
+    return payload.exp > Math.floor(Date.now() / 1000)
+  } catch {
     return false
   }
 })
 
-// Функция для сохранения JWT токена
 const saveJWTToken = (token) => {
-  if (token) {
-    localStorage.setItem('jwt_token', token)
-    console.log('✅ JWT токен сохранен в localStorage')
-  }
+  localStorage.setItem('jwt_token', token)
 }
 
-// Функция для очистки JWT токена
 const clearJWTToken = () => {
   localStorage.removeItem('jwt_token')
-  console.log('🗑️ JWT токен удален из localStorage')
 }
 
 onMounted(async () => {
   console.log('🚀 App mounted, initializing...')
 
-  // Даем время на инициализацию Telegram WebApp
+  try {
+    // Если это Telegram, ждем его готовности
+    if (isTelegram.value) {
+      loaderMessage.value = 'Загрузка Telegram...'
+      console.log('⏳ Ожидание готовности Telegram WebApp...')
+      await waitForTelegramReady(5000)
+      console.log('✅ Telegram WebApp готов')
+    } else {
+      console.log('🌐 Это не Telegram WebApp')
+    }
+
     isInitialized.value = true
-    console.log('✅ App initialized:', {
+    console.log('✅ App initialized', {
       isTelegram: isTelegram.value,
-      user: telegramUser.value,
-      theme: themeParams.value
+      isTelegramReady: isTelegramReady?.value,
+      authHash: !!authHash.value
     })
 
-    // Если в Telegram, отправляем данные аутентификации на сервер
-    if (isTelegram.value && authHash.value) {
+    // Авторизация только если Telegram готов и есть хэш
+    if (isTelegram.value && isTelegramReady?.value && authHash.value) {
       loaderMessage.value = 'Авторизация через Telegram...'
-      console.log('📡 Sending auth data to server...')
-
-      try {
-        const result = await sendAuthToServer('/api/auth/telegram')
-
-        if (result && result.token) {
-          // Сохраняем JWT токен
-          saveJWTToken(result.token)
-          console.log('✅ Успешная авторизация, токен сохранен')
-          authError.value = null
-        } else {
-          throw new Error('Сервер не вернул JWT токен')
-        }
-      } catch (error) {
-        console.error('❌ Failed to send auth data:', error)
-        authError.value = error.message || 'Не удалось выполнить авторизацию. Попробуйте позже.'
-        clearJWTToken() // Очищаем старый токен при ошибке
+      console.log('📡 Отправка данных аутентификации на сервер...')
+      
+      const result = await sendAuthToServer('/api/auth/telegram')
+      
+      if (result?.token) {
+        saveJWTToken(result.token)
+        console.log('✅ Успешная авторизация, токен сохранен')
+        authError.value = null
+      } else {
+        throw new Error('Сервер не вернул токен')
       }
+    } else if (isTelegram.value && !authHash.value) {
+      console.warn('⚠️ Нет хэша аутентификации')
+      authError.value = 'Ошибка авторизации. Перезайдите в приложение.'
     }
+
+  } catch (error) {
+    console.error('❌ Ошибка инициализации:', error)
+    authError.value = error.message || 'Ошибка загрузки приложения'
+    isInitialized.value = true // Все равно показываем интерфейс
+  }
 })
 
-// Обработчик глобальных ошибок
-onErrorCaptured((error, instance, info) => {
-  console.error('💥 Global error captured:', error, info)
-  // Можно отправить ошибку в сервис мониторинга
-  return false
-})
-
-// Функция для повторной попытки авторизации
 const retryAuth = async () => {
   authError.value = null
   loaderMessage.value = 'Повторная авторизация...'
   isInitialized.value = false
-
-  // Небольшая задержка для отображения лоадера
   await new Promise(resolve => setTimeout(resolve, 500))
-
-  // Повторная попытка авторизации
+  
   try {
     const result = await sendAuthToServer('/api/auth/telegram')
-
-    if (result && result.token) {
+    if (result?.token) {
       saveJWTToken(result.token)
-      console.log('✅ Повторная авторизация успешна')
       authError.value = null
+      console.log('✅ Повторная авторизация успешна')
     } else {
-      throw new Error('Сервер не вернул JWT токен')
+      throw new Error('Сервер не вернул токен')
     }
   } catch (error) {
+    authError.value = error.message || 'Ошибка авторизации'
     console.error('❌ Повторная авторизация не удалась:', error)
-    authError.value = error.message || 'Не удалось выполнить авторизацию. Попробуйте позже.'
-    clearJWTToken()
   } finally {
     isInitialized.value = true
   }
 }
 
-// Функция для отложенной попытки
 const tryLater = () => {
-  // Просто очищаем ошибку и показываем основной интерфейс
-  // В реальном приложении можно добавить логику отложенной авторизации
   authError.value = null
   console.log('🕒 Пользователь выбрал "Попробовать позже"')
 }
-
-// Глобальные функции для отладки (можно убрать в продакшене)
-if (import.meta.env.DEV) {
-  window.$telegram = {
-    getUser: () => telegramUser.value,
-    getAuthData: () => getAuthData(),
-    refreshTheme: () => refreshTheme(),
-    isTelegram: () => isTelegram.value,
-    hasValidToken: () => hasValidToken.value,
-    clearToken: () => clearJWTToken()
-  }
-}
 </script>
-
 <style>
 @import './assets/css/app.css';
 /* Глобальные стили остаются здесь */
