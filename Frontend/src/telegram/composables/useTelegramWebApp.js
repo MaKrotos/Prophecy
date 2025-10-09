@@ -19,44 +19,47 @@ export function useTelegramWebApp() {
   const jwtToken = ref(null);
 
   onMounted(() => {
-    initTelegramWebApp({
-      onUserDetected: (user) => {
-        telegramUser.value = user;
-        console.log("Telegram user detected:", user);
-      },
-      onReady: () => {
-        isTelegram.value = true;
-        console.log("Telegram WebApp ready");
+    // Небольшая задержка для уверенности в загрузке SDK
+    setTimeout(() => {
+      initTelegramWebApp({
+        onUserDetected: (user) => {
+          telegramUser.value = user;
+          console.log("Telegram user detected:", user);
+        },
+        onReady: () => {
+          isTelegram.value = true;
+          console.log("Telegram WebApp ready");
 
-        // Проверяем наличие валидного токена
-        if (hasValidToken()) {
-          jwtToken.value = localStorage.getItem("jwt_token");
-          console.log("✅ Найден валидный JWT токен");
-        }
+          // Проверяем наличие валидного токена
+          if (hasValidToken()) {
+            jwtToken.value = localStorage.getItem("jwt_token");
+            console.log("✅ Найден валидный JWT токен");
+          }
 
-        // Получаем параметры темы после готовности
-        const tgData = getTelegramAuthData();
-        if (tgData?.themeParams) {
-          themeParams.value = tgData.themeParams;
-          applyThemeToApp(themeParams.value);
-        }
-      },
-      onError: (error) => {
-        console.error("Telegram WebApp error:", error);
-      },
-      onHashReceived: (hash, initData) => {
-        authHash.value = hash;
-        authData.value = initData;
+          // Получаем параметры темы после готовности
+          const tgData = getTelegramAuthData();
+          if (tgData?.themeParams) {
+            themeParams.value = tgData.themeParams;
+            applyThemeToApp(themeParams.value);
+          }
+        },
+        onError: (error) => {
+          console.error("Telegram WebApp error:", error);
+        },
+        onHashReceived: (hash, initData) => {
+          authHash.value = hash;
+          authData.value = initData;
 
-        console.log("✅ Authentication hash received and stored");
-        console.log("🔐 Hash to send to server:", hash);
-      },
-      onThemeChanged: (theme) => {
-        themeParams.value = theme;
-        applyThemeToApp(theme);
-        console.log("🎨 Theme changed:", theme);
-      },
-    });
+          console.log("✅ Authentication hash received and stored");
+          console.log("🔐 Hash to send to server:", hash);
+        },
+        onThemeChanged: (theme) => {
+          themeParams.value = theme;
+          applyThemeToApp(theme);
+          console.log("🎨 Theme changed:", theme);
+        },
+      });
+    }, 100);
   });
 
   const applyThemeToApp = (theme) => {

@@ -4,21 +4,25 @@
 
 export function isInTelegramWebView() {
   if (typeof window === "undefined") return false;
-  
+
   const userAgent = navigator.userAgent.toLowerCase();
-  const isTelegramWebView = 
+  const isTelegramWebView =
     /telegram|webview/i.test(userAgent) ||
     /telegram|tweb/i.test(navigator.userAgent) ||
     !!window.TelegramWebviewProxy ||
-    !!window.Telegram?.WebApp;
-  
+    !!window.Telegram?.WebApp ||
+    // Дополнительные проверки для Telegram WebApp
+    (window.Telegram && typeof window.Telegram === "object") ||
+    userAgent.includes("telegram") ||
+    userAgent.includes("tweb");
+
   console.log("🔍 Telegram WebView detection:", {
     userAgent: navigator.userAgent,
     hasTelegramWebviewProxy: !!window.TelegramWebviewProxy,
     hasTelegramWebApp: !!window.Telegram?.WebApp,
-    isTelegramWebView
+    isTelegramWebView,
   });
-  
+
   return isTelegramWebView;
 }
 

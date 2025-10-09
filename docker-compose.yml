@@ -61,7 +61,8 @@
     environment:
       - SERVER_PORT=8080
       - DB_HOST=postgres
-      - DB_PORT=5432
+      - DB_PORT=5433
+      - DB_INTERNAL_PORT=5432
       - DB_USER=prophecy_user
       - DB_PASSWORD=prophecy_password
       - DB_NAME=prophecy_db
