@@ -67,11 +67,12 @@ const openTelegram = () => {
   min-height: 100vh;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
-  align-items: center;
+  align-items: flex-start; /* Изменено с center на flex-start */
   justify-content: center;
   padding: 20px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  overflow-y: auto;
+  overflow-y: auto; /* Добавлена прокрутка для всего layout */
+  height: 100vh; /* Фиксированная высота для прокрутки */
 }
 
 .container {
@@ -82,8 +83,8 @@ const openTelegram = () => {
   padding: 40px 30px;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   text-align: center;
-  max-height: 90vh;
-  overflow-y: auto;
+  margin: auto; /* Центрирование контейнера */
+  /* Убраны max-height и overflow-y из контейнера */
 }
 
 .header {
@@ -197,9 +198,14 @@ const openTelegram = () => {
 
 /* Адаптивность */
 @media (max-width: 480px) {
+  .telegram-only-layout {
+    padding: 10px; /* Уменьшен padding на мобильных */
+    align-items: flex-start; /* Выравнивание по верху */
+  }
+
   .container {
     padding: 30px 20px;
-    margin: 10px;
+    margin: 10px 0; /* Убраны боковые отступы */
   }
 
   .title {
@@ -213,6 +219,19 @@ const openTelegram = () => {
   .telegram-button {
     padding: 12px 25px;
     font-size: 1rem;
+  }
+}
+
+/* Дополнительные стили для очень маленьких экранов */
+@media (max-height: 600px) {
+  .telegram-only-layout {
+    align-items: flex-start;
+    padding-top: 10px;
+  }
+  
+  .container {
+    margin-top: 10px;
+    margin-bottom: 10px;
   }
 }
 </style>
