@@ -2,9 +2,9 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
   workflow_dispatch:
 
 jobs:
@@ -34,10 +34,14 @@ jobs:
 
       - name: Build Docker image
         run: |
-          cd ${{ matrix.component == 'frontend' && 'Frontend' || 'Backend' }}
-          docker build \
-            ${{ matrix.component == 'frontend' && '--target prod' }} \
-            -t ${{ secrets.REGISTRY_URL }}/makrotos/prophecy-${{ matrix.component }}:latest .
+          COMPONENT_DIR=${{ matrix.component == 'frontend' && 'Frontend' || 'Backend' }}
+          cd $COMPONENT_DIR
+
+          if [ "${{ matrix.component }}" = "frontend" ]; then
+            docker build --target prod -t ${{ secrets.REGISTRY_URL }}/makrotos/prophecy-${{ matrix.component }}:latest .
+          else
+            docker build -t ${{ secrets.REGISTRY_URL }}/makrotos/prophecy-${{ matrix.component }}:latest .
+          fi
 
       - name: Push Docker image
         run: docker push ${{ secrets.REGISTRY_URL }}/makrotos/prophecy-${{ matrix.component }}:latest
