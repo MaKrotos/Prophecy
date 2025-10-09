@@ -21,7 +21,7 @@ export function extractAuthData(webApp) {
     initData,
     initDataUnsafe,
     user: initDataUnsafe?.user,
-    authDate: initDataUnsafe?.auth_date ? parseInt(initDataUnsafe.auth_date, 10) : null,
+    authDate: initDataUnsafe?.auth_date,
     queryId: initDataUnsafe?.query_id,
     themeParams: initDataUnsafe?.theme_params,
   };
