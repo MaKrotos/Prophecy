@@ -1,30 +1,31 @@
 <template>
   <div id="app">
-    <!-- Показываем основной layout только если в Telegram WebApp -->
-    <MainLayout v-if="isTelegram && isInitialized" />
-    
+    <!-- Показываем основной layout только если в Telegram WebApp и есть JWT токен -->
+    <MainLayout v-if="isTelegram && isInitialized && hasValidToken" />
+
+    <!-- Показываем страницу ошибки авторизации, если есть ошибка -->
+    <AuthErrorLayout v-else-if="isTelegram && isInitialized && authError" :error-message="authError" @retry="retryAuth"
+      @try-later="tryLater" />
+
     <!-- Показываем сообщение о необходимости Telegram, если не в WebApp -->
-    <TelegramOnlyLayout 
-      v-else-if="!isTelegram && isInitialized"
-      :telegram-link="telegramBotLink"
-    />
-    
+    <TelegramOnlyLayout v-else-if="!isTelegram && isInitialized" :telegram-link="telegramBotLink" />
+
     <!-- Лоадер во время инициализации -->
     <div v-else class="app-loader">
       <div class="loader-content">
         <div class="loader-spinner"></div>
-        <p class="loader-text">Инициализация приложения...</p>
+        <p class="loader-text">{{ loaderMessage }}</p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onErrorCaptured } from 'vue'
+import { ref, onMounted, onErrorCaptured, computed } from 'vue'
 import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
+import AuthErrorLayout from '/src/layouts/AuthErrorLayout.vue'
 import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp'
-
 
 // Используем хук Telegram WebApp
 const {
@@ -40,26 +41,73 @@ const {
 } = useTelegramWebApp()
 
 const isInitialized = ref(false)
+const authError = ref(null)
+const loaderMessage = ref('Инициализация приложения...')
 const telegramBotLink = ref('https://t.me/your_bot_username') // Замените на реальную ссылку
+
+// Проверяем наличие валидного JWT токена
+const hasValidToken = computed(() => {
+  const token = localStorage.getItem('jwt_token')
+  if (!token) return false
+
+  // Здесь можно добавить проверку срока действия токена
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const currentTime = Math.floor(Date.now() / 1000)
+    return payload.exp > currentTime
+  } catch (e) {
+    console.error('Ошибка проверки токена:', e)
+    return false
+  }
+})
+
+// Функция для сохранения JWT токена
+const saveJWTToken = (token) => {
+  if (token) {
+    localStorage.setItem('jwt_token', token)
+    console.log('✅ JWT токен сохранен в localStorage')
+  }
+}
+
+// Функция для очистки JWT токена
+const clearJWTToken = () => {
+  localStorage.removeItem('jwt_token')
+  console.log('🗑️ JWT токен удален из localStorage')
+}
 
 onMounted(async () => {
   console.log('🚀 App mounted, initializing...')
-  
+
   // Даем время на инициализацию Telegram WebApp
-  setTimeout(() => {
+  setTimeout(async () => {
     isInitialized.value = true
     console.log('✅ App initialized:', {
       isTelegram: isTelegram.value,
       user: telegramUser.value,
       theme: themeParams.value
     })
-    
+
     // Если в Telegram, отправляем данные аутентификации на сервер
     if (isTelegram.value && authHash.value) {
+      loaderMessage.value = 'Авторизация через Telegram...'
       console.log('📡 Sending auth data to server...')
-      sendAuthToServer().catch(error => {
+
+      try {
+        const result = await sendAuthToServer('/auth/telegram')
+
+        if (result && result.token) {
+          // Сохраняем JWT токен
+          saveJWTToken(result.token)
+          console.log('✅ Успешная авторизация, токен сохранен')
+          authError.value = null
+        } else {
+          throw new Error('Сервер не вернул JWT токен')
+        }
+      } catch (error) {
         console.error('❌ Failed to send auth data:', error)
-      })
+        authError.value = error.message || 'Не удалось выполнить авторизацию. Попробуйте позже.'
+        clearJWTToken() // Очищаем старый токен при ошибке
+      }
     }
   }, 1000)
 })
@@ -71,13 +119,52 @@ onErrorCaptured((error, instance, info) => {
   return false
 })
 
+// Функция для повторной попытки авторизации
+const retryAuth = async () => {
+  authError.value = null
+  loaderMessage.value = 'Повторная авторизация...'
+  isInitialized.value = false
+
+  // Небольшая задержка для отображения лоадера
+  await new Promise(resolve => setTimeout(resolve, 500))
+
+  // Повторная попытка авторизации
+  try {
+    const result = await sendAuthToServer('/auth/telegram')
+
+    if (result && result.token) {
+      saveJWTToken(result.token)
+      console.log('✅ Повторная авторизация успешна')
+      authError.value = null
+    } else {
+      throw new Error('Сервер не вернул JWT токен')
+    }
+  } catch (error) {
+    console.error('❌ Повторная авторизация не удалась:', error)
+    authError.value = error.message || 'Не удалось выполнить авторизацию. Попробуйте позже.'
+    clearJWTToken()
+  } finally {
+    isInitialized.value = true
+  }
+}
+
+// Функция для отложенной попытки
+const tryLater = () => {
+  // Просто очищаем ошибку и показываем основной интерфейс
+  // В реальном приложении можно добавить логику отложенной авторизации
+  authError.value = null
+  console.log('🕒 Пользователь выбрал "Попробовать позже"')
+}
+
 // Глобальные функции для отладки (можно убрать в продакшене)
 if (import.meta.env.DEV) {
   window.$telegram = {
     getUser: () => telegramUser.value,
     getAuthData: () => getAuthData(),
     refreshTheme: () => refreshTheme(),
-    isTelegram: () => isTelegram.value
+    isTelegram: () => isTelegram.value,
+    hasValidToken: () => hasValidToken.value,
+    clearToken: () => clearJWTToken()
   }
 }
 </script>
@@ -133,8 +220,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 
@@ -239,6 +331,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -246,18 +339,35 @@ body {
 }
 
 /* Анимация для карточек с задержкой */
-.stagger-animation > * {
+.stagger-animation>* {
   opacity: 0;
   transform: translateY(20px);
   animation: staggerFadeIn 0.5s ease-out forwards;
 }
 
-.stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
-.stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
-.stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
-.stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
-.stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
-.stagger-animation > *:nth-child(6) { animation-delay: 0.6s; }
+.stagger-animation>*:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.stagger-animation>*:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.stagger-animation>*:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.stagger-animation>*:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.stagger-animation>*:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.stagger-animation>*:nth-child(6) {
+  animation-delay: 0.6s;
+}
 
 @keyframes staggerFadeIn {
   to {
@@ -279,15 +389,15 @@ body {
   .slide-left-enter-from {
     transform: translateX(20px);
   }
-  
+
   .slide-left-leave-to {
     transform: translateX(-20px);
   }
-  
+
   .slide-right-enter-from {
     transform: translateX(-20px);
   }
-  
+
   .slide-right-leave-to {
     transform: translateX(20px);
   }
