@@ -124,7 +124,7 @@ func (ta *TelegramAuth) ValidateTokenEd25519(data *TelegramWebAppData) (bool, er
 	// Формат токена: 123456789:ABCDEFabcdef1234567890ABCDEFabcd
 	tokenParts := strings.Split(ta.Token, ":")
 	if len(tokenParts) != 2 {
-		return false, fmt.Errorf("invalid bot token format")
+		return false, fmt.Errorf("invalid bot token format (token length: %d, first 20 chars: %.20s)", len(ta.Token), ta.Token)
 	}
 
 	botID := tokenParts[0]
@@ -171,9 +171,9 @@ func (ta *TelegramAuth) ValidateTokenEd25519(data *TelegramWebAppData) (bool, er
 	checkString := botID + ":WebAppData\n" + dataCheckString
 
 	// Декодирование подписи из base64url
-	signature, err := base64.URLEncoding.DecodeString(data.Signature)
+	signature, err := decodeBase64URL(data.Signature)
 	if err != nil {
-		return false, fmt.Errorf("invalid signature format: %v", err)
+		return false, fmt.Errorf("invalid signature format (length: %d, first 20 chars: %.20s): %v", len(data.Signature), data.Signature, err)
 	}
 
 	// Получение публичного ключа Telegram (в production используйте production ключ)
@@ -181,7 +181,7 @@ func (ta *TelegramAuth) ValidateTokenEd25519(data *TelegramWebAppData) (bool, er
 	publicKeyHex := "40055058a4ee38156a06562e52eece92a771bcd8346a8c4615cb7376eddf72ec"
 	publicKey, err := hex.DecodeString(publicKeyHex)
 	if err != nil {
-		return false, fmt.Errorf("invalid public key format: %v", err)
+		return false, fmt.Errorf("invalid public key format (hex length: %d, first 20 chars: %.20s): %v", len(publicKeyHex), publicKeyHex, err)
 	}
 
 	// Проверка длины публичного ключа
@@ -191,7 +191,7 @@ func (ta *TelegramAuth) ValidateTokenEd25519(data *TelegramWebAppData) (bool, er
 
 	// Проверка подписи с использованием Ed25519
 	if !ed25519.Verify(publicKey, []byte(checkString), signature) {
-		return false, fmt.Errorf("invalid signature")
+		return false, fmt.Errorf("invalid signature (check string length: %d, signature length: %d)", len(checkString), len(signature))
 	}
 
 	return true, nil
@@ -331,7 +331,7 @@ func (ta *TelegramAuth) validateInitDataEd25519(parsedData url.Values) (bool, *T
 	// Для Ed25519 проверки нам нужно получить bot_id из токена
 	tokenParts := strings.Split(ta.Token, ":")
 	if len(tokenParts) != 2 {
-		return false, nil, fmt.Errorf("invalid bot token format")
+		return false, nil, fmt.Errorf("invalid bot token format (token length: %d, first 20 chars: %.20s)", len(ta.Token), ta.Token)
 	}
 
 	botID := tokenParts[0]
@@ -340,9 +340,9 @@ func (ta *TelegramAuth) validateInitDataEd25519(parsedData url.Values) (bool, *T
 	checkString := botID + ":WebAppData\n" + dataCheckString
 
 	// Декодирование подписи из base64url
-	signatureBytes, err := base64.URLEncoding.DecodeString(signature)
+	signatureBytes, err := decodeBase64URL(signature)
 	if err != nil {
-		return false, nil, fmt.Errorf("invalid signature format: %v", err)
+		return false, nil, fmt.Errorf("invalid signature format (length: %d, first 20 chars: %.20s): %v", len(signature), signature, err)
 	}
 
 	// Получение публичного ключа Telegram (в production используйте production ключ)
@@ -350,7 +350,7 @@ func (ta *TelegramAuth) validateInitDataEd25519(parsedData url.Values) (bool, *T
 	publicKeyHex := "40055058a4ee38156a06562e52eece92a771bcd8346a8c4615cb7376eddf72ec"
 	publicKey, err := hex.DecodeString(publicKeyHex)
 	if err != nil {
-		return false, nil, fmt.Errorf("invalid public key format: %v", err)
+		return false, nil, fmt.Errorf("invalid public key format (hex length: %d, first 20 chars: %.20s): %v", len(publicKeyHex), publicKeyHex, err)
 	}
 
 	// Проверка длины публичного ключа
@@ -360,7 +360,7 @@ func (ta *TelegramAuth) validateInitDataEd25519(parsedData url.Values) (bool, *T
 
 	// Проверка подписи с использованием Ed25519
 	if !ed25519.Verify(publicKey, []byte(checkString), signatureBytes) {
-		return false, nil, fmt.Errorf("invalid signature")
+		return false, nil, fmt.Errorf("invalid signature (check string length: %d, signature length: %d)", len(checkString), len(signatureBytes))
 	}
 
 	// Создаем структуру с данными пользователя
@@ -533,4 +533,26 @@ func extractUserPhotoURL(userStr string) string {
 		return ""
 	}
 	return userStr[start : start+end]
+}
+
+// decodeBase64URL декодирует base64 URL с обработкой ошибок
+func decodeBase64URL(encoded string) ([]byte, error) {
+	// Попытка декодирования с автоматическим добавлением padding
+	decoded, err := base64.URLEncoding.DecodeString(encoded)
+	if err != nil {
+		// Если ошибка связана с padding, попробуем добавить padding вручную
+		if strings.Contains(err.Error(), "illegal base64 data") {
+			// Добавляем padding если необходимо
+			for len(encoded)%4 != 0 {
+				encoded += "="
+			}
+			decoded, err = base64.URLEncoding.DecodeString(encoded)
+			if err != nil {
+				return nil, err
+			}
+			return decoded, nil
+		}
+		return nil, err
+	}
+	return decoded, nil
 }
