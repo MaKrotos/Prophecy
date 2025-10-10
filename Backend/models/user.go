@@ -23,12 +23,14 @@ type UserResponse struct {
 
 // TelegramUser представляет собой модель пользователя Telegram
 type TelegramUser struct {
-	ID         int       `json:"id"`
-	TelegramID int64     `json:"telegram_id"`
-	FirstName  string    `json:"first_name"`
-	LastName   string    `json:"last_name"`
-	Username   string    `json:"username"`
-	PhotoURL   string    `json:"photo_url"`
-	AuthDate   int64     `json:"auth_date"`
-	CreatedAt  time.Time `json:"created_at"`
+	ID            int       `json:"id"`
+	TelegramID    int64     `json:"telegram_id"`
+	FirstName     string    `json:"first_name"`
+	LastName      string    `json:"last_name"`
+	Username      string    `json:"username"`
+	PhotoURL      string    `json:"photo_url"`
+	AuthDate      int64     `json:"auth_date"`
+	GeneratedName string    `json:"generated_name"`
+	IsAdmin       bool      `json:"is_admin"`
+	CreatedAt     time.Time `json:"created_at"`
 }

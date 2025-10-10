@@ -7,6 +7,7 @@ import (
 
 	"prophecy/backend/auth"
 	"prophecy/backend/models"
+	"prophecy/backend/names"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,14 +62,18 @@ func ValidateTelegramToken(c *gin.Context) {
 		return
 	}
 
+	// Генерация случайного имени
+	generatedName := names.GenerateRandomName()
+
 	// Сохранение пользователя Telegram в базе данных
 	telegramUser := &models.TelegramUser{
-		TelegramID: userData.ID,
-		FirstName:  userData.FirstName,
-		LastName:   userData.LastName,
-		Username:   userData.Username,
-		PhotoURL:   userData.PhotoURL,
-		AuthDate:   authDateInt,
+		TelegramID:    userData.ID,
+		FirstName:     userData.FirstName,
+		LastName:      userData.LastName,
+		Username:      userData.Username,
+		PhotoURL:      userData.PhotoURL,
+		AuthDate:      authDateInt,
+		GeneratedName: generatedName,
 	}
 
 	err = models.CreateTelegramUser(telegramUser)
@@ -100,14 +105,15 @@ func ValidateTelegramToken(c *gin.Context) {
 		"message": "Token is valid",
 		"token":   token,
 		"user": gin.H{
-			"id":          telegramUser.ID,
-			"telegram_id": telegramUser.TelegramID,
-			"first_name":  telegramUser.FirstName,
-			"last_name":   telegramUser.LastName,
-			"username":    telegramUser.Username,
-			"photo_url":   telegramUser.PhotoURL,
-			"auth_date":   telegramUser.AuthDate,
-			"created_at":  telegramUser.CreatedAt,
+			"id":             telegramUser.ID,
+			"telegram_id":    telegramUser.TelegramID,
+			"first_name":     telegramUser.FirstName,
+			"last_name":      telegramUser.LastName,
+			"generated_name": telegramUser.GeneratedName,
+			"is_admin":       telegramUser.IsAdmin,
+			"photo_url":      telegramUser.PhotoURL,
+			"auth_date":      telegramUser.AuthDate,
+			"created_at":     telegramUser.CreatedAt,
 		},
 	})
 }
@@ -155,14 +161,29 @@ func VerifyJWT(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Token is valid",
 		"user": gin.H{
-			"id":          telegramUser.ID,
-			"telegram_id": telegramUser.TelegramID,
-			"first_name":  telegramUser.FirstName,
-			"last_name":   telegramUser.LastName,
-			"username":    telegramUser.Username,
-			"photo_url":   telegramUser.PhotoURL,
-			"auth_date":   telegramUser.AuthDate,
-			"created_at":  telegramUser.CreatedAt,
+			"id":             telegramUser.ID,
+			"telegram_id":    telegramUser.TelegramID,
+			"first_name":     telegramUser.FirstName,
+			"last_name":      telegramUser.LastName,
+			"generated_name": telegramUser.GeneratedName,
+			"is_admin":       telegramUser.IsAdmin,
+			"photo_url":      telegramUser.PhotoURL,
+			"auth_date":      telegramUser.AuthDate,
+			"created_at":     telegramUser.CreatedAt,
 		},
+	})
+}
+
+// CheckAdminStatus проверяет статус администратора пользователя
+func CheckAdminStatus(c *gin.Context) {
+	// Получение is_admin из контекста (установлен в middleware)
+	isAdmin, exists := c.Get("is_admin")
+	if !exists {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Admin status not found in context"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"is_admin": isAdmin,
 	})
 }

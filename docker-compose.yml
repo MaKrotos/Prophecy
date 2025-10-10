@@ -69,6 +69,7 @@
       - DB_NAME=prophecy_db
       - JWT_SECRET=prophecy_jwt_secret_key_change_in_production
       - TELEGRAM_BOT_TOKEN=123456789:ABCDEFabcdef1234567890ABCDEFabcd
+      - ADMIN_TELEGRAM_ID=123456789
     networks:
       - Prophecy-network
     volumes:
