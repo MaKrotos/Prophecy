@@ -2,7 +2,28 @@
   <div class="page">
     <h2 class="page-title">Добро пожаловать! 👋</h2>
     <p class="page-description">Это главная страница приложения.</p>
-    
+
+    <!-- User Info Section -->
+    <div class="user-info-section" v-if="userInfo">
+      <div class="user-card">
+        <div class="user-header">
+          <h3 class="user-name">{{ userInfo.generatedName }}</h3>
+          <div class="user-id">ID: {{ userInfo.id }}</div>
+        </div>
+
+        <div class="user-details">
+          <div class="detail-item">
+            <span class="detail-label">Telegram ID:</span>
+            <span class="detail-value">{{ userInfo.telegramId }}</span>
+          </div>
+
+          <div class="detail-item" v-if="userInfo.isAdmin">
+            <span class="admin-badge">Администратор</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="cards-grid">
       <div class="card" v-for="i in 6" :key="i">
         <div class="card-icon">📦</div>
@@ -149,20 +170,20 @@
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
+
   .card {
     padding: 16px;
   }
-  
+
   .stats-section {
     grid-template-columns: repeat(3, 1fr);
     gap: 8px;
   }
-  
+
   .stat-item {
     padding: 12px;
   }
-  
+
   .stat-value {
     font-size: 1.25rem;
   }
@@ -172,15 +193,15 @@
   .page {
     padding: 12px;
   }
-  
+
   .page-title {
     font-size: 1.3rem;
   }
-  
+
   .cards-grid {
     gap: 10px;
   }
-  
+
   .stats-section {
     grid-template-columns: 1fr;
     gap: 8px;
@@ -220,12 +241,29 @@
   transform: translateY(20px);
 }
 
-.card:nth-child(1) { animation-delay: 0.1s; }
-.card:nth-child(2) { animation-delay: 0.2s; }
-.card:nth-child(3) { animation-delay: 0.3s; }
-.card:nth-child(4) { animation-delay: 0.4s; }
-.card:nth-child(5) { animation-delay: 0.5s; }
-.card:nth-child(6) { animation-delay: 0.6s; }
+.card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.card:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+.card:nth-child(5) {
+  animation-delay: 0.5s;
+}
+
+.card:nth-child(6) {
+  animation-delay: 0.6s;
+}
 
 @keyframes fadeInUp {
   to {
@@ -233,4 +271,110 @@
     transform: translateY(0);
   }
 }
+
+/* User Info Section Styles */
+.user-info-section {
+  margin-bottom: 24px;
+}
+
+.user-card {
+  background: var(--tg-theme-secondary-bg-color, white);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+  transition: all 0.3s ease;
+}
+
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.user-name {
+  color: var(--tg-theme-text-color, #333333);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  transition: color 0.3s ease;
+}
+
+.user-id {
+  color: var(--tg-theme-hint-color, #666666);
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-label {
+  color: var(--tg-theme-hint-color, #666666);
+  font-size: 0.9rem;
+  transition: color 0.3s ease;
+}
+
+.detail-value {
+  color: var(--tg-theme-text-color, #333333);
+  font-weight: 500;
+  transition: color 0.3s ease;
+}
+
+.admin-badge {
+  background: var(--tg-theme-button-color, #667eea);
+  color: var(--tg-theme-button-text-color, white);
+  padding: 6px 12px;
+  border-radius: 16px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Dark theme adjustments */
+:global(.tg-theme-dark) .user-card {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .user-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .user-name {
+    font-size: 1.3rem;
+  }
+
+  .user-card {
+    padding: 16px;
+  }
+}
 </style>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { getUserInfoFromToken } from '/src/telegram/index.js'
+
+const userInfo = ref(null)
+
+onMounted(() => {
+  // Получаем информацию о пользователе из JWT токена
+  userInfo.value = getUserInfoFromToken()
+
+  console.log('User Info:', userInfo.value)
+})
+</script>

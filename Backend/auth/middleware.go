@@ -39,6 +39,8 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		// Сохранение claims в контексте
 		c.Set("user_id", claims.UserID)
 		c.Set("telegram_id", claims.TelegramID)
+		c.Set("generated_name", claims.GeneratedName)
+		c.Set("is_admin", claims.IsAdmin)
 		c.Set("claims", claims)
 
 		// Продолжение выполнения

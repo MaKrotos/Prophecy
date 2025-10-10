@@ -5,6 +5,7 @@ export * from "./theme/manager.js";
 export * from "./auth/data.js";
 export * from "./auth/server.js";
 export * from "./auth/jwt.js";
+export * from "./auth/user.js";
 export * from "./ui/messages.js";
 
 // Основные функции для обратной совместимости
@@ -20,3 +21,4 @@ export {
   hasValidToken,
   authenticatedFetch,
 } from "./auth/jwt.js";
+export { getUserInfoFromToken } from "./auth/user.js";

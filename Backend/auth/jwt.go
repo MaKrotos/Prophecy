@@ -11,8 +11,10 @@ import (
 
 // JWTClaims структура для хранения пользовательских данных в токене
 type JWTClaims struct {
-	UserID     int   `json:"user_id"`
-	TelegramID int64 `json:"telegram_id"`
+	UserID        int    `json:"user_id"`
+	TelegramID    int64  `json:"telegram_id"`
+	GeneratedName string `json:"generated_name"`
+	IsAdmin       bool   `json:"is_admin"`
 	jwt.RegisteredClaims
 }
 
@@ -22,8 +24,10 @@ func GenerateJWT(user *models.TelegramUser) (string, error) {
 
 	// Создание claims с пользовательскими данными
 	claims := &JWTClaims{
-		UserID:     user.ID,
-		TelegramID: user.TelegramID,
+		UserID:        user.ID,
+		TelegramID:    user.TelegramID,
+		GeneratedName: user.GeneratedName,
+		IsAdmin:       user.IsAdmin,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // Токен действует 24 часа
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

@@ -54,8 +54,8 @@ func GetUserByID(id int) (*User, error) {
 // CreateTelegramUser создает нового пользователя Telegram в базе данных
 func CreateTelegramUser(telegramUser *TelegramUser) error {
 	query := `
-		INSERT INTO telegram_users (telegram_id, first_name, last_name, username, photo_url, auth_date, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO telegram_users (telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 		RETURNING id`
 
 	now := time.Now()
@@ -66,6 +66,8 @@ func CreateTelegramUser(telegramUser *TelegramUser) error {
 		telegramUser.Username,
 		telegramUser.PhotoURL,
 		telegramUser.AuthDate,
+		telegramUser.GeneratedName,
+		telegramUser.IsAdmin,
 		now,
 	).Scan(&telegramUser.ID)
 
@@ -82,7 +84,7 @@ func CreateTelegramUser(telegramUser *TelegramUser) error {
 func GetTelegramUserByTelegramID(telegramID int64) (*TelegramUser, error) {
 	var telegramUser TelegramUser
 	query := `
-		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, created_at
+		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, created_at
 		FROM telegram_users
 		WHERE telegram_id = $1`
 
@@ -94,6 +96,8 @@ func GetTelegramUserByTelegramID(telegramID int64) (*TelegramUser, error) {
 		&telegramUser.Username,
 		&telegramUser.PhotoURL,
 		&telegramUser.AuthDate,
+		&telegramUser.GeneratedName,
+		&telegramUser.IsAdmin,
 		&telegramUser.CreatedAt,
 	)
 

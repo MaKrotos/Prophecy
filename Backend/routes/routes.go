@@ -23,4 +23,7 @@ func RegisterRoutes(router *gin.Engine) {
 
 	// Маршруты для работы с JWT
 	router.GET("/auth/verify", auth.JWTAuthMiddleware(), handlers.VerifyJWT)
+
+	// Маршрут для проверки статуса администратора
+	router.GET("/auth/admin", auth.JWTAuthMiddleware(), handlers.CheckAdminStatus)
 }
