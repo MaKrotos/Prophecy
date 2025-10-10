@@ -4,8 +4,10 @@
     <MainLayout v-if="isTelegram && isInitialized && hasValidToken" />
 
     <!-- Показываем страницу ошибки авторизации, если есть ошибка -->
-    <AuthErrorLayout v-else-if="isTelegram && isInitialized && authError" :error-message="authError" @retry="retryAuth"
-      @try-later="tryLater" />
+    <AuthErrorLayout v-else-if="isTelegram && isInitialized && authError" 
+      :error-message="authError" 
+      @retry="handleRetryAuth"
+      @try-later="handleTryLater" />
 
     <!-- Показываем сообщение о необходимости Telegram, если не в WebApp -->
     <TelegramOnlyLayout v-else-if="!isTelegram && isInitialized" :telegram-link="telegramBotLink" />
@@ -21,12 +23,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted } from 'vue'
 import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
 import AuthErrorLayout from '/src/layouts/AuthErrorLayout.vue'
 import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp'
-import { getUserInfoFromToken } from '/src/telegram/auth/user.js'
 
 const {
   telegramUser,
@@ -37,101 +38,28 @@ const {
   sendAuthToServer,
   waitForTelegramReady,
   hasValidToken,
-  saveJWTToken,
-  clearJWTToken
+  checkTelegramIdConsistency,
+  retryAuth,
+  clearAuthError,
+  authError
 } = useTelegramWebApp()
 
 const isInitialized = ref(false)
-const authError = ref(null)
 const loaderMessage = ref('Инициализация приложения...')
 const telegramBotLink = ref('https://t.me/your_bot_username')
-const needsReauth = ref(false)
 
 /**
- * Проверяет соответствие Telegram ID в JWT токене и в данных WebApp
- * @returns {boolean} true если ID совпадают или токен отсутствует, false если не совпадают
+ * Инициализация приложения
  */
-const checkTelegramIdConsistency = () => {
-  // Получаем информацию из токена
-  const tokenUserInfo = getUserInfoFromToken()
-
-  // Если токена нет, проверка не требуется
-  if (!tokenUserInfo) {
-    console.log('ℹ️ Нет JWT токена для проверки')
-    return true
-  }
-
-  // Получаем Telegram ID из токена
-  const tokenTelegramId = tokenUserInfo.telegramId
-
-  // Получаем Telegram ID из WebApp данных
-  const webAppUser = telegramUser.value
-  const webAppTelegramId = webAppUser?.id
-
-  // Если нет данных WebApp, проверка не может быть выполнена
-  if (!webAppTelegramId) {
-    console.log('⚠️ Нет данных Telegram WebApp для проверки')
-    return true
-  }
-
-
-  if (tokenTelegramId === webAppTelegramId) {
-    console.log('✅ Telegram ID из токена и WebApp совпадают')
-    return true
-  } else {
-    console.warn('❌ Telegram ID из токена и WebApp НЕ совпадают', {
-      tokenTelegramId,
-      webAppTelegramId,
-    })
-    // Очищаем токен при несовпадении
-    clearJWTToken() // ✅ Теперь эта функция доступна
-    // Устанавливаем флаг необходимости повторной авторизации
-    needsReauth.value = true
-    return false
-  }
-}
-
-onMounted(async () => {
+const initializeApp = async () => {
   console.log('🚀 App mounted, initializing...')
 
   try {
     // Если это Telegram, ждем его готовности
     if (isTelegram.value) {
-      loaderMessage.value = 'Загрузка Telegram...'
-      console.log('⏳ Ожидание готовности Telegram WebApp...')
-      await waitForTelegramReady(5000)
-      console.log('✅ Telegram WebApp готов')
-
-      // Проверяем соответствие Telegram ID
-      const isConsistent = checkTelegramIdConsistency()
-      if (!isConsistent) {
-        loaderMessage.value = 'Повторная авторизация...'
-        console.log('🔄 Необходима повторная авторизация из-за несоответствия Telegram ID')
-      }
+      await initializeTelegramApp()
     } else {
       console.log('🌐 Это не Telegram WebApp')
-    }
-
-    // Авторизация только если Telegram готов и есть хэш
-    // Выполняем авторизацию даже если токен был очищен из-за несоответствия ID
-    if (isTelegram.value && isTelegramReady?.value && authHash.value) {
-      loaderMessage.value = 'Авторизация через Telegram...'
-      console.log('📡 Отправка данных аутентификации на сервер...')
-
-      const result = await sendAuthToServer('/api/auth/telegram', 3)
-
-      if (result?.token) {
-        saveJWTToken(result.token)
-        console.log('✅ Успешная авторизация, токен сохранен')
-        authError.value = null
-        // Сбрасываем флаг необходимости повторной авторизации
-        needsReauth.value = false
-      } else {
-        throw new Error('Сервер не вернул токен')
-      }
-    } else if (isTelegram.value && !authHash.value) {
-      console.warn('⚠️ Нет хэша аутентификации')
-      authError.value = 'Ошибка авторизации. Перезайдите в приложение.'
     }
 
     isInitialized.value = true
@@ -145,50 +73,68 @@ onMounted(async () => {
   } catch (error) {
     console.error('❌ Ошибка инициализации:', error)
     authError.value = error.message || 'Ошибка загрузки приложения'
-    isInitialized.value = true // Все равно показываем интерфейс
-  }
-})
-
-const retryAuth = async () => {
-  authError.value = null
-  loaderMessage.value = 'Повторная авторизация...'
-  isInitialized.value = false
-  await new Promise(resolve => setTimeout(resolve, 500))
-
-  try {
-    // Проверяем, есть ли хэш аутентификации
-    if (!authHash.value) {
-      throw new Error('Нет хэша аутентификации. Перезайдите в приложение.')
-    }
-
-    // Пытаемся повторно авторизоваться с повторными попытками
-    const result = await sendAuthToServer('/api/auth/telegram', 3)
-    if (result?.token) {
-      saveJWTToken(result.token)
-      authError.value = null
-      console.log('✅ Повторная авторизация успешна')
-      // Сбрасываем флаг необходимости повторной авторизации
-      needsReauth.value = false
-    } else {
-      throw new Error('Сервер не вернул токен')
-    }
-  } catch (error) {
-    authError.value = error.message || 'Ошибка авторизации'
-    console.error('❌ Повторная авторизация не удалась после всех попыток:', error)
-  } finally {
     isInitialized.value = true
   }
 }
 
-const tryLater = () => {
-  authError.value = null
+/**
+ * Инициализация Telegram приложения
+ */
+const initializeTelegramApp = async () => {
+  loaderMessage.value = 'Загрузка Telegram...'
+  console.log('⏳ Ожидание готовности Telegram WebApp...')
+  
+  await waitForTelegramReady(5000)
+  console.log('✅ Telegram WebApp готов')
+
+  // Проверяем соответствие Telegram ID
+  const isConsistent = checkTelegramIdConsistency()
+  if (!isConsistent) {
+    loaderMessage.value = 'Повторная авторизация...'
+    console.log('🔄 Необходима повторная авторизация из-за несоответствия Telegram ID')
+  }
+
+  // Авторизация только если Telegram готов и есть хэш
+  if (isTelegramReady?.value && authHash.value) {
+    loaderMessage.value = 'Авторизация через Telegram...'
+    console.log('📡 Отправка данных аутентификации на сервер...')
+
+    await sendAuthToServer('/api/auth/telegram', 3)
+  } else if (!authHash.value) {
+    console.warn('⚠️ Нет хэша аутентификации')
+    throw new Error('Ошибка авторизации. Перезайдите в приложение.')
+  }
+}
+
+/**
+ * Обработка повторной авторизации
+ */
+const handleRetryAuth = async () => {
+  loaderMessage.value = 'Повторная авторизация...'
+  isInitialized.value = false
+  
+  await new Promise(resolve => setTimeout(resolve, 500))
+  await retryAuth('/api/auth/telegram', 3)
+  
+  isInitialized.value = true
+}
+
+/**
+ * Обработка отложенной попытки
+ */
+const handleTryLater = () => {
+  clearAuthError()
   console.log('🕒 Пользователь выбрал "Попробовать позже"')
 }
-</script>
-<style>
-@import './assets/css/app.css';
-/* Глобальные стили остаются здесь */
 
+onMounted(() => {
+  initializeApp()
+})
+</script>
+
+<style>
+/* Стили остаются без изменений */
+@import './assets/css/app.css';
 
 * {
   margin: 0;
@@ -204,7 +150,6 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
   overflow: hidden;
 }
-
 /* Стили лоадера */
 .app-loader {
   display: flex;
