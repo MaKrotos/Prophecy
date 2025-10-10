@@ -24,9 +24,14 @@ export function useTelegramWebApp() {
     initTelegramWebAppWithRetry();
   });
 
-  const initTelegramWebAppWithRetry = async (retryCount = 0, maxRetries = 15) => {
+  const initTelegramWebAppWithRetry = async (
+    retryCount = 0,
+    maxRetries = 15
+  ) => {
     try {
-      console.log(`🔄 Попытка инициализации Telegram WebApp #${retryCount + 1}`);
+      console.log(
+        `🔄 Попытка инициализации Telegram WebApp #${retryCount + 1}`
+      );
 
       initTelegramWebApp({
         onUserDetected: (user) => {
@@ -55,7 +60,7 @@ export function useTelegramWebApp() {
         onError: (error) => {
           console.error("❌ Telegram WebApp error:", error);
           initializationError.value = error;
-          
+
           // При ошибке пробуем повторить
           if (retryCount < maxRetries) {
             setTimeout(() => {
@@ -78,13 +83,16 @@ export function useTelegramWebApp() {
       // Проверяем готовность через короткий интервал
       setTimeout(() => {
         if (!isTelegramReady.value && retryCount < maxRetries) {
-          console.log(`⏳ Telegram не готов, повторная попытка #${retryCount + 1}`);
+          console.log(
+            `⏳ Telegram не готов, повторная попытка #${retryCount + 1}`
+          );
           initTelegramWebAppWithRetry(retryCount + 1, maxRetries);
         } else if (!isTelegramReady.value) {
-          console.warn(`⚠️ Достигнут лимит попыток (${maxRetries}), продолжаем без Telegram`);
+          console.warn(
+            `⚠️ Достигнут лимит попыток (${maxRetries}), продолжаем без Telegram`
+          );
         }
       }, 300);
-
     } catch (error) {
       console.error("❌ Ошибка при инициализации Telegram WebApp:", error);
       initializationError.value = error;
@@ -112,7 +120,9 @@ export function useTelegramWebApp() {
         } else if (Date.now() - startTime > timeout) {
           clearInterval(checkInterval);
           console.warn(`⏰ Таймаут ожидания Telegram WebApp (${timeout}ms)`);
-          reject(new Error(`Telegram WebApp initialization timeout (${timeout}ms)`));
+          reject(
+            new Error(`Telegram WebApp initialization timeout (${timeout}ms)`)
+          );
         }
       }, 50);
     });
@@ -135,7 +145,10 @@ export function useTelegramWebApp() {
     console.log("🎨 Theme applied to app");
   };
 
-  const sendAuthToServer = async (endpoint = "/api/auth/telegram") => {
+  const sendAuthToServer = async (
+    endpoint = "/api/auth/telegram",
+    maxRetries = 3
+  ) => {
     // Ждем готовности Telegram перед отправкой
     try {
       await waitForTelegramReady(3000);
@@ -154,20 +167,43 @@ export function useTelegramWebApp() {
       themeParams: themeParams.value,
     });
 
-    try {
-      const result = await sendAuthToServerUtil(payload, endpoint);
+    let lastError;
 
-      if (result && result.token) {
-        saveJWTToken(result.token);
-        jwtToken.value = result.token;
+    // Пытаемся отправить запрос несколько раз
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`📤 Попытка авторизации #${attempt + 1}/${maxRetries + 1}`);
+        const result = await sendAuthToServerUtil(payload, endpoint);
+
+        if (result && result.token) {
+          saveJWTToken(result.token);
+          jwtToken.value = result.token;
+          console.log("✅ Авторизация успешна");
+          return result;
+        } else {
+          throw new Error("Сервер не вернул токен");
+        }
+      } catch (error) {
+        lastError = error;
+        console.warn(
+          `❌ Попытка авторизации #${attempt + 1} не удалась:`,
+          error.message
+        );
+
+        // Если это не последняя попытка, ждем перед повтором
+        if (attempt < maxRetries) {
+          // Экспоненциальная задержка: 1s, 2s, 4s, ...
+          const delay = Math.pow(2, attempt) * 1000;
+          console.log(`⏳ Ожидание ${delay}ms перед следующей попыткой...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        }
       }
-
-      return result;
-    } catch (error) {
-      clearJWTToken();
-      jwtToken.value = null;
-      throw error;
     }
+
+    // Если все попытки исчерпаны, очищаем токен и выбрасываем ошибку
+    clearJWTToken();
+    jwtToken.value = null;
+    throw lastError;
   };
 
   const getCurrentAuthData = () => {

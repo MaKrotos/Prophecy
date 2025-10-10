@@ -4,47 +4,74 @@
 
 export async function sendAuthToServer(
   authData,
-  endpoint = "/api/auth/telegram"
+  endpoint = "/api/auth/telegram",
+  maxRetries = 3
 ) {
   if (!authData?.hash) {
     console.warn("No auth hash available");
     return null;
   }
 
-  try {
-    // Подготавливаем данные для отправки в формате, который ожидает сервер
-    const payload = {
-      initData: window.Telegram?.WebApp?.initData,
-    };
+  let lastError;
 
-    console.log("📤 Sending auth data to server:", payload);
+  // Пытаемся отправить запрос несколько раз
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      // Подготавливаем данные для отправки в формате, который ожидает сервер
+      const payload = {
+        initData: window.Telegram?.WebApp?.initData,
+      };
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-    });
+      console.log(
+        `📤 Sending auth data to server (attempt ${attempt + 1}/${
+          maxRetries + 1
+        }):`,
+        payload
+      );
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Server responded with ${response.status}: ${errorText}`);
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Server responded with ${response.status}: ${errorText}`
+        );
+      }
+
+      const result = await response.json();
+      console.log("✅ Auth data successfully sent to server:", result);
+
+      // Если сервер вернул токен, сохраняем его
+      if (result.token) {
+        console.log("🔐 JWT token received from server");
+      }
+
+      return result;
+    } catch (error) {
+      lastError = error;
+      console.error(
+        `❌ Failed to send auth data to server (attempt ${attempt + 1}):`,
+        error.message
+      );
+
+      // Если это не последняя попытка, ждем перед повтором
+      if (attempt < maxRetries) {
+        // Экспоненциальная задержка: 1s, 2s, 4s, ...
+        const delay = Math.pow(2, attempt) * 1000;
+        console.log(`⏳ Waiting ${delay}ms before next attempt...`);
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
     }
-
-    const result = await response.json();
-    console.log("✅ Auth data successfully sent to server:", result);
-
-    // Если сервер вернул токен, сохраняем его
-    if (result.token) {
-      console.log("🔐 JWT token received from server");
-    }
-
-    return result;
-  } catch (error) {
-    console.error("❌ Failed to send auth data to server:", error);
-    throw error;
   }
+
+  // Если все попытки исчерпаны, выбрасываем последнюю ошибку
+  throw lastError;
 }
 
 export function prepareAuthPayload(authData) {
