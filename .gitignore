@@ -7,3 +7,4 @@
 /Frontend/.vscode
 /node_modules
 docker-compose.release.yml
+debug_data_check2.go

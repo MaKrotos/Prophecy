@@ -13,13 +13,7 @@ import (
 
 // TelegramAuthRequest структура для запроса аутентификации Telegram
 type TelegramAuthRequest struct {
-	ID        int64  `json:"id" binding:"required"`
-	FirstName string `json:"first_name" binding:"required"`
-	LastName  string `json:"last_name"`
-	Username  string `json:"username"`
-	PhotoURL  string `json:"photo_url"`
-	AuthDate  string `json:"auth_date" binding:"required"`
-	Hash      string `json:"hash" binding:"required"`
+	InitData string `json:"initData" binding:"required"`
 }
 
 // ValidateTelegramToken проверяет токен Telegram WebApp
@@ -29,13 +23,6 @@ func ValidateTelegramToken(c *gin.Context) {
 	// Проверка и парсинг JSON
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	// Преобразование строки auth_date в int64
-	authDateInt, err := strconv.ParseInt(req.AuthDate, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid auth_date format"})
 		return
 	}
 
@@ -49,19 +36,8 @@ func ValidateTelegramToken(c *gin.Context) {
 
 	telegramAuth := auth.NewTelegramAuth(botToken)
 
-	// Создание данных для проверки
-	data := &auth.TelegramWebAppData{
-		ID:        req.ID,
-		FirstName: req.FirstName,
-		LastName:  req.LastName,
-		Username:  req.Username,
-		PhotoURL:  req.PhotoURL,
-		AuthDate:  req.AuthDate,
-		Hash:      req.Hash,
-	}
-
-	// Проверка токена
-	valid, err := telegramAuth.ValidateToken(data)
+	// Проверка токена с использованием initData
+	valid, userData, err := telegramAuth.ValidateInitData(req.InitData)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error":   "Invalid token",
@@ -78,20 +54,27 @@ func ValidateTelegramToken(c *gin.Context) {
 		return
 	}
 
+	// Преобразование строки auth_date в int64
+	authDateInt, err := strconv.ParseInt(userData.AuthDate, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid auth_date format"})
+		return
+	}
+
 	// Сохранение пользователя Telegram в базе данных
 	telegramUser := &models.TelegramUser{
-		TelegramID: data.ID,
-		FirstName:  data.FirstName,
-		LastName:   data.LastName,
-		Username:   data.Username,
-		PhotoURL:   data.PhotoURL,
+		TelegramID: userData.ID,
+		FirstName:  userData.FirstName,
+		LastName:   userData.LastName,
+		Username:   userData.Username,
+		PhotoURL:   userData.PhotoURL,
 		AuthDate:   authDateInt,
 	}
 
 	err = models.CreateTelegramUser(telegramUser)
 	if err != nil {
 		// Если пользователь уже существует, получаем его из базы
-		existingUser, getErr := models.GetTelegramUserByTelegramID(data.ID)
+		existingUser, getErr := models.GetTelegramUserByTelegramID(userData.ID)
 		if getErr != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":   "Failed to save or retrieve user",
