@@ -241,5 +241,7 @@ export function useTelegramWebApp() {
     logout,
     hasValidToken,
     waitForTelegramReady,
+    saveJWTToken,
+    clearJWTToken,
   };
 }
