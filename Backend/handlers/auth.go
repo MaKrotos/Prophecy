@@ -65,29 +65,36 @@ func ValidateTelegramToken(c *gin.Context) {
 	// Генерация случайного имени
 	generatedName := names.GenerateRandomName()
 
-	// Сохранение пользователя Telegram в базе данных
-	telegramUser := &models.TelegramUser{
-		TelegramID:    userData.ID,
-		FirstName:     userData.FirstName,
-		LastName:      userData.LastName,
-		Username:      userData.Username,
-		PhotoURL:      userData.PhotoURL,
-		AuthDate:      authDateInt,
-		GeneratedName: generatedName,
+	// Проверка, существует ли пользователь Telegram в базе данных
+	telegramUser, err := models.GetTelegramUserByTelegramID(userData.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Failed to retrieve user",
+			"message": err.Error(),
+		})
+		return
 	}
 
-	err = models.CreateTelegramUser(telegramUser)
-	if err != nil {
-		// Если пользователь уже существует, получаем его из базы
-		existingUser, getErr := models.GetTelegramUserByTelegramID(userData.ID)
-		if getErr != nil {
+	// Если пользователь не существует, создаем нового
+	if telegramUser == nil {
+		telegramUser = &models.TelegramUser{
+			TelegramID:    userData.ID,
+			FirstName:     userData.FirstName,
+			LastName:      userData.LastName,
+			Username:      userData.Username,
+			PhotoURL:      userData.PhotoURL,
+			AuthDate:      authDateInt,
+			GeneratedName: generatedName,
+		}
+
+		err = models.CreateTelegramUser(telegramUser)
+		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "Failed to save or retrieve user",
+				"error":   "Failed to save user",
 				"message": err.Error(),
 			})
 			return
 		}
-		telegramUser = existingUser
 	}
 
 	// Генерация JWT токена
