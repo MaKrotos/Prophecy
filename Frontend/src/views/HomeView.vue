@@ -8,6 +8,7 @@
       <div class="user-card">
         <div class="user-header">
           <h3 class="user-name">{{ userInfo.generatedName }}</h3>
+          <div class="user-id">ID: {{ userInfo.id }}</div>
         </div>
 
         <div class="user-details">
