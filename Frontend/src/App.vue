@@ -45,6 +45,7 @@ const isInitialized = ref(false)
 const authError = ref(null)
 const loaderMessage = ref('Инициализация приложения...')
 const telegramBotLink = ref('https://t.me/your_bot_username') // Добавляем обратно эту переменную
+const needsReauth = ref(false) // Флаг для отслеживания необходимости повторной авторизации
 
 /**
  * Проверяет соответствие Telegram ID в JWT токене и в данных WebApp
@@ -84,6 +85,8 @@ const checkTelegramIdConsistency = () => {
     })
     // Очищаем токен при несовпадении
     clearJWTToken()
+    // Устанавливаем флаг необходимости повторной авторизации
+    needsReauth.value = true
     return false
   }
 }
@@ -111,7 +114,7 @@ onMounted(async () => {
 
     // Авторизация только если Telegram готов и есть хэш
     // Выполняем авторизацию даже если токен был очищен из-за несоответствия ID
-    if (isTelegram.value && isTelegramReady?.value && authHash.value) {
+    if (isTelegram.value && isTelegramReady?.value && (authHash.value || needsReauth.value)) {
       loaderMessage.value = 'Авторизация через Telegram...'
       console.log('📡 Отправка данных аутентификации на сервер...')
 
@@ -121,6 +124,8 @@ onMounted(async () => {
         saveJWTToken(result.token)
         console.log('✅ Успешная авторизация, токен сохранен')
         authError.value = null
+        // Сбрасываем флаг необходимости повторной авторизации
+        needsReauth.value = false
       } else {
         throw new Error('Сервер не вернул токен')
       }
@@ -157,6 +162,8 @@ const retryAuth = async () => {
       saveJWTToken(result.token)
       authError.value = null
       console.log('✅ Повторная авторизация успешна')
+      // Сбрасываем флаг необходимости повторной авторизации
+      needsReauth.value = false
     } else {
       throw new Error('Сервер не вернул токен')
     }
