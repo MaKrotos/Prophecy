@@ -19,7 +19,7 @@ type TelegramWebAppData struct {
 	LastName  string `json:"last_name"`
 	Username  string `json:"username"`
 	PhotoURL  string `json:"photo_url"`
-	AuthDate  int64  `json:"auth_date"`
+	AuthDate  string `json:"auth_date"`
 	Hash      string `json:"hash"`
 }
 
@@ -37,14 +37,20 @@ func NewTelegramAuth(token string) *TelegramAuth {
 
 // ValidateToken проверяет токен Telegram WebApp
 func (ta *TelegramAuth) ValidateToken(data *TelegramWebAppData) (bool, error) {
+	// Преобразование строки auth_date в int64
+	authDateInt, err := strconv.ParseInt(data.AuthDate, 10, 64)
+	if err != nil {
+		return false, fmt.Errorf("invalid auth_date format: %v", err)
+	}
+
 	// Проверка времени аутентификации (не старше 1 дня)
-	if time.Now().Unix()-data.AuthDate > 86400 {
+	if time.Now().Unix()-authDateInt > 86400 {
 		return false, fmt.Errorf("auth data is too old")
 	}
 
 	// Создание данных для хэширования
 	params := url.Values{}
-	params.Add("auth_date", strconv.FormatInt(data.AuthDate, 10))
+	params.Add("auth_date", data.AuthDate) // Используем строковое значение напрямую
 	params.Add("first_name", data.FirstName)
 	params.Add("id", strconv.FormatInt(data.ID, 10))
 	if data.LastName != "" {

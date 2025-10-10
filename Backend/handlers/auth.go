@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"os"
+	"strconv"
 
 	"prophecy/backend/auth"
 	"prophecy/backend/models"
@@ -17,7 +18,7 @@ type TelegramAuthRequest struct {
 	LastName  string `json:"last_name"`
 	Username  string `json:"username"`
 	PhotoURL  string `json:"photo_url"`
-	AuthDate  int64  `json:"auth_date" binding:"required"`
+	AuthDate  string `json:"auth_date" binding:"required"`
 	Hash      string `json:"hash" binding:"required"`
 }
 
@@ -28,6 +29,13 @@ func ValidateTelegramToken(c *gin.Context) {
 	// Проверка и парсинг JSON
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Преобразование строки auth_date в int64
+	authDateInt, err := strconv.ParseInt(req.AuthDate, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid auth_date format"})
 		return
 	}
 
@@ -77,7 +85,7 @@ func ValidateTelegramToken(c *gin.Context) {
 		LastName:   data.LastName,
 		Username:   data.Username,
 		PhotoURL:   data.PhotoURL,
-		AuthDate:   data.AuthDate,
+		AuthDate:   authDateInt,
 	}
 
 	err = models.CreateTelegramUser(telegramUser)
