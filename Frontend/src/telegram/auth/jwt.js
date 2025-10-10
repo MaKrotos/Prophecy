@@ -35,10 +35,23 @@ export function clearJWTToken() {
  * @returns {boolean} true если токен валиден, false если нет
  */
 export function isTokenValid(token) {
-  if (!token) return false;
+  if (!token || typeof token !== "string") return false;
+
+  // Проверяем, что токен состоит из 3 частей, разделенных точками
+  const parts = token.split(".");
+  if (parts.length !== 3) return false;
+
+  const payloadPart = parts[1];
+  if (!payloadPart) return false;
 
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    // Проверяем, что payload часть может быть декодирована
+    const decodedPayload = atob(payloadPart);
+    const payload = JSON.parse(decodedPayload);
+
+    // Проверяем, что в payload есть поле exp
+    if (!payload.exp) return false;
+
     const currentTime = Math.floor(Date.now() / 1000);
     return payload.exp > currentTime;
   } catch (e) {
