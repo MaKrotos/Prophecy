@@ -35,32 +35,16 @@ const {
   themeParams,
   isTelegramReady,
   sendAuthToServer,
-  waitForTelegramReady
+  waitForTelegramReady,
+  hasValidToken,
+  saveJWTToken,
+  clearJWTToken
 } = useTelegramWebApp()
 
 const isInitialized = ref(false)
 const authError = ref(null)
 const loaderMessage = ref('Инициализация приложения...')
 const telegramBotLink = ref('https://t.me/your_bot_username') // Добавляем обратно эту переменную
-
-const hasValidToken = computed(() => {
-  const token = localStorage.getItem('jwt_token')
-  if (!token) return false
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    return payload.exp > Math.floor(Date.now() / 1000)
-  } catch {
-    return false
-  }
-})
-
-const saveJWTToken = (token) => {
-  localStorage.setItem('jwt_token', token)
-}
-
-const clearJWTToken = () => {
-  localStorage.removeItem('jwt_token')
-}
 
 /**
  * Проверяет соответствие Telegram ID в JWT токене и в данных WebApp
@@ -125,13 +109,6 @@ onMounted(async () => {
       console.log('🌐 Это не Telegram WebApp')
     }
 
-    isInitialized.value = true
-    console.log('✅ App initialized', {
-      isTelegram: isTelegram.value,
-      isTelegramReady: isTelegramReady?.value,
-      authHash: !!authHash.value
-    })
-
     // Авторизация только если Telegram готов и есть хэш
     // Выполняем авторизацию даже если токен был очищен из-за несоответствия ID
     if (isTelegram.value && isTelegramReady?.value && authHash.value) {
@@ -151,6 +128,14 @@ onMounted(async () => {
       console.warn('⚠️ Нет хэша аутентификации')
       authError.value = 'Ошибка авторизации. Перезайдите в приложение.'
     }
+
+    isInitialized.value = true
+    console.log('✅ App initialized', {
+      isTelegram: isTelegram.value,
+      isTelegramReady: isTelegramReady?.value,
+      authHash: !!authHash.value,
+      hasValidToken: hasValidToken()
+    })
 
   } catch (error) {
     console.error('❌ Ошибка инициализации:', error)
