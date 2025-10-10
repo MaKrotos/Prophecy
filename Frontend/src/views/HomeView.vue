@@ -8,15 +8,9 @@
       <div class="user-card">
         <div class="user-header">
           <h3 class="user-name">{{ userInfo.generatedName }}</h3>
-          <div class="user-id">ID: {{ userInfo.id }}</div>
         </div>
 
         <div class="user-details">
-          <div class="detail-item">
-            <span class="detail-label">Telegram ID:</span>
-            <span class="detail-value">{{ userInfo.telegramId }}</span>
-          </div>
-
           <div class="detail-item" v-if="userInfo.isAdmin">
             <span class="admin-badge">Администратор</span>
           </div>
@@ -303,12 +297,6 @@
   transition: color 0.3s ease;
 }
 
-.user-id {
-  color: var(--tg-theme-hint-color, #666666);
-  font-size: 0.9rem;
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
 
 .user-details {
   display: flex;

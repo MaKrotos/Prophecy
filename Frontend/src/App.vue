@@ -26,6 +26,7 @@ import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
 import AuthErrorLayout from '/src/layouts/AuthErrorLayout.vue'
 import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp'
+import { getUserInfoFromToken } from '/src/telegram/auth/user.js'
 
 const {
   telegramUser,
@@ -61,6 +62,48 @@ const clearJWTToken = () => {
   localStorage.removeItem('jwt_token')
 }
 
+/**
+ * Проверяет соответствие Telegram ID в JWT токене и в данных WebApp
+ * @returns {boolean} true если ID совпадают или токен отсутствует, false если не совпадают
+ */
+const checkTelegramIdConsistency = () => {
+  // Получаем информацию из токена
+  const tokenUserInfo = getUserInfoFromToken()
+
+  // Если токена нет, проверка не требуется
+  if (!tokenUserInfo) {
+    console.log('ℹ️ Нет JWT токена для проверки')
+    return true
+  }
+
+  // Получаем Telegram ID из токена
+  const tokenTelegramId = tokenUserInfo.telegramId
+
+  // Получаем Telegram ID из WebApp данных
+  const webAppUser = telegramUser.value
+  const webAppTelegramId = webAppUser?.id
+
+  // Если нет данных WebApp, проверка не может быть выполнена
+  if (!webAppTelegramId) {
+    console.log('⚠️ Нет данных Telegram WebApp для проверки')
+    return true
+  }
+
+  // Сравниваем ID
+  if (tokenTelegramId === webAppTelegramId) {
+    console.log('✅ Telegram ID из токена и WebApp совпадают')
+    return true
+  } else {
+    console.warn('❌ Telegram ID из токена и WebApp НЕ совпадают', {
+      tokenTelegramId,
+      webAppTelegramId
+    })
+    // Очищаем токен при несовпадении
+    clearJWTToken()
+    return false
+  }
+}
+
 onMounted(async () => {
   console.log('🚀 App mounted, initializing...')
 
@@ -71,6 +114,13 @@ onMounted(async () => {
       console.log('⏳ Ожидание готовности Telegram WebApp...')
       await waitForTelegramReady(5000)
       console.log('✅ Telegram WebApp готов')
+
+      // Проверяем соответствие Telegram ID
+      const isConsistent = checkTelegramIdConsistency()
+      if (!isConsistent) {
+        loaderMessage.value = 'Повторная авторизация...'
+        console.log('🔄 Необходима повторная авторизация из-за несоответствия Telegram ID')
+      }
     } else {
       console.log('🌐 Это не Telegram WebApp')
     }
@@ -83,12 +133,13 @@ onMounted(async () => {
     })
 
     // Авторизация только если Telegram готов и есть хэш
+    // Выполняем авторизацию даже если токен был очищен из-за несоответствия ID
     if (isTelegram.value && isTelegramReady?.value && authHash.value) {
       loaderMessage.value = 'Авторизация через Telegram...'
       console.log('📡 Отправка данных аутентификации на сервер...')
-      
+
       const result = await sendAuthToServer('/api/auth/telegram')
-      
+
       if (result?.token) {
         saveJWTToken(result.token)
         console.log('✅ Успешная авторизация, токен сохранен')
@@ -113,7 +164,7 @@ const retryAuth = async () => {
   loaderMessage.value = 'Повторная авторизация...'
   isInitialized.value = false
   await new Promise(resolve => setTimeout(resolve, 500))
-  
+
   try {
     const result = await sendAuthToServer('/api/auth/telegram')
     if (result?.token) {
