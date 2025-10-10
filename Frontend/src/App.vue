@@ -138,7 +138,7 @@ onMounted(async () => {
       loaderMessage.value = 'Авторизация через Telegram...'
       console.log('📡 Отправка данных аутентификации на сервер...')
 
-      const result = await sendAuthToServer('/api/auth/telegram')
+      const result = await sendAuthToServer('/api/auth/telegram', 3)
 
       if (result?.token) {
         saveJWTToken(result.token)
@@ -166,7 +166,8 @@ const retryAuth = async () => {
   await new Promise(resolve => setTimeout(resolve, 500))
 
   try {
-    const result = await sendAuthToServer('/api/auth/telegram')
+    // Пытаемся повторно авторизоваться с повторными попытками
+    const result = await sendAuthToServer('/api/auth/telegram', 3)
     if (result?.token) {
       saveJWTToken(result.token)
       authError.value = null
@@ -176,7 +177,7 @@ const retryAuth = async () => {
     }
   } catch (error) {
     authError.value = error.message || 'Ошибка авторизации'
-    console.error('❌ Повторная авторизация не удалась:', error)
+    console.error('❌ Повторная авторизация не удалась после всех попыток:', error)
   } finally {
     isInitialized.value = true
   }

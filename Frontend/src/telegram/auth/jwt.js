@@ -45,8 +45,14 @@ export function isTokenValid(token) {
   if (!payloadPart) return false;
 
   try {
-    // Проверяем, что payload часть может быть декодирована
-    const decodedPayload = atob(payloadPart);
+    // Декодируем base64url
+    const decodedPayload = decodeURIComponent(
+      atob(payloadPart.replace(/-/g, "+").replace(/_/g, "/"))
+        .split("")
+        .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
+        .join("")
+    );
+
     const payload = JSON.parse(decodedPayload);
 
     // Проверяем, что в payload есть поле exp
@@ -88,24 +94,44 @@ export function addAuthHeader(headers = {}) {
 }
 
 /**
- * Выполняет авторизованный запрос к API
+ * Выполняет авторизованный запрос к API с возможностью повторных попыток
  * @param {string} url - URL для запроса
  * @param {Object} options - Опции запроса
+ * @param {number} maxRetries - Максимальное количество попыток
  * @returns {Promise} Результат запроса
  */
-export async function authenticatedFetch(url, options = {}) {
-  const headers = addAuthHeader(options.headers || {});
+export async function authenticatedFetch(url, options = {}, maxRetries = 3) {
+  let lastError;
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const headers = addAuthHeader(options.headers || {});
 
-  if (response.status === 401) {
-    // Токен недействителен, очищаем его
-    clearJWTToken();
-    throw new Error("Токен авторизации недействителен");
+      const response = await fetch(url, {
+        ...options,
+        headers,
+      });
+
+      if (response.status === 401) {
+        // Токен недействителен, очищаем его
+        clearJWTToken();
+        throw new Error("Токен авторизации недействителен");
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error;
+      console.warn(`Попытка ${attempt + 1} не удалась:`, error.message);
+
+      // Если это не последняя попытка, ждем перед повтором
+      if (attempt < maxRetries) {
+        // Экспоненциальная задержка: 1s, 2s, 4s, ...
+        const delay = Math.pow(2, attempt) * 1000;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
   }
 
-  return response;
+  // Если все попытки исчерпаны, выбрасываем последнюю ошибку
+  throw lastError;
 }
