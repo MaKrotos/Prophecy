@@ -14,13 +14,7 @@ export async function sendAuthToServer(
   try {
     // Подготавливаем данные для отправки в формате, который ожидает сервер
     const payload = {
-      id: authData.user?.id,
-      first_name: authData.user?.first_name,
-      last_name: authData.user?.last_name,
-      username: authData.user?.username,
-      photo_url: authData.user?.photo_url,
-      auth_date: authData.authDate,
-      hash: authData.hash,
+      initData: window.Telegram?.WebApp?.initData,
     };
 
     console.log("📤 Sending auth data to server:", payload);
