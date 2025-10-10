@@ -1,230 +1,152 @@
-import { ref, onMounted } from "vue";
-import {
-  initTelegramWebApp,
-  getTelegramAuthData,
-  applyThemeColors,
-  isDarkTheme as checkDarkTheme,
-  sendAuthToServer as sendAuthToServerUtil,
-  prepareAuthPayload,
-} from "../index.js";
-import { saveJWTToken, clearJWTToken, hasValidToken } from "../auth/jwt.js";
+import { ref, onMounted } from 'vue';
+import { initTelegramWebApp, getTelegramAuthData } from '../index.js';
+import { hasValidToken, saveJWTToken, clearJWTToken } from '../auth/jwt.js';
+import { useTelegramAuth } from './useTelegramAuth.js';
+import { useTelegramTheme } from './useTelegramTheme.js';
+import { waitForCondition } from '../utils/retry.js';
 
+/**
+ * Главная композиция для работы с Telegram WebApp
+ */
 export function useTelegramWebApp() {
+  // Reactive state
   const telegramUser = ref(null);
   const isTelegram = ref(false);
-  const authHash = ref(null);
-  const authData = ref(null);
-  const themeParams = ref(null);
-  const isDarkTheme = ref(false);
-  const jwtToken = ref(null);
   const isTelegramReady = ref(false);
   const initializationError = ref(null);
+
+  // Инициализация модулей
+  const { themeParams, isDarkTheme, applyThemeToApp, refreshTheme } = useTelegramTheme();
+  const { 
+    authError, 
+    isAuthenticating, 
+    needsReauth, 
+    checkTelegramIdConsistency, 
+    performAuth, 
+    retryAuth, 
+    clearAuthError 
+  } = useTelegramAuth(
+    telegramUser, 
+    getTelegramAuthData, 
+    hasValidToken, 
+    saveJWTToken, 
+    clearJWTToken
+  );
+
+  // Auth data
+  const authHash = ref(null);
+  const authData = ref(null);
+  const jwtToken = ref(hasValidToken() ? localStorage.getItem('jwt_token') : null);
 
   onMounted(() => {
     initTelegramWebAppWithRetry();
   });
 
-  const initTelegramWebAppWithRetry = async (
-    retryCount = 0,
-    maxRetries = 15
-  ) => {
+  /**
+   * Инициализация Telegram WebApp с повторными попытками
+   */
+  const initTelegramWebAppWithRetry = async (retryCount = 0, maxRetries = 15) => {
     try {
-      console.log(
-        `🔄 Попытка инициализации Telegram WebApp #${retryCount + 1}`
-      );
+      console.log(`🔄 Попытка инициализации Telegram WebApp #${retryCount + 1}`);
 
       initTelegramWebApp({
         onUserDetected: (user) => {
           telegramUser.value = user;
-          console.log("✅ Telegram user detected:", user);
+          console.log('✅ Telegram user detected:', user);
         },
         onReady: () => {
-          isTelegram.value = true;
-          isTelegramReady.value = true;
-          initializationError.value = null;
-          console.log("✅ Telegram WebApp READY");
-
-          // Проверяем наличие валидного токена
-          if (hasValidToken()) {
-            jwtToken.value = localStorage.getItem("jwt_token");
-            console.log("✅ Найден валидный JWT токен");
-          }
-
-          // Получаем параметры темы после готовности
-          const tgData = getTelegramAuthData();
-          if (tgData?.themeParams) {
-            themeParams.value = tgData.themeParams;
-            applyThemeToApp(themeParams.value);
-          }
+          handleTelegramReady();
         },
         onError: (error) => {
-          console.error("❌ Telegram WebApp error:", error);
-          initializationError.value = error;
-
-          // При ошибке пробуем повторить
-          if (retryCount < maxRetries) {
-            setTimeout(() => {
-              initTelegramWebAppWithRetry(retryCount + 1, maxRetries);
-            }, 200);
-          }
+          handleTelegramError(error, retryCount, maxRetries);
         },
         onHashReceived: (hash, initData) => {
           authHash.value = hash;
           authData.value = initData;
-          console.log("✅ Authentication hash received and stored");
+          console.log('✅ Authentication hash received and stored');
         },
         onThemeChanged: (theme) => {
           themeParams.value = theme;
           applyThemeToApp(theme);
-          console.log("🎨 Theme changed:", theme);
+          console.log('🎨 Theme changed:', theme);
         },
       });
 
-      // Проверяем готовность через короткий интервал
-      setTimeout(() => {
-        if (!isTelegramReady.value && retryCount < maxRetries) {
-          console.log(
-            `⏳ Telegram не готов, повторная попытка #${retryCount + 1}`
-          );
-          initTelegramWebAppWithRetry(retryCount + 1, maxRetries);
-        } else if (!isTelegramReady.value) {
-          console.warn(
-            `⚠️ Достигнут лимит попыток (${maxRetries}), продолжаем без Telegram`
-          );
-        }
-      }, 300);
+      // Проверяем готовность
+      checkReadiness(retryCount, maxRetries);
     } catch (error) {
-      console.error("❌ Ошибка при инициализации Telegram WebApp:", error);
-      initializationError.value = error;
-      if (retryCount < maxRetries) {
-        setTimeout(() => {
-          initTelegramWebAppWithRetry(retryCount + 1, maxRetries);
-        }, 200);
-      }
+      handleTelegramError(error, retryCount, maxRetries);
     }
   };
 
-  // Функция ожидания готовности Telegram
-  const waitForTelegramReady = (timeout = 5000) => {
-    return new Promise((resolve, reject) => {
-      if (isTelegramReady.value) {
-        resolve(true);
-        return;
-      }
+  /**
+   * Обработка готовности Telegram
+   */
+  const handleTelegramReady = () => {
+    isTelegram.value = true;
+    isTelegramReady.value = true;
+    initializationError.value = null;
+    console.log('✅ Telegram WebApp READY');
 
-      const startTime = Date.now();
-      const checkInterval = setInterval(() => {
-        if (isTelegramReady.value) {
-          clearInterval(checkInterval);
-          resolve(true);
-        } else if (Date.now() - startTime > timeout) {
-          clearInterval(checkInterval);
-          console.warn(`⏰ Таймаут ожидания Telegram WebApp (${timeout}ms)`);
-          reject(
-            new Error(`Telegram WebApp initialization timeout (${timeout}ms)`)
-          );
-        }
-      }, 50);
-    });
-  };
-
-  const applyThemeToApp = (theme) => {
-    if (!theme) return;
-
-    applyThemeColors(theme);
-    isDarkTheme.value = checkDarkTheme(theme);
-
-    if (isDarkTheme.value) {
-      document.body.classList.add("tg-theme-dark");
-      document.body.classList.remove("tg-theme-light");
-    } else {
-      document.body.classList.add("tg-theme-light");
-      document.body.classList.remove("tg-theme-dark");
+    // Проверяем наличие валидного токена
+    if (hasValidToken()) {
+      jwtToken.value = localStorage.getItem('jwt_token');
+      console.log('✅ Найден валидный JWT токен');
     }
 
-    console.log("🎨 Theme applied to app");
-  };
-
-  const sendAuthToServer = async (
-    endpoint = "/api/auth/telegram",
-    maxRetries = 3
-  ) => {
-    // Ждем готовности Telegram перед отправкой
-    try {
-      await waitForTelegramReady(3000);
-    } catch (error) {
-      console.warn("⚠️ Telegram не готов, но продолжаем авторизацию:", error);
-    }
-
-    const currentAuthData = getTelegramAuthData();
-    if (!currentAuthData?.hash) {
-      console.warn("No auth hash available");
-      throw new Error("No authentication data available");
-    }
-
-    const payload = prepareAuthPayload({
-      ...currentAuthData,
-      themeParams: themeParams.value,
-    });
-
-    let lastError;
-
-    // Пытаемся отправить запрос несколько раз
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        console.log(`📤 Попытка авторизации #${attempt + 1}/${maxRetries + 1}`);
-        const result = await sendAuthToServerUtil(payload, endpoint);
-
-        if (result && result.token) {
-          saveJWTToken(result.token);
-          jwtToken.value = result.token;
-          console.log("✅ Авторизация успешна");
-          return result;
-        } else {
-          throw new Error("Сервер не вернул токен");
-        }
-      } catch (error) {
-        lastError = error;
-        console.warn(
-          `❌ Попытка авторизации #${attempt + 1} не удалась:`,
-          error.message
-        );
-
-        // Если это не последняя попытка, ждем перед повтором
-        if (attempt < maxRetries) {
-          // Экспоненциальная задержка: 1s, 2s, 4s, ...
-          const delay = Math.pow(2, attempt) * 1000;
-          console.log(`⏳ Ожидание ${delay}ms перед следующей попыткой...`);
-          await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-      }
-    }
-
-    // Если все попытки исчерпаны, очищаем токен и выбрасываем ошибку
-    clearJWTToken();
-    jwtToken.value = null;
-    throw lastError;
-  };
-
-  const getCurrentAuthData = () => {
-    return getTelegramAuthData();
-  };
-
-  const refreshTheme = () => {
+    // Применяем тему
     const tgData = getTelegramAuthData();
     if (tgData?.themeParams) {
-      themeParams.value = tgData.themeParams;
-      applyThemeToApp(themeParams.value);
+      applyThemeToApp(tgData.themeParams);
     }
   };
 
+  /**
+   * Обработка ошибок Telegram
+   */
+  const handleTelegramError = (error, retryCount, maxRetries) => {
+    console.error('❌ Telegram WebApp error:', error);
+    initializationError.value = error;
+
+    if (retryCount < maxRetries) {
+      setTimeout(() => {
+        initTelegramWebAppWithRetry(retryCount + 1, maxRetries);
+      }, 200);
+    }
+  };
+
+  /**
+   * Проверка готовности Telegram
+   */
+  const checkReadiness = (retryCount, maxRetries) => {
+    setTimeout(() => {
+      if (!isTelegramReady.value && retryCount < maxRetries) {
+        console.log(`⏳ Telegram не готов, повторная попытка #${retryCount + 1}`);
+        initTelegramWebAppWithRetry(retryCount + 1, maxRetries);
+      } else if (!isTelegramReady.value) {
+        console.warn(`⚠️ Достигнут лимит попыток (${maxRetries}), продолжаем без Telegram`);
+      }
+    }, 300);
+  };
+
+  /**
+   * Ожидание готовности Telegram
+   */
+  const waitForTelegramReady = (timeout = 5000) => {
+    return waitForCondition(() => isTelegramReady.value, timeout);
+  };
+
+  /**
+   * Выход из системы
+   */
   const logout = () => {
     clearJWTToken();
     jwtToken.value = null;
-    console.log("📤 Пользователь вышел из системы");
+    console.log('📤 Пользователь вышел из системы');
   };
 
   return {
+    // State
     telegramUser,
     isTelegram,
     authHash,
@@ -234,14 +156,24 @@ export function useTelegramWebApp() {
     jwtToken,
     isTelegramReady,
     initializationError,
-    sendAuthToServer,
-    getAuthData: getCurrentAuthData,
-    refreshTheme,
+    
+    // Auth
+    authError,
+    isAuthenticating,
+    needsReauth,
+    hasValidToken,
+    
+    // Methods
+    sendAuthToServer: performAuth,
+    getAuthData: getTelegramAuthData,
+    refreshTheme: () => refreshTheme(getTelegramAuthData),
     applyThemeToApp,
     logout,
-    hasValidToken,
     waitForTelegramReady,
     saveJWTToken,
     clearJWTToken,
+    checkTelegramIdConsistency,
+    retryAuth,
+    clearAuthError
   };
 }
