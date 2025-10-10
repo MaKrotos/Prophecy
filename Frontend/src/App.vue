@@ -44,8 +44,8 @@ const {
 const isInitialized = ref(false)
 const authError = ref(null)
 const loaderMessage = ref('Инициализация приложения...')
-const telegramBotLink = ref('https://t.me/your_bot_username') // Добавляем обратно эту переменную
-const needsReauth = ref(false) // Флаг для отслеживания необходимости повторной авторизации
+const telegramBotLink = ref('https://t.me/your_bot_username')
+const needsReauth = ref(false)
 
 /**
  * Проверяет соответствие Telegram ID в JWT токене и в данных WebApp
@@ -74,17 +74,17 @@ const checkTelegramIdConsistency = () => {
     return true
   }
 
-  // Сравниваем ID
+
   if (tokenTelegramId === webAppTelegramId) {
     console.log('✅ Telegram ID из токена и WebApp совпадают')
     return true
   } else {
     console.warn('❌ Telegram ID из токена и WebApp НЕ совпадают', {
       tokenTelegramId,
-      webAppTelegramId
+      webAppTelegramId,
     })
     // Очищаем токен при несовпадении
-    clearJWTToken()
+    clearJWTToken() // ✅ Теперь эта функция доступна
     // Устанавливаем флаг необходимости повторной авторизации
     needsReauth.value = true
     return false
@@ -114,7 +114,7 @@ onMounted(async () => {
 
     // Авторизация только если Telegram готов и есть хэш
     // Выполняем авторизацию даже если токен был очищен из-за несоответствия ID
-    if (isTelegram.value && isTelegramReady?.value && (authHash.value || needsReauth.value)) {
+    if (isTelegram.value && isTelegramReady?.value && authHash.value) {
       loaderMessage.value = 'Авторизация через Telegram...'
       console.log('📡 Отправка данных аутентификации на сервер...')
 
@@ -156,6 +156,11 @@ const retryAuth = async () => {
   await new Promise(resolve => setTimeout(resolve, 500))
 
   try {
+    // Проверяем, есть ли хэш аутентификации
+    if (!authHash.value) {
+      throw new Error('Нет хэша аутентификации. Перезайдите в приложение.')
+    }
+
     // Пытаемся повторно авторизоваться с повторными попытками
     const result = await sendAuthToServer('/api/auth/telegram', 3)
     if (result?.token) {
