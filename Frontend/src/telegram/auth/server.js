@@ -13,16 +13,20 @@ export async function sendAuthToServer(
     throw new Error("No authentication data available");
   }
 
-  const { apiPost } = useApi();
+  // Для запроса аутентификации используем прямой fetch,
+  // чтобы избежать циклической зависимости
+  const apiUrl = `/api/${endpoint.replace(/^\//, '')}`;
   try {
     console.log(`📤 Sending auth data to server:`, authData);
 
-    const response = await apiPost(endpoint, {
-      initData: window.Telegram?.WebApp?.initData,
-    }, {
-      // Отключаем автоматическую аутентификацию для этого запроса,
-      // так как мы отправляем данные для получения токена
-      autoAuth: false
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        initData: window.Telegram?.WebApp?.initData,
+      })
     });
 
     if (!response.ok) {
