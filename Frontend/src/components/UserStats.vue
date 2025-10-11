@@ -12,20 +12,27 @@
           <span class="stat-value">{{ adminUsers }}</span>
         </div>
       </div>
-      <button @click="fetchStats" class="refresh-btn" :disabled="loading">
-        <span v-if="loading">⏳ Загрузка...</span>
-        <span v-else>🔄 Обновить статистику</span>
-      </button>
+      <div class="stats-actions">
+        <button @click="fetchStats" class="refresh-btn" :disabled="loading">
+          <span v-if="loading">⏳ Загрузка...</span>
+          <span v-else>🔄 Обновить статистику</span>
+        </button>
+        <button @click="viewAllUsers" class="view-all-btn">
+          👥 Просмотр всех пользователей
+        </button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
 import { getUserInfoFromToken } from '../telegram/auth/user'
 import { useApi } from '../telegram/composables/useApi'
 
+const router = useRouter()
 const { sendAuthToServer, jwtToken } = useTelegramWebApp()
 const { apiGet } = useApi()
 
@@ -37,7 +44,10 @@ const totalUsers = ref(0)
 const adminUsers = ref(0)
 const loading = ref(false)
 
-
+// Переход к просмотру всех пользователей
+const viewAllUsers = () => {
+  router.push('/users')
+}
 
 // Получаем статистику при монтировании компонента
 const fetchStats = async (showErrors = true) => {
@@ -83,11 +93,15 @@ onMounted(() => {
 <style scoped>
 .user-stats {
   margin: 16px;
-  padding: 16px;
-  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.stats-card {
+  background: var(--tg-theme-secondary-bg-color, white);
+  padding: 20px;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+  transition: all 0.3s ease;
 }
 
 .stats-card h3 {
@@ -95,22 +109,25 @@ onMounted(() => {
   margin-bottom: 16px;
   color: var(--tg-theme-text-color, #000000);
   text-align: center;
-  font-size: 18px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 .stats-content {
-  margin: 12px 0;
+  margin: 16px 0;
 }
 
 .stat-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
-  padding: 12px;
-  background-color: var(--tg-theme-bg-color, #ffffff);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 16px;
+  padding: 16px;
+  background: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
 }
 
 .stat-item:last-child {
@@ -119,44 +136,93 @@ onMounted(() => {
 
 .stat-label {
   color: var(--tg-theme-text-color, #000000);
-  font-size: 16px;
+  font-size: 1rem;
+  transition: color 0.3s ease;
 }
 
 .stat-value {
-  font-weight: bold;
-  font-size: 18px;
-  color: var(--tg-theme-button-color, #000000);
-  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-  padding: 4px 12px;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--tg-theme-button-color, #667eea);
+  background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  padding: 6px 16px;
   border-radius: 20px;
+  transition: all 0.3s ease;
 }
 
-.refresh-btn {
-  background-color: var(--tg-theme-button-color, #000000);
-  color: var(--tg-theme-button-text-color, #ffffff);
+.stats-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.refresh-btn, .view-all-btn {
+  background-color: var(--tg-theme-button-color, #667eea);
+  color: var(--tg-theme-button-text-color, white);
   border: none;
-  padding: 10px 20px;
-  border-radius: 6px;
+  padding: 12px 20px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 16px;
+  font-size: 1rem;
+  font-weight: 500;
   width: 100%;
-  margin-top: 16px;
-  transition: opacity 0.2s ease;
+  transition: all 0.3s ease;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.refresh-btn:hover:not(:disabled) {
-  opacity: 0.9;
+.view-all-btn {
+  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  color: var(--tg-theme-text-color, #333333);
+  border: 1px solid var(--tg-theme-hint-color, #cccccc);
 }
 
-.refresh-btn:active:not(:disabled) {
-  transform: translateY(1px);
+.refresh-btn:hover:not(:disabled), .view-all-btn:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.refresh-btn:active:not(:disabled), .view-all-btn:active {
+  transform: translateY(0);
 }
 
 .refresh-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+  transform: none;
+}
+
+/* Dark theme adjustments */
+:global(.tg-theme-dark) .stats-card {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+}
+
+:global(.tg-theme-dark) .stat-item {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+:global(.tg-theme-dark) .view-all-btn {
+  background: var(--tg-theme-bg-color, #2a3b4d);
+  border-color: var(--tg-theme-hint-color, #4a5b6d);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  
+  
+  .stats-card {
+    padding: 16px;
+  }
+  
+  .stat-item {
+    padding: 12px;
+  }
+  
+  .refresh-btn, .view-all-btn {
+    padding: 10px 16px;
+  }
 }
 </style>
