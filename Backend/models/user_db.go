@@ -117,7 +117,7 @@ func GetAllTelegramUsers(limit, offset int) ([]TelegramUser, error) {
 	query := `
 		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, created_at
 		FROM telegram_users
-		ORDER BY created_at DESC
+		ORDER BY id ASC
 		LIMIT $1 OFFSET $2`
 
 	rows, err := database.DB.Query(query, limit, offset)
