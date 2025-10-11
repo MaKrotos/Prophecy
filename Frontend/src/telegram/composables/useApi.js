@@ -21,16 +21,9 @@ export function useApi() {
     
     // Проверяем наличие токена
     if (autoAuth && !hasValidToken()) {
-      try {
-        // Пытаемся получить токен
-        const authData = await sendAuthToServer()
-        if (!authData?.token) {
-          throw new Error('Не удалось получить токен аутентификации')
-        }
-      } catch (error) {
-        console.error('Ошибка при получении токена:', error)
-        throw error
-      }
+      // Вместо автоматической аутентификации, просто бросаем ошибку
+      // Это предотвращает циклическую зависимость между useApi и useTelegramWebApp
+      throw new Error('Нет валидного токена аутентификации. Пожалуйста, выполните аутентификацию отдельно.')
     }
     
     // Выполняем запрос с использованием authenticatedFetch

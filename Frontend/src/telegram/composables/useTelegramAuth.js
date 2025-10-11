@@ -73,13 +73,18 @@ export function useTelegramAuth(telegramUser, getTelegramAuthData, hasValidToken
 
       const result = await retryWithBackoff(
         async () => {
-          const { apiPost } = useApi();
-          const response = await apiPost(endpoint, {
-            initData: window.Telegram?.WebApp?.initData,
-          }, {
-            // Отключаем автоматическую аутентификацию для этого запроса,
-            // так как мы отправляем данные для получения токена
-            autoAuth: false
+          // Для запроса аутентификации используем прямой fetch,
+          // чтобы избежать циклической зависимости
+          const apiUrl = `/api/${endpoint.replace(/^\//, '')}`;
+          
+          const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              initData: window.Telegram?.WebApp?.initData,
+            })
           });
           
           if (!response.ok) {
