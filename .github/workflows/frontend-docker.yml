@@ -23,7 +23,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Получаем всю историю коммитов для получения списка изменений
+          fetch-depth: 0
 
       - name: Allow insecure registry
         run: |
@@ -68,24 +68,39 @@ jobs:
             fi
           fi
           
-          # Экранируем специальные символы для JSON
-          COMMITS_ESCAPED=$(echo "$COMMITS" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+          # Сохраняем в output
           echo "commits_list<<EOF" >> $GITHUB_OUTPUT
-          echo "$COMMITS_ESCAPED" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Send Telegram notification
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            🎨 **Frontend обновлён!**
-            📋 **Последние коммиты:**
-            ${{ fromJSON(steps.commits.outputs.commits_list) }}
-            
-            
-            🎯 **Target:** production
+      - name: Send Telegram notification via API
+        run: |
+          MESSAGE=$(cat <<EOF
+          🎨 <b>Frontend обновлён!</b>
+          📋 <b>Последние коммиты:</b>
+          ${{ steps.commits.outputs.commits_list }}
+          
+          🎯 <b>Target:</b> production
+          EOF
+          )
+          
+          # Формируем JSON для отправки
+          JSON_DATA=$(jq -n \
+            --arg chat_id "${{ secrets.TELEGRAM_CHAT_ID }}" \
+            --arg text "$MESSAGE" \
+            --arg parse_mode "HTML" \
+            '{
+              chat_id: $chat_id,
+              text: $text,
+              parse_mode: $parse_mode,
+              disable_web_page_preview: true
+            }')
+          
+          # Отправляем сообщение через Telegram API
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -d "$JSON_DATA" \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
 
   test-frontend:
     runs-on: ubuntu-latest
