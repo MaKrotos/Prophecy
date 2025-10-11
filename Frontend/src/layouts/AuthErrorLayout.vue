@@ -72,7 +72,7 @@ const tryLater = () => {
 
 <style scoped>
 .auth-error-layout {
-    min-height: 100vh;
+
     background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
     display: flex;
     align-items: flex-start; /* Изменено с center на flex-start */

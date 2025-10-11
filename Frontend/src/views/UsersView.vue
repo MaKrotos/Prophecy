@@ -3,7 +3,7 @@
     <h2 class="page-title">👥 Все пользователи</h2>
     <p class="page-description">Список всех пользователей системы</p>
 
-    <div class="users-list" ref="scrollContainer" @scroll="handleScroll">
+    <div class="users-list">
       <div
         v-for="user in users"
         :key="user.id"
@@ -49,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useApi } from '../telegram/composables/useApi'
 
 const { apiGet } = useApi()
@@ -59,7 +59,6 @@ const loading = ref(false)
 const offset = ref(0)
 const limit = ref(20)
 const noMoreUsers = ref(false)
-const scrollContainer = ref(null)
 
 // Форматирование даты
 const formatDate = (dateString) => {
@@ -81,10 +80,22 @@ const loadUsers = async () => {
     
     if (response.ok) {
       const data = await response.json()
-      if (data.length > 0) {
-        users.value = [...users.value, ...data]
-        offset.value += data.length
+      // Проверяем, что data - массив
+      if (Array.isArray(data)) {
+        if (data.length > 0) {
+          users.value = [...users.value, ...data]
+          offset.value += data.length
+          
+          // Если получено меньше пользователей, чем запрашивали, значит больше нет
+          if (data.length < limit.value) {
+            noMoreUsers.value = true
+          }
+        } else {
+          noMoreUsers.value = true
+        }
       } else {
+        // Если data не массив, значит это ошибка или пустой ответ
+        console.warn('Получен неожиданный формат данных:', data)
         noMoreUsers.value = true
       }
     } else {
@@ -96,19 +107,35 @@ const loadUsers = async () => {
     alert('Произошла ошибка при загрузке списка пользователей')
   } finally {
     loading.value = false
+    // После загрузки проверяем, нужно ли загрузить еще
+    checkIfNeedMoreUsers()
   }
 }
 
-// Обработка скролла
-const handleScroll = () => {
-  const container = scrollContainer.value
-  if (!container) return
+// Проверка, нужно ли загрузить еще пользователей
+const checkIfNeedMoreUsers = () => {
+  const mainContent = document.querySelector('.main-content')
+  if (mainContent) {
+    const { scrollTop, scrollHeight, clientHeight } = mainContent
+    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
+    
+    // Если скролл находится в пределах, где нужно подгружать, и еще есть что подгружать
+    if (scrollPercentage > 0.8 && !noMoreUsers.value && !loading.value) {
+      loadUsers()
+    }
+  }
+}
 
-  const { scrollTop, scrollHeight, clientHeight } = container
+// Обработка скролла главного контента
+const handleScroll = () => {
+  const mainContent = document.querySelector('.main-content')
+  if (!mainContent) return
+  
+  const { scrollTop, scrollHeight, clientHeight } = mainContent
   const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
 
   // Загружаем больше пользователей, когда пользователь прокрутил 80% контента
-  if (scrollPercentage > 0.8) {
+  if (scrollPercentage > 0.8 && !noMoreUsers.value && !loading.value) {
     loadUsers()
   }
 }
@@ -116,13 +143,26 @@ const handleScroll = () => {
 // Первоначальная загрузка
 onMounted(() => {
   loadUsers()
+  // Добавляем обработчик скролла к main-content
+  const mainContent = document.querySelector('.main-content')
+  if (mainContent) {
+    mainContent.addEventListener('scroll', handleScroll)
+  }
+})
+
+// Удаляем обработчик скролла при размонтировании компонента
+onUnmounted(() => {
+  const mainContent = document.querySelector('.main-content')
+  if (mainContent) {
+    mainContent.removeEventListener('scroll', handleScroll)
+  }
 })
 </script>
 
 <style scoped>
 .page {
   padding: 16px;
-  min-height: 100vh;
+
   background-color: var(--tg-theme-bg-color, #f5f5f5);
   transition: background-color 0.3s ease;
 }
@@ -146,8 +186,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  max-height: calc(100vh - 150px);
-  overflow-y: auto;
   padding-right: 8px;
 }
 

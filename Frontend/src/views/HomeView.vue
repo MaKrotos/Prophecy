@@ -51,7 +51,7 @@
 <style scoped>
 .page {
   padding: 16px;
-  min-height: 100vh;
+
   background-color: var(--tg-theme-bg-color, #f5f5f5);
   transition: background-color 0.3s ease;
 }
