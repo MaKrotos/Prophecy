@@ -17,13 +17,13 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'push' || github.event_name == 'workflow_dispatch') &&
-      !contains(github.event.head_commit.modified, 'Frontend/')
+      !contains(github.event.head_commit.message, 'Frontend/')
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Получаем всю историю коммитов для получения списка изменений
+          fetch-depth: 0
 
       - name: Allow insecure registry
         run: |
@@ -53,26 +53,69 @@ jobs:
         run: |
           # Получаем коммиты с предыдущего пуша до текущего
           if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
-            COMMITS=$(git log --oneline --no-decorate ${{ github.event.before }}..${{ github.event.after }} --format="• %s (%h)" | sed 's/"/\\"/g')
+            COMMITS=$(git log --oneline --no-decorate ${{ github.event.before }}..${{ github.event.after }} -- Backend/ --format="• %s (%h)" | sed 's/"/\\"/g')
           else
             # Для первого коммита в репозитории или workflow_dispatch
-            COMMITS=$(git log --oneline --no-decorate -10 --format="• %s (%h)" | sed 's/"/\\"/g')
+            COMMITS=$(git log --oneline --no-decorate -10 -- Backend/ --format="• %s (%h)" | sed 's/"/\\"/g')
           fi
           
-          # Экранируем специальные символы для JSON
-          COMMITS_ESCAPED=$(echo "$COMMITS" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
+          # Если нет коммитов, связанных с Backend, используем общие коммиты
+          if [ -z "$COMMITS" ]; then
+            if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
+              COMMITS=$(git log --oneline --no-decorate ${{ github.event.before }}..${{ github.event.after }} --format="• %s (%h)" | sed 's/"/\\"/g')
+            else
+              COMMITS=$(git log --oneline --no-decorate -10 --format="• %s (%h)" | sed 's/"/\\"/g')
+            fi
+          fi
+          
+          # Сохраняем в output
           echo "commits_list<<EOF" >> $GITHUB_OUTPUT
-          echo "$COMMITS_ESCAPED" >> $GITHUB_OUTPUT
+          echo "$COMMITS" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Send Telegram notification
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-            🚀 **Backend обновлён!**
-            
-            📋 **Последние коммиты:**
-            ${{ fromJSON(steps.commits.outputs.commits_list) }}
-            
+      - name: Send Telegram notification via API
+        run: |
+          MESSAGE=$(cat <<EOF
+          🚀 <b>Backend обновлён!</b>
+          📋 <b>Последние коммиты:</b>
+          ${{ steps.commits.outputs.commits_list }}
+          
+          🎯 <b>Target:</b> production
+          🔗 <b>Repository:</b> ${{ github.repository }}
+          🌿 <b>Branch:</b> ${{ github.ref_name }}
+          👤 <b>Author:</b> ${{ github.actor }}
+          EOF
+          )
+          
+          # Формируем JSON для отправки
+          JSON_DATA=$(jq -n \
+            --arg chat_id "${{ secrets.TELEGRAM_CHAT_ID }}" \
+            --arg text "$MESSAGE" \
+            --arg parse_mode "HTML" \
+            '{
+              chat_id: $chat_id,
+              text: $text,
+              parse_mode: $parse_mode,
+              disable_web_page_preview: true
+            }')
+          
+          # Отправляем сообщение через Telegram API
+          curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d "$JSON_DATA" \
+            "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage"
+
+  test-backend:
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name == 'pull_request' &&
+      !contains(github.event.pull_request.head.sha, 'Frontend/')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build Backend Docker image (test)
+        run: |
+          cd Backend
+          docker build -t prophecy-backend:test .
