@@ -1,11 +1,14 @@
 import { ref } from 'vue';
-import { AuthService } from '../auth/authService.js';
+import { useApi } from './useApi.js';
+import { retryWithBackoff } from '../utils/retry.js';
+import { saveJWTToken, clearJWTToken } from '../auth/jwt.js';
 import { getUserInfoFromToken } from '../auth/user.js';
+import { prepareAuthPayload } from '../auth/server.js';
 
 /**
  * Композиция для управления аутентификацией Telegram
  */
-export function useTelegramAuth(telegramUser, getTelegramAuthData, hasValidToken, saveJWTToken, clearJWTToken) {
+export function useTelegramAuth(telegramUser, getTelegramAuthData, hasValidToken) {
   const authError = ref(null);
   const isAuthenticating = ref(false);
   const needsReauth = ref(false);
@@ -14,15 +17,45 @@ export function useTelegramAuth(telegramUser, getTelegramAuthData, hasValidToken
    * Проверка соответствия Telegram ID
    */
   const checkTelegramIdConsistency = () => {
-    const result = AuthService.checkTelegramIdConsistency(telegramUser.value, getUserInfoFromToken);
-    needsReauth.value = result.needsReauth;
-    return result.consistent;
+    const tokenUserInfo = getUserInfoFromToken();
+
+    // Если токена нет, проверка не требуется
+    if (!tokenUserInfo) {
+      console.log('ℹ️ Нет JWT токена для проверки');
+      needsReauth.value = false;
+      return { consistent: true, needsReauth: false };
+    }
+
+    const tokenTelegramId = tokenUserInfo.telegramId;
+    const webAppTelegramId = telegramUser?.value?.id;
+
+    // Если нет данных WebApp, проверка не может быть выполнена
+    if (!webAppTelegramId) {
+      console.log('⚠️ Нет данных Telegram WebApp для проверки');
+      needsReauth.value = false;
+      return { consistent: true, needsReauth: false };
+    }
+
+    if (tokenTelegramId === webAppTelegramId) {
+      console.log('✅ Telegram ID из токена и WebApp совпадают');
+      needsReauth.value = false;
+      return { consistent: true, needsReauth: false };
+    } else {
+      console.warn('❌ Telegram ID из токена и WebApp НЕ совпадают', {
+        tokenTelegramId,
+        webAppTelegramId,
+      });
+      
+      clearJWTToken();
+      needsReauth.value = true;
+      return { consistent: false, needsReauth: true };
+    }
   };
 
   /**
    * Выполнение аутентификации
    */
-  const performAuth = async (endpoint = '/api/auth/telegram', maxRetries = 3) => {
+  const performAuth = async (endpoint = 'auth/telegram', maxRetries = 3) => {
     isAuthenticating.value = true;
     authError.value = null;
 
@@ -33,7 +66,49 @@ export function useTelegramAuth(telegramUser, getTelegramAuthData, hasValidToken
         throw new Error('Нет хэша аутентификации. Перезайдите в приложение.');
       }
 
-      const result = await AuthService.sendAuthToServer(authData, endpoint, maxRetries);
+      const payload = prepareAuthPayload({
+        ...authData,
+        themeParams: authData.themeParams
+      });
+
+      const result = await retryWithBackoff(
+        async () => {
+          const { apiPost } = useApi();
+          const response = await apiPost(endpoint, {
+            initData: window.Telegram?.WebApp?.initData,
+          }, {
+            // Отключаем автоматическую аутентификацию для этого запроса,
+            // так как мы отправляем данные для получения токена
+            autoAuth: false
+          });
+          
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(
+              `Server responded with ${response.status}: ${errorText}`
+            );
+          }
+          
+          const data = await response.json();
+          
+          // Если сервер вернул токен, сохраняем его
+          if (data.token) {
+            saveJWTToken(data.token);
+            console.log("🔐 JWT token received from server");
+            return data;
+          } else {
+            throw new Error('Сервер не вернул токен');
+          }
+        },
+        maxRetries,
+        {
+          onRetry: (attempt, maxAttempts, delay, error) => {
+            console.warn(`❌ Попытка авторизации #${attempt}/${maxAttempts} не удалась:`, error.message);
+          }
+        }
+      );
+      
+      console.log('✅ Авторизация успешна');
       needsReauth.value = false;
       return result;
     } catch (error) {
@@ -47,7 +122,7 @@ export function useTelegramAuth(telegramUser, getTelegramAuthData, hasValidToken
   /**
    * Повторная аутентификация
    */
-  const retryAuth = async (endpoint = '/api/auth/telegram', maxRetries = 3) => {
+  const retryAuth = async (endpoint = 'auth/telegram', maxRetries = 3) => {
     authError.value = null;
     
     try {

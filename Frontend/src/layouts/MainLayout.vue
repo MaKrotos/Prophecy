@@ -23,7 +23,9 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HeaderNav from '../components/HeaderNav.vue'
 import BottomNav from '../components/BottomNav.vue'
+import UserStats from '../components/UserStats.vue'
 import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
+import { getUserInfoFromToken } from '../telegram/auth/user'
 
 const route = useRoute()
 const router = useRouter()
@@ -39,6 +41,10 @@ const {
   refreshTheme,
   sendAuthToServer
 } = useTelegramWebApp()
+
+// Проверяем, является ли пользователь администратором
+const userInfo = computed(() => getUserInfoFromToken())
+const isAdmin = computed(() => userInfo.value?.isAdmin || false)
 
 // Получаем порядок маршрутов из meta данных
 const getRoutesOrder = () => {

@@ -1,0 +1,162 @@
+<template>
+  <div v-if="isAdmin" class="user-stats">
+    <div class="stats-card">
+      <h3>📊 Статистика пользователей</h3>
+      <div class="stats-content">
+        <div class="stat-item">
+          <span class="stat-label">👥 Всего пользователей</span>
+          <span class="stat-value">{{ totalUsers }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">👑 Администраторов</span>
+          <span class="stat-value">{{ adminUsers }}</span>
+        </div>
+      </div>
+      <button @click="fetchStats" class="refresh-btn" :disabled="loading">
+        <span v-if="loading">⏳ Загрузка...</span>
+        <span v-else>🔄 Обновить статистику</span>
+      </button>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted, computed } from 'vue'
+import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
+import { getUserInfoFromToken } from '../telegram/auth/user'
+import { useApi } from '../telegram/composables/useApi'
+
+const { sendAuthToServer, jwtToken } = useTelegramWebApp()
+const { apiGet } = useApi()
+
+// Получаем информацию о пользователе из токена
+const userInfo = computed(() => getUserInfoFromToken())
+const isAdmin = computed(() => userInfo.value?.isAdmin || false)
+
+const totalUsers = ref(0)
+const adminUsers = ref(0)
+const loading = ref(false)
+
+
+
+// Получаем статистику при монтировании компонента
+const fetchStats = async (showErrors = true) => {
+  try {
+    loading.value = true
+    
+    // Запрос к бэкенду для получения статистики через новую composable функцию
+    const response = await apiGet('users/stats')
+    
+    if (response.ok) {
+      const data = await response.json()
+      totalUsers.value = data.total_users || 0
+      adminUsers.value = data.admin_users || 0
+    } else {
+      console.error('Ошибка при получении статистики:', response.status)
+      // Показываем уведомление об ошибке только если это ручное обновление
+      if (showErrors) {
+        alert('Не удалось загрузить статистику пользователей')
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка при запросе статистики:', error)
+    // Показываем уведомление об ошибке только если это ручное обновление
+    if (showErrors) {
+      alert('Произошла ошибка при загрузке статистики пользователей')
+    }
+  } finally {
+    loading.value = false
+  }
+}
+
+// Получаем статистику при монтировании компонента
+onMounted(() => {
+  if (isAdmin.value) {
+    // Небольшая задержка для гарантии, что токен аутентификации уже доступен
+    setTimeout(() => {
+      fetchStats(false) // Не показываем ошибки при автоматической загрузке
+    }, 100)
+  }
+})
+</script>
+
+<style scoped>
+.user-stats {
+  margin: 16px;
+  padding: 16px;
+  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+}
+
+.stats-card h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: var(--tg-theme-text-color, #000000);
+  text-align: center;
+  font-size: 18px;
+}
+
+.stats-content {
+  margin: 12px 0;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding: 12px;
+  background-color: var(--tg-theme-bg-color, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.stat-item:last-child {
+  margin-bottom: 0;
+}
+
+.stat-label {
+  color: var(--tg-theme-text-color, #000000);
+  font-size: 16px;
+}
+
+.stat-value {
+  font-weight: bold;
+  font-size: 18px;
+  color: var(--tg-theme-button-color, #000000);
+  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.refresh-btn {
+  background-color: var(--tg-theme-button-color, #000000);
+  color: var(--tg-theme-button-text-color, #ffffff);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  width: 100%;
+  margin-top: 16px;
+  transition: opacity 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.refresh-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.refresh-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.refresh-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+</style>
