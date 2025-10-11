@@ -46,6 +46,15 @@ const routes = [
       title: 'Сканер',
       order: 5
     }
+  },
+  {
+    path: '/users',
+    name: 'users',
+    component: () => import('../views/UsersView.vue'),
+    meta: {
+      title: 'Все пользователи',
+      order: 6
+    }
   }
 ]
 
