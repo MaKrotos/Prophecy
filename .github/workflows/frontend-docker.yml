@@ -23,7 +23,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Получаем всю историю коммитов для получения списка изменений
+          fetch-depth: 0
 
       - name: Allow insecure registry
         run: |
@@ -51,15 +51,12 @@ jobs:
       - name: Get commit history
         id: commits
         run: |
-          # Получаем коммиты с предыдущего пуша до текущего
           if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
             COMMITS=$(git log --oneline --no-decorate ${{ github.event.before }}..${{ github.event.after }} -- Frontend/ --format="• %s (%h)" | sed 's/"/\\"/g')
           else
-            # Для первого коммита в репозитории или workflow_dispatch
             COMMITS=$(git log --oneline --no-decorate -10 -- Frontend/ --format="• %s (%h)" | sed 's/"/\\"/g')
           fi
           
-          # Если нет коммитов, связанных с Frontend, используем общие коммиты
           if [ -z "$COMMITS" ]; then
             if [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
               COMMITS=$(git log --oneline --no-decorate ${{ github.event.before }}..${{ github.event.after }} --format="• %s (%h)" | sed 's/"/\\"/g')
@@ -68,24 +65,25 @@ jobs:
             fi
           fi
           
-          # Экранируем специальные символы для JSON
           COMMITS_ESCAPED=$(echo "$COMMITS" | python3 -c "import sys,json; print(json.dumps(sys.stdin.read()))")
           echo "commits_list<<EOF" >> $GITHUB_OUTPUT
           echo "$COMMITS_ESCAPED" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Send Telegram notification
+      - name: Send Telegram notification to channel
         uses: appleboy/telegram-action@master
         with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          # Для канала используйте @channel_username или chat_id канала
+          to: ${{ secrets.TELEGRAM_CHANNEL_ID }}
           token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           message: |
             🎨 **Frontend обновлён!**
             📋 **Последние коммиты:**
             ${{ fromJSON(steps.commits.outputs.commits_list) }}
             
-            
             🎯 **Target:** production
+            
+            #deploy #frontend
 
   test-frontend:
     runs-on: ubuntu-latest
