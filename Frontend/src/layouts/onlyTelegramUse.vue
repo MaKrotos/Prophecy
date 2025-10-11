@@ -64,7 +64,7 @@ const openTelegram = () => {
 
 <style scoped>
 .telegram-only-layout {
-  min-height: 100vh;
+
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   display: flex;
   align-items: flex-start; /* Изменено с center на flex-start */

@@ -62,8 +62,20 @@ watch(() => route?.path, (newPath) => {
 })
 
 const navigateTo = (path) => {
-  activeTab.value = path
-  router.push(path)
+  // Если пользователь нажал на уже активную вкладку, скроллим наверх
+  if (activeTab.value === path) {
+    const mainContent = document.querySelector('.main-content')
+    if (mainContent) {
+      mainContent.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      })
+    }
+  } else {
+    // Иначе переходим на новую страницу
+    activeTab.value = path
+    router.push(path)
+  }
 }
 </script>
 
