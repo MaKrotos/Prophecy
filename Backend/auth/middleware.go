@@ -47,3 +47,26 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		c.Next()
 	}
 }
+
+// AdminAuthMiddleware middleware для проверки прав администратора
+func AdminAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Получение информации о правах администратора из контекста
+		isAdmin, exists := c.Get("is_admin")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Admin privileges required"})
+			c.Abort()
+			return
+		}
+
+		// Проверка, является ли пользователь администратором
+		if !isAdmin.(bool) {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Admin privileges required"})
+			c.Abort()
+			return
+		}
+
+		// Продолжение выполнения
+		c.Next()
+	}
+}
