@@ -1,5 +1,8 @@
 <template>
   <div class="page">
+    <!-- Компонент статистики пользователей (только для админов) -->
+    <UserStats v-if="isAdmin" />
+
     <h2 class="page-title">Добро пожаловать! 👋</h2>
     <p class="page-description">Это главная страница приложения.</p>
 
@@ -355,15 +358,20 @@
 </style>
 
 <script setup>
+import { getUserInfoFromToken } from '../telegram/auth/user'
+
 import { ref, onMounted } from 'vue'
-import { getUserInfoFromToken } from '/src/telegram/index.js'
+import UserStats from '../components/UserStats.vue'
+
+import { computed } from 'vue'
 
 const userInfo = ref(null)
+const isAdmin = computed(() => userInfo.value?.isAdmin || false)
 
 onMounted(() => {
   // Получаем информацию о пользователе из JWT токена
   userInfo.value = getUserInfoFromToken()
-
+  const isAdmin = computed(() => userInfo.value?.isAdmin || false)
   console.log('User Info:', userInfo.value)
 })
 </script>

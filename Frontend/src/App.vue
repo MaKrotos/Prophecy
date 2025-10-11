@@ -99,7 +99,7 @@ const initializeTelegramApp = async () => {
     loaderMessage.value = 'Авторизация через Telegram...'
     console.log('📡 Отправка данных аутентификации на сервер...')
 
-    await sendAuthToServer('/api/auth/telegram', 3)
+    await sendAuthToServer('auth/telegram', 3)
   } else if (!authHash.value) {
     console.warn('⚠️ Нет хэша аутентификации')
     throw new Error('Ошибка авторизации. Перезайдите в приложение.')
@@ -114,7 +114,7 @@ const handleRetryAuth = async () => {
   isInitialized.value = false
   
   await new Promise(resolve => setTimeout(resolve, 500))
-  await retryAuth('/api/auth/telegram', 3)
+  await retryAuth('auth/telegram', 3)
   
   isInitialized.value = true
 }
