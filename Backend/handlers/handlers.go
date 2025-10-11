@@ -79,3 +79,54 @@ func CreateUser(c *gin.Context) {
 		"user":    response,
 	})
 }
+
+// GetAllUsers возвращает список всех пользователей Telegram с пагинацией
+func GetAllUsers(c *gin.Context) {
+	// Получение параметров пагинации из запроса
+	limit := 10 // значение по умолчанию
+	offset := 0 // значение по умолчанию
+
+	if limitParam := c.Query("limit"); limitParam != "" {
+		if parsedLimit, err := strconv.Atoi(limitParam); err == nil && parsedLimit > 0 {
+			limit = parsedLimit
+		}
+	}
+
+	if offsetParam := c.Query("offset"); offsetParam != "" {
+		if parsedOffset, err := strconv.Atoi(offsetParam); err == nil && parsedOffset >= 0 {
+			offset = parsedOffset
+		}
+	}
+
+	// Ограничение максимального значения limit для предотвращения перегрузки
+	if limit > 100 {
+		limit = 100
+	}
+
+	// Получение пользователей из базы данных с пагинацией
+	users, err := models.GetAllTelegramUsers(limit, offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get users"})
+		return
+	}
+
+	c.JSON(http.StatusOK, users)
+}
+
+// GetUserStats возвращает статистику пользователей
+func GetUserStats(c *gin.Context) {
+	// Получение статистики из базы данных
+	stats, err := models.GetUserStats()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user stats"})
+		return
+	}
+
+	// Преобразуем статистику в формат, ожидаемый фронтендом
+	response := gin.H{
+		"total_users": stats["total_users"],
+		"admin_users": stats["admin_users"],
+	}
+
+	c.JSON(http.StatusOK, response)
+}
