@@ -92,7 +92,7 @@ onMounted(() => {
 
 <style scoped>
 .user-stats {
-  margin: 16px;
+  margin-bottom: 16px;
 }
 
 .stats-card {
@@ -212,11 +212,7 @@ onMounted(() => {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   
-  
-  .stats-card {
-    padding: 16px;
-  }
-  
+
   .stat-item {
     padding: 12px;
   }
