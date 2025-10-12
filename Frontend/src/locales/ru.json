@@ -124,8 +124,13 @@
   },
   "scan_view": {
     "title": "QR Code Scanner",
-    "scanned_qr": "Scanned QR Code:",
-    "camera_error": "Camera initialization failed: "
+    "scanned_qr": "Отсканированный QR-код:",
+    "camera_error": "Ошибка инициализации камеры: ",
+    "success_message": "QR-код успешно отсканирован!",
+    "select_camera": "Выберите камеру:",
+    "camera_access_denied": "Доступ к камере запрещен. Пожалуйста, разрешите доступ к камере в настройках браузера.",
+    "camera_access_requested": "Запрашивается доступ к камере...",
+    "no_cameras_found": "Камеры не найдены"
   },
   "components": {
     "animatedCards": {

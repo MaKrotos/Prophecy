@@ -125,7 +125,12 @@
   "scan_view": {
     "title": "QR Code Scanner",
     "scanned_qr": "Scanned QR Code:",
-    "camera_error": "Camera initialization failed: "
+    "camera_error": "Camera initialization failed: ",
+    "success_message": "QR code successfully scanned!",
+    "select_camera": "Select camera:",
+    "camera_access_denied": "Camera access denied. Please allow camera access in your browser settings.",
+    "camera_access_requested": "Requesting camera access...",
+    "no_cameras_found": "No cameras found"
   },
   "components": {
     "animatedCards": {
