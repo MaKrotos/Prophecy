@@ -127,23 +127,6 @@
     "scanned_qr": "Scanned QR Code:",
     "camera_error": "Camera initialization failed: "
   },
-  "telegram_only": {
-    "title": "Telegram WebApp",
-    "subtitle": "This application works only within Telegram",
-    "how_to_use": "How to use:",
-    "instruction_1": "Open the application in Telegram",
-    "instruction_2": "Find our bot: <strong>@MyExampleBot</strong>",
-    "instruction_3": "Launch WebApp via /start command or bot menu",
-    "go_to_bot": "Go to bot",
-    "features": {
-      "title": "Application features:",
-      "feature_1": "✅ Convenient interface optimized for Telegram",
-      "feature_2": "✅ Integration with Telegram Mini Apps",
-      "feature_3": "✅ Secure authorization",
-      "feature_4": "✅ Instant loading"
-    },
-    "footer": "If you have access issues, make sure you're using the latest Telegram version"
-  },
   "components": {
     "animatedCards": {
       "loading": "Loading...",
