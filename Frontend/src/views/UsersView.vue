@@ -1,7 +1,7 @@
 <template>
   <div class="page">
-    <h2 class="page-title">👥 Все пользователи</h2>
-    <p class="page-description">Список всех пользователей системы</p>
+    <h2 class="page-title">👥 {{ t('users_view.title') }}</h2>
+    <p class="page-description">{{ t('users_view.description') }}</p>
 
     <AnimatedCardList
       :items="users"
@@ -10,8 +10,8 @@
       key-field="id"
       card-class="user-card"
       :animation-delay="0.1"
-      loading-text="Загрузка пользователей..."
-      no-more-items-text="Все пользователи загружены"
+      :loading-text="t('users_view.loading')"
+      :no-more-items-text="t('users_view.no_more')"
     >
       <template #card="{ item: user }">
         <div class="user-header">
@@ -19,7 +19,7 @@
             <h3 class="user-name">{{ user.generated_name }}</h3>
           </div>
           <div class="user-badge" :class="{ 'admin-badge': user.is_admin }">
-            {{ user.is_admin ? 'Админ' : 'Пользователь' }}
+            {{ user.is_admin ? t('users_view.admin') : t('users_view.user') }}
           </div>
         </div>
 
@@ -35,7 +35,7 @@
           </div>
           
           <div class="detail-item">
-            <span class="detail-label">Регистрация:</span>
+            <span class="detail-label">{{ t('users_view.registration') }}:</span>
             <span class="detail-value">{{ formatDate(user.created_at) }}</span>
           </div>
         </div>
@@ -48,6 +48,8 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useApi } from '../telegram/composables/useApi'
 import AnimatedCardList from '../components/AnimatedCardList.vue'
+import { useLocalization } from '@/locales/index.js'
+const { t } = useLocalization()
 
 const { apiGet } = useApi()
 
@@ -97,11 +99,11 @@ const loadUsers = async () => {
       }
     } else {
       console.error('Ошибка при загрузке пользователей:', response.status)
-      alert('Не удалось загрузить список пользователей')
+      alert(t('users_view.load_error'))
     }
   } catch (error) {
     console.error('Ошибка при запросе пользователей:', error)
-    alert('Произошла ошибка при загрузке списка пользователей')
+    alert(t('users_view.load_error_general'))
   } finally {
     loading.value = false
     // После загрузки проверяем, нужно ли загрузить еще

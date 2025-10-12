@@ -1,0 +1,153 @@
+{
+  "app": {
+    "name": "My Application",
+    "loading": "Loading...",
+    "initializing": "Initializing application...",
+    "retryAuth": "Retrying authorization...",
+    "authError": "Application loading error"
+  },
+  "auth": {
+    "error": {
+      "title": "Authorization Error",
+      "subtitle": "Failed to sign in via Telegram",
+      "message": "Failed to get authorization token from server",
+      "whatHappened": "What happened?",
+      "retry": "Try again",
+      "later": "Try later",
+      "footer": "If the problem persists, try updating Telegram or contact support"
+    },
+    "reasons": {
+      "title": "Possible reasons:",
+      "server": "🔧 Temporary server maintenance",
+      "security": "🔒 Telegram WebApp security issues",
+      "connection": "🌐 Unstable internet connection",
+      "outdated": "🔄 Outdated application version"
+    }
+  },
+  "telegram": {
+    "only": {
+      "title": "Telegram WebApp",
+      "subtitle": "This application works only within Telegram",
+      "instructions": {
+        "title": "How to use:",
+        "step1": "Open the application in Telegram",
+        "step2": "Find our bot: <strong>@MyExampleBot</strong>",
+        "step3": "Launch WebApp via /start command or bot menu"
+      },
+      "button": "Go to bot",
+      "features": {
+        "title": "Application features:",
+        "feature1": "✅ Convenient interface optimized for Telegram",
+        "feature2": "✅ Integration with Telegram Mini Apps",
+        "feature3": "✅ Secure authorization",
+        "feature4": "✅ Instant loading"
+      },
+      "footer": "If you have access issues, make sure you're using the latest Telegram version"
+    }
+  },
+  "bottom_nav": {
+    "home": "Home",
+    "messages": "Messages",
+    "profile": "Profile",
+    "settings": "Settings",
+    "scanner": "Scanner"
+  },
+  "home_view": {
+    "admin": "Administrator",
+    "stats": {
+      "items": "Items",
+      "tasks": "Tasks",
+      "done": "Done"
+    },
+    "cards": {
+      "card_1": {
+        "title": "Card 1",
+        "description": "Example card content"
+      },
+      "card_2": {
+        "title": "Card 2",
+        "description": "Example card content"
+      },
+      "card_3": {
+        "title": "Card 3",
+        "description": "Example card content"
+      },
+      "card_4": {
+        "title": "Card 4",
+        "description": "Example card content"
+      },
+      "card_5": {
+        "title": "Card 5",
+        "description": "Example card content"
+      },
+      "card_6": {
+        "title": "Card 6",
+        "description": "Example card content"
+      },
+      "new": "New"
+    }
+  },
+  "users_view": {
+    "title": "👥 All Users",
+    "description": "List of all system users",
+    "loading": "Loading users...",
+    "no_more": "All users loaded",
+    "admin": "Admin",
+    "user": "User",
+    "registration": "Registration",
+    "load_error": "Failed to load user list",
+    "load_error_general": "An error occurred while loading the user list"
+  },
+  "user_stats": {
+    "title": "📊 User Statistics",
+    "total_users": "👥 Total Users",
+    "admins": "👑 Administrators",
+    "loading": "⏳ Loading...",
+    "refresh": "🔄 Refresh Statistics",
+    "view_all": "👥 View All Users",
+    "load_error": "Failed to load user statistics",
+    "load_error_general": "An error occurred while loading user statistics"
+  },
+  "profile_view": {
+    "title": "Your Profile",
+    "edit_profile": "Edit profile",
+    "privacy_settings": "Privacy settings",
+    "logout": "Logout"
+  },
+  "settings_view": {
+    "title": "Settings",
+    "description": "Settings page"
+  },
+  "messages_view": {
+    "title": "Messages",
+    "description": "Messages page"
+  },
+  "scan_view": {
+    "title": "QR Code Scanner",
+    "scanned_qr": "Scanned QR Code:",
+    "camera_error": "Camera initialization failed: "
+  },
+  "telegram_only": {
+    "title": "Telegram WebApp",
+    "subtitle": "This application works only within Telegram",
+    "how_to_use": "How to use:",
+    "instruction_1": "Open the application in Telegram",
+    "instruction_2": "Find our bot: <strong>@MyExampleBot</strong>",
+    "instruction_3": "Launch WebApp via /start command or bot menu",
+    "go_to_bot": "Go to bot",
+    "features": {
+      "title": "Application features:",
+      "feature_1": "✅ Convenient interface optimized for Telegram",
+      "feature_2": "✅ Integration with Telegram Mini Apps",
+      "feature_3": "✅ Secure authorization",
+      "feature_4": "✅ Instant loading"
+    },
+    "footer": "If you have access issues, make sure you're using the latest Telegram version"
+  },
+  "components": {
+    "animatedCards": {
+      "loading": "Loading...",
+      "noMore": "All items loaded"
+    }
+  }
+}

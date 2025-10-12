@@ -9,40 +9,40 @@
                             fill="#FF6B6B" />
                     </svg>
                 </div>
-                <h1 class="title">Ошибка авторизации</h1>
-                <p class="subtitle">Не удалось выполнить вход через Telegram</p>
+                <h1 class="title">{{ t('auth.error.title') }}</h1>
+                <p class="subtitle">{{ t('auth.error.subtitle') }}</p>
             </div>
 
             <div class="content">
                 <div class="error-card">
-                    <h2>Что произошло:</h2>
-                    <p class="error-message">{{ errorMessage }}</p>
+                    <h2>{{ t('auth.error.whatHappened') }}</h2>
+                    <p class="error-message">{{ defaultErrorMessage }}</p>
                 </div>
 
                 <div class="actions">
                     <button class="retry-button" @click="retryAuth">
-                        Попробовать снова
+                        {{ t('auth.error.retry') }}
                     </button>
 
                     <button class="later-button" @click="tryLater">
-                        Попробовать позже
+                        {{ t('auth.error.later') }}
                     </button>
                 </div>
 
                 <div class="info">
-                    <h3>Возможные причины:</h3>
+                    <h3>{{ t('auth.reasons.title') }}</h3>
                     <ul class="reasons-list">
-                        <li>🔧 Временные технические работы на сервере</li>
-                        <li>🔒 Проблемы с безопасностью Telegram WebApp</li>
-                        <li>🌐 Нестабильное интернет-соединение</li>
-                        <li>🔄 Устаревшая версия приложения</li>
+                        <li v-html="t('auth.reasons.server')"></li>
+                        <li v-html="t('auth.reasons.security')"></li>
+                        <li v-html="t('auth.reasons.connection')"></li>
+                        <li v-html="t('auth.reasons.outdated')"></li>
                     </ul>
                 </div>
             </div>
 
             <div class="footer">
                 <p class="footer-text">
-                    Если проблема сохраняется, попробуйте обновить Telegram или обратиться в поддержку
+                    {{ t('auth.error.footer') }}
                 </p>
             </div>
         </div>
@@ -50,13 +50,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useLocalization } from '/src/locales/index.js'
+
+const { t } = useLocalization()
 
 const props = defineProps({
     errorMessage: {
         type: String,
-        default: 'Не удалось получить токен авторизации от сервера'
+        default: ''
     }
+})
+
+// Вычисляемое свойство для локализованного сообщения по умолчанию
+const defaultErrorMessage = computed(() => {
+    return props.errorMessage || t('auth.error.message')
 })
 
 const emit = defineEmits(['retry', 'tryLater'])

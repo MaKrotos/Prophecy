@@ -2,17 +2,22 @@
   <div class="page">
     <div class="profile-header">
       <div class="avatar">👤</div>
-      <h2>Ваш Профиль</h2>
+      <h2>{{ t('profile_view.title') }}</h2>
       <p>user@example.com</p>
     </div>
     
     <div class="profile-actions">
-      <button class="action-btn">Редактировать профиль</button>
-      <button class="action-btn">Настройки приватности</button>
-      <button class="action-btn">Выйти</button>
+      <button class="action-btn">{{ t('profile_view.edit_profile') }}</button>
+      <button class="action-btn">{{ t('profile_view.privacy_settings') }}</button>
+      <button class="action-btn">{{ t('profile_view.logout') }}</button>
     </div>
   </div>
 </template>
+
+<script setup>
+import { useLocalization } from '@/locales/index.js'
+const { t } = useLocalization()
+</script>
 
 <style scoped>
 .profile-header {
