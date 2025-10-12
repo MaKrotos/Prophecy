@@ -28,7 +28,7 @@ import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
 import AuthErrorLayout from '/src/layouts/AuthErrorLayout.vue'
 import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp'
-import { useLocalization } from '/src/locales/index.js'
+import { useLocalization, initLocalization } from '/src/locales/index.js'
 
 const { t } = useLocalization()
 
@@ -58,6 +58,9 @@ const initializeApp = async () => {
   console.log('🚀 App mounted, initializing...')
 
   try {
+    // Инициализируем локализацию
+    await initLocalization()
+    
     // Если это Telegram, ждем его готовности
     if (isTelegram.value) {
       await initializeTelegramApp()
