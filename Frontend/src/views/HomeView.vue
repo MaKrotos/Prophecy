@@ -21,14 +21,20 @@
     </div>
 
     <div class="cards-grid">
-      <div class="card" v-for="i in 6" :key="i">
-        <div class="card-icon">📦</div>
-        <h3 class="card-title">Карточка {{ i }}</h3>
-        <p class="card-description">Пример контента карточки</p>
+      <AnimatedCard
+        v-for="(card, index) in cards"
+        :key="card.id"
+        :index="index"
+        :animation-delay="0.1"
+        custom-class="card"
+      >
+        <div class="card-icon">{{ card.icon }}</div>
+        <h3 class="card-title">{{ card.title }}</h3>
+        <p class="card-description">{{ card.description }}</p>
         <div class="card-footer">
-          <span class="card-badge">Новое</span>
+          <span class="card-badge">{{ card.badge }}</span>
         </div>
-      </div>
+      </AnimatedCard>
     </div>
 
     <div class="stats-section">
@@ -232,40 +238,7 @@
 
 /* Анимация появления карточек */
 .card {
-  animation: fadeInUp 0.5s ease forwards;
-  opacity: 0;
-  transform: translateY(20px);
-}
-
-.card:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-.card:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.card:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.card:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-.card:nth-child(5) {
-  animation-delay: 0.5s;
-}
-
-.card:nth-child(6) {
-  animation-delay: 0.6s;
-}
-
-@keyframes fadeInUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  cursor: pointer;
 }
 
 /* User Info Section Styles */
@@ -360,11 +333,20 @@ import { getUserInfoFromToken } from '../telegram/auth/user'
 
 import { ref, onMounted } from 'vue'
 import UserStats from '../components/UserStats.vue'
+import AnimatedCard from '../components/AnimatedCard.vue'
 
 import { computed } from 'vue'
 
 const userInfo = ref(null)
 const isAdmin = computed(() => userInfo.value?.isAdmin || false)
+const cards = ref([
+  { id: 1, icon: '📦', title: 'Карточка 1', description: 'Пример контента карточки', badge: 'Новое' },
+  { id: 2, icon: '📦', title: 'Карточка 2', description: 'Пример контента карточки', badge: 'Новое' },
+  { id: 3, icon: '📦', title: 'Карточка 3', description: 'Пример контента карточки', badge: 'Новое' },
+  { id: 4, icon: '📦', title: 'Карточка 4', description: 'Пример контента карточки', badge: 'Новое' },
+  { id: 5, icon: '📦', title: 'Карточка 5', description: 'Пример контента карточки', badge: 'Новое' },
+  { id: 6, icon: '📦', title: 'Карточка 6', description: 'Пример контента карточки', badge: 'Новое' }
+])
 
 onMounted(() => {
   // Получаем информацию о пользователе из JWT токена

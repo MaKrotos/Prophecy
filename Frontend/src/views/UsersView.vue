@@ -3,12 +3,17 @@
     <h2 class="page-title">👥 Все пользователи</h2>
     <p class="page-description">Список всех пользователей системы</p>
 
-    <div class="users-list">
-      <div
-        v-for="user in users"
-        :key="user.id"
-        class="user-card"
-      >
+    <AnimatedCardList
+      :items="users"
+      :loading="loading"
+      :no-more-items="noMoreUsers"
+      key-field="id"
+      card-class="user-card"
+      :animation-delay="0.1"
+      loading-text="Загрузка пользователей..."
+      no-more-items-text="Все пользователи загружены"
+    >
+      <template #card="{ item: user }">
         <div class="user-header">
           <div class="user-info">
             <h3 class="user-name">{{ user.generated_name }}</h3>
@@ -34,23 +39,15 @@
             <span class="detail-value">{{ formatDate(user.created_at) }}</span>
           </div>
         </div>
-      </div>
-
-      <div v-if="loading" class="loading-indicator">
-        <div class="spinner"></div>
-        <p>Загрузка пользователей...</p>
-      </div>
-
-      <div v-if="noMoreUsers && !loading" class="no-more-users">
-        <p>Все пользователи загружены</p>
-      </div>
-    </div>
+      </template>
+    </AnimatedCardList>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useApi } from '../telegram/composables/useApi'
+import AnimatedCardList from '../components/AnimatedCardList.vue'
 
 const { apiGet } = useApi()
 
@@ -189,13 +186,13 @@ onUnmounted(() => {
   padding-right: 8px;
 }
 
-.user-card {
-  background: var(--tg-theme-secondary-bg-color, white);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
-  transition: all 0.3s ease;
+.user-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .user-header {
@@ -257,35 +254,34 @@ onUnmounted(() => {
   transition: color 0.3s ease;
 }
 
-.loading-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 16px;
-  color: var(--tg-theme-hint-color, #666666);
+/* Плавные переходы для всех элементов */
+.page,
+.page-title,
+.page-description,
+.user-name,
+.detail-label,
+.detail-value {
+  transition: all 0.3s ease;
 }
 
-.spinner {
-  width: 24px;
-  height: 24px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  border-top: 2px solid var(--tg-theme-button-color, #667eea);
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 8px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.no-more-users {
-  text-align: center;
-  padding: 16px;
-  color: var(--tg-theme-hint-color, #666666);
-  font-style: italic;
-  font-size: 0.9rem;
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .user-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .user-name {
+    font-size: 1rem;
+  }
+  
+  .user-card {
+    padding: 12px;
+  }
+  
+  .users-list {
+    max-height: calc(100vh - 130px);
+  }
 }
 
 /* Dark theme adjustments */
