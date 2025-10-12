@@ -14,41 +14,41 @@
               fill="#0088CC" />
           </svg>
         </div>
-        <h1 class="title">Telegram WebApp</h1>
-        <p class="subtitle">Это приложение работает только внутри Telegram</p>
+        <h1 class="title">{{ t('telegram_only.title') }}</h1>
+        <p class="subtitle">{{ t('telegram_only.subtitle') }}</p>
       </div>
 
       <div class="content">
         <div class="info-card">
-          <h2>Как использовать:</h2>
+          <h2>{{ t('telegram_only.how_to_use') }}</h2>
           <ol class="instructions">
-            <li>Откройте приложение в Telegram</li>
-            <li>Найдите нашего бота: <strong>@MyExampleBot</strong></li>
-            <li>Запустите WebApp через команду /start или меню бота</li>
+            <li>{{ t('telegram_only.instruction_1') }}</li>
+            <li v-html="t('telegram_only.instruction_2')"></li>
+            <li>{{ t('telegram_only.instruction_3') }}</li>
           </ol>
         </div>
 
         <div class="bot-link">
           <a href="https://t.me/MyExampleBot" target="_blank" class="telegram-button" @click="openTelegram">
             <span class="button-icon">📱</span>
-            Перейти к боту
+            {{ t('telegram_only.go_to_bot') }}
           </a>
         </div>
 
         <div class="features">
-          <h3>Возможности приложения:</h3>
+          <h3>{{ t('telegram_only.features.title') }}</h3>
           <ul class="features-list">
-            <li>✅ Удобный интерфейс оптимизирован для Telegram</li>
-            <li>✅ Интеграция с Telegram Mini Apps</li>
-            <li>✅ Безопасная авторизация</li>
-            <li>✅ Мгновенная загрузка</li>
+            <li v-html="t('telegram_only.features.feature_1')"></li>
+            <li v-html="t('telegram_only.features.feature_2')"></li>
+            <li v-html="t('telegram_only.features.feature_3')"></li>
+            <li v-html="t('telegram_only.features.feature_4')"></li>
           </ul>
         </div>
       </div>
 
       <div class="footer">
         <p class="footer-text">
-          Если у вас возникли проблемы с доступом, убедитесь что используете последнюю версию Telegram
+          {{ t('telegram_only.footer') }}
         </p>
       </div>
     </div>
@@ -56,6 +56,9 @@
 </template>
 
 <script setup>
+import { useLocalization } from '@/locales/index.js';
+const { t } = useLocalization();
+
 const openTelegram = () => {
   // Можно добавить аналитику или дополнительную логику
   console.log('Redirecting to Telegram bot...');

@@ -171,4 +171,5 @@ function logDebugInfo(webApp) {
   console.log("📱 Platform:", webApp.platform);
   console.log("🎨 Theme:", webApp.colorScheme);
   console.log("🎨 Theme Params:", webApp.themeParams);
+  console.log("🌍 Language:", webApp.initDataUnsafe?.user?.language_code);
 }

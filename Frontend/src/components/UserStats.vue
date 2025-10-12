@@ -1,24 +1,24 @@
 <template>
   <div v-if="isAdmin" class="user-stats">
     <div class="stats-card">
-      <h3>📊 Статистика пользователей</h3>
+      <h3>📊 {{ t('user_stats.title') }}</h3>
       <div class="stats-content">
         <div class="stat-item">
-          <span class="stat-label">👥 Всего пользователей</span>
+          <span class="stat-label">👥 {{ t('user_stats.total_users') }}</span>
           <span class="stat-value">{{ totalUsers }}</span>
         </div>
         <div class="stat-item">
-          <span class="stat-label">👑 Администраторов</span>
+          <span class="stat-label">👑 {{ t('user_stats.admins') }}</span>
           <span class="stat-value">{{ adminUsers }}</span>
         </div>
       </div>
       <div class="stats-actions">
         <button @click="fetchStats" class="refresh-btn" :disabled="loading">
-          <span v-if="loading">⏳ Загрузка...</span>
-          <span v-else>🔄 Обновить статистику</span>
+          <span v-if="loading">⏳ {{ t('user_stats.loading') }}</span>
+          <span v-else>🔄 {{ t('user_stats.refresh') }}</span>
         </button>
         <button @click="viewAllUsers" class="view-all-btn">
-          👥 Просмотр всех пользователей
+          👥 {{ t('user_stats.view_all') }}
         </button>
       </div>
     </div>
@@ -31,6 +31,8 @@ import { useRouter } from 'vue-router'
 import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
 import { getUserInfoFromToken } from '../telegram/auth/user'
 import { useApi } from '../telegram/composables/useApi'
+import { useLocalization } from '@/locales/index.js'
+const { t } = useLocalization()
 
 const router = useRouter()
 const { sendAuthToServer, jwtToken } = useTelegramWebApp()
@@ -65,14 +67,14 @@ const fetchStats = async (showErrors = true) => {
       console.error('Ошибка при получении статистики:', response.status)
       // Показываем уведомление об ошибке только если это ручное обновление
       if (showErrors) {
-        alert('Не удалось загрузить статистику пользователей')
+        alert(t('user_stats.load_error'))
       }
     }
   } catch (error) {
     console.error('Ошибка при запросе статистики:', error)
     // Показываем уведомление об ошибке только если это ручное обновление
     if (showErrors) {
-      alert('Произошла ошибка при загрузке статистики пользователей')
+      alert(t('user_stats.load_error_general'))
     }
   } finally {
     loading.value = false

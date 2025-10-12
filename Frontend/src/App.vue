@@ -28,6 +28,9 @@ import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
 import AuthErrorLayout from '/src/layouts/AuthErrorLayout.vue'
 import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp'
+import { useLocalization } from '/src/locales/index.js'
+
+const { t } = useLocalization()
 
 const {
   telegramUser,
@@ -45,7 +48,7 @@ const {
 } = useTelegramWebApp()
 
 const isInitialized = ref(false)
-const loaderMessage = ref('Инициализация приложения...')
+const loaderMessage = ref(t('app.initializing'))
 const telegramBotLink = ref('https://t.me/your_bot_username')
 
 /**
@@ -72,7 +75,7 @@ const initializeApp = async () => {
 
   } catch (error) {
     console.error('❌ Ошибка инициализации:', error)
-    authError.value = error.message || 'Ошибка загрузки приложения'
+    authError.value = error.message || t('app.authError')
     isInitialized.value = true
   }
 }
@@ -81,7 +84,7 @@ const initializeApp = async () => {
  * Инициализация Telegram приложения
  */
 const initializeTelegramApp = async () => {
-  loaderMessage.value = 'Загрузка Telegram...'
+  loaderMessage.value = t('app.loading')
   console.log('⏳ Ожидание готовности Telegram WebApp...')
   
   await waitForTelegramReady(5000)
@@ -90,19 +93,19 @@ const initializeTelegramApp = async () => {
   // Проверяем соответствие Telegram ID
   const isConsistent = checkTelegramIdConsistency()
   if (!isConsistent) {
-    loaderMessage.value = 'Повторная авторизация...'
+    loaderMessage.value = t('app.retryAuth')
     console.log('🔄 Необходима повторная авторизация из-за несоответствия Telegram ID')
   }
 
   // Авторизация только если Telegram готов и есть хэш
   if (isTelegramReady?.value && authHash.value) {
-    loaderMessage.value = 'Авторизация через Telegram...'
+    loaderMessage.value = t('app.loading')
     console.log('📡 Отправка данных аутентификации на сервер...')
 
     await sendAuthToServer('auth/telegram', 3)
   } else if (!authHash.value) {
     console.warn('⚠️ Нет хэша аутентификации')
-    throw new Error('Ошибка авторизации. Перезайдите в приложение.')
+    throw new Error(t('auth.error.message'))
   }
 }
 
@@ -110,7 +113,7 @@ const initializeTelegramApp = async () => {
  * Обработка повторной авторизации
  */
 const handleRetryAuth = async () => {
-  loaderMessage.value = 'Повторная авторизация...'
+  loaderMessage.value = t('app.retryAuth')
   isInitialized.value = false
   
   await new Promise(resolve => setTimeout(resolve, 500))

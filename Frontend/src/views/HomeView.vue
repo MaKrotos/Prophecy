@@ -14,7 +14,7 @@
 
         <div class="user-details">
           <div class="detail-item" v-if="userInfo.isAdmin">
-            <span class="admin-badge">Администратор</span>
+            <span class="admin-badge">{{ t('home_view.admin') }}</span>
           </div>
         </div>
       </div>
@@ -40,15 +40,15 @@
     <div class="stats-section">
       <div class="stat-item">
         <div class="stat-value">42</div>
-        <div class="stat-label">Элементов</div>
+        <div class="stat-label">{{ t('home_view.stats.items') }}</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">7</div>
-        <div class="stat-label">Задач</div>
+        <div class="stat-label">{{ t('home_view.stats.tasks') }}</div>
       </div>
       <div class="stat-item">
         <div class="stat-value">99%</div>
-        <div class="stat-label">Готово</div>
+        <div class="stat-label">{{ t('home_view.stats.done') }}</div>
       </div>
     </div>
   </div>
@@ -334,18 +334,20 @@ import { getUserInfoFromToken } from '../telegram/auth/user'
 import { ref, onMounted } from 'vue'
 import UserStats from '../components/UserStats.vue'
 import AnimatedCard from '../components/AnimatedCard.vue'
+import { useLocalization } from '@/locales/index.js'
 
 import { computed } from 'vue'
+const { t } = useLocalization()
 
 const userInfo = ref(null)
 const isAdmin = computed(() => userInfo.value?.isAdmin || false)
 const cards = ref([
-  { id: 1, icon: '📦', title: 'Карточка 1', description: 'Пример контента карточки', badge: 'Новое' },
-  { id: 2, icon: '📦', title: 'Карточка 2', description: 'Пример контента карточки', badge: 'Новое' },
-  { id: 3, icon: '📦', title: 'Карточка 3', description: 'Пример контента карточки', badge: 'Новое' },
-  { id: 4, icon: '📦', title: 'Карточка 4', description: 'Пример контента карточки', badge: 'Новое' },
-  { id: 5, icon: '📦', title: 'Карточка 5', description: 'Пример контента карточки', badge: 'Новое' },
-  { id: 6, icon: '📦', title: 'Карточка 6', description: 'Пример контента карточки', badge: 'Новое' }
+  { id: 1, icon: '📦', title: t('home_view.cards.card_1.title'), description: t('home_view.cards.card_1.description'), badge: t('home_view.cards.new') },
+  { id: 2, icon: '📦', title: t('home_view.cards.card_2.title'), description: t('home_view.cards.card_2.description'), badge: t('home_view.cards.new') },
+  { id: 3, icon: '📦', title: t('home_view.cards.card_3.title'), description: t('home_view.cards.card_3.description'), badge: t('home_view.cards.new') },
+  { id: 4, icon: '📦', title: t('home_view.cards.card_4.title'), description: t('home_view.cards.card_4.description'), badge: t('home_view.cards.new') },
+  { id: 5, icon: '📦', title: t('home_view.cards.card_5.title'), description: t('home_view.cards.card_5.description'), badge: t('home_view.cards.new') },
+  { id: 6, icon: '📦', title: t('home_view.cards.card_6.title'), description: t('home_view.cards.card_6.description'), badge: t('home_view.cards.new') }
 ])
 
 onMounted(() => {

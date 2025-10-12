@@ -1,9 +1,9 @@
 <template>
   <div class="scan-view">
-    <h1>QR Code Scanner</h1>
+    <h1>{{ t('scan_view.title') }}</h1>
     <qrcode-stream @decode="onDecode" @init="onInit"></qrcode-stream>
     <div v-if="scanned" class="result">
-      <h2>Scanned QR Code:</h2>
+      <h2>{{ t('scan_view.scanned_qr') }}</h2>
       <p>{{ scanned }}</p>
       <qrcode-vue :value="scanned" :size="200" />
     </div>
@@ -16,12 +16,17 @@
 <script>
 import { QrcodeStream } from 'vue-qrcode-reader'
 import QrcodeVue from 'qrcode.vue'
+import { useLocalization } from '@/locales/index.js'
 
 export default {
   name: 'ScanView',
   components: {
     QrcodeStream,
     QrcodeVue
+  },
+  setup() {
+    const { t } = useLocalization()
+    return { t }
   },
   data() {
     return {
@@ -36,7 +41,7 @@ export default {
     },
     onInit(promise) {
       promise.catch(e => {
-        this.error = 'Camera initialization failed: ' + e.message
+        this.error = t('scan_view.camera_error') + e.message
       })
     }
   }
