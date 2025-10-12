@@ -9,12 +9,20 @@ export const currentLocale = ref('ru')
 // Загруженные переводы
 export const translations = ref({})
 
+// Предварительно загружаем все JSON файлы локалей с помощью import.meta.glob
+const localeModules = import.meta.glob('./*.json', { import: 'default', eager: true })
+
 // Асинхронная загрузка переводов
 export const loadLocaleMessages = async (locale) => {
   try {
-    const messages = await import(`./${locale}.json`)
-    translations.value[locale] = messages.default
-    console.log(`✅ Загружены переводы для локали: ${locale}`)
+    // Получаем сообщения из предварительно загруженных модулей
+    const modulePath = `./${locale}.json`
+    if (localeModules[modulePath]) {
+      translations.value[locale] = localeModules[modulePath]
+      console.log(`✅ Загружены переводы для локали: ${locale}`)
+    } else {
+      throw new Error(`Locale file not found: ${locale}.json`)
+    }
   } catch (error) {
     console.error(`❌ Ошибка загрузки переводов для локали ${locale}:`, error)
   }
@@ -101,6 +109,3 @@ export const useLocalization = () => {
     t
   }
 }
-
-// Инициализируем локализацию
-initLocalization()
