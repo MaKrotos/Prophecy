@@ -14,41 +14,41 @@
               fill="#0088CC" />
           </svg>
         </div>
-        <h1 class="title">{{ t('telegram_only.title') }}</h1>
-        <p class="subtitle">{{ t('telegram_only.subtitle') }}</p>
+        <h1 class="title">{{ t('telegram.only.title') }}</h1>
+        <p class="subtitle">{{ t('telegram.only.subtitle') }}</p>
       </div>
 
       <div class="content">
         <div class="info-card">
-          <h2>{{ t('telegram_only.how_to_use') }}</h2>
+          <h2>{{ t('telegram.only.instructions.title') }}</h2>
           <ol class="instructions">
-            <li>{{ t('telegram_only.instruction_1') }}</li>
-            <li v-html="t('telegram_only.instruction_2')"></li>
-            <li>{{ t('telegram_only.instruction_3') }}</li>
+            <li>{{ t('telegram.only.instructions.step1') }}</li>
+            <li v-html="t('telegram.only.instructions.step2')"></li>
+            <li>{{ t('telegram.only.instructions.step3') }}</li>
           </ol>
         </div>
 
         <div class="bot-link">
           <a href="https://t.me/MyExampleBot" target="_blank" class="telegram-button" @click="openTelegram">
             <span class="button-icon">📱</span>
-            {{ t('telegram_only.go_to_bot') }}
+            {{ t('telegram.only.button') }}
           </a>
         </div>
 
         <div class="features">
-          <h3>{{ t('telegram_only.features.title') }}</h3>
+          <h3>{{ t('telegram.only.features.title') }}</h3>
           <ul class="features-list">
-            <li v-html="t('telegram_only.features.feature_1')"></li>
-            <li v-html="t('telegram_only.features.feature_2')"></li>
-            <li v-html="t('telegram_only.features.feature_3')"></li>
-            <li v-html="t('telegram_only.features.feature_4')"></li>
+            <li v-html="t('telegram.only.features.feature1')"></li>
+            <li v-html="t('telegram.only.features.feature2')"></li>
+            <li v-html="t('telegram.only.features.feature3')"></li>
+            <li v-html="t('telegram.only.features.feature4')"></li>
           </ul>
         </div>
       </div>
 
       <div class="footer">
         <p class="footer-text">
-          {{ t('telegram_only.footer') }}
+          {{ t('telegram.only.footer') }}
         </p>
       </div>
     </div>

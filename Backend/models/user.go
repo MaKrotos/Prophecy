@@ -32,5 +32,6 @@ type TelegramUser struct {
 	AuthDate      int64     `json:"auth_date"`
 	GeneratedName string    `json:"generated_name"`
 	IsAdmin       bool      `json:"is_admin"`
+	Role          string    `json:"role"`
 	CreatedAt     time.Time `json:"created_at"`
 }

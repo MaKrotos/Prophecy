@@ -18,8 +18,19 @@
           <div class="user-info">
             <h3 class="user-name">{{ user.generated_name }}</h3>
           </div>
-          <div class="user-badge" :class="{ 'admin-badge': user.is_admin }">
-            {{ user.is_admin ? t('users_view.admin') : t('users_view.user') }}
+          <div class="user-controls">
+            <div class="user-badge" :class="{ 'admin-badge': user.is_admin, 'architect-badge': user.role && user.role.String === 'Архитектор' }">
+              <span v-if="user.role && user.role.String === 'Архитектор'">{{ t('users_view.architect') }}</span>
+              <span v-else-if="user.is_admin">{{ t('users_view.admin') }}</span>
+              <span v-else>{{ t('users_view.user') }}</span>
+            </div>
+            <button
+              v-if="user.is_admin"
+              class="role-button"
+              @click="showRoleMenu(user)"
+            >
+              ⚙️
+            </button>
           </div>
         </div>
 
@@ -51,7 +62,7 @@ import AnimatedCardList from '../components/AnimatedCardList.vue'
 import { useLocalization } from '@/locales/index.js'
 const { t } = useLocalization()
 
-const { apiGet } = useApi()
+const { apiGet, apiPut } = useApi()
 
 const users = ref([])
 const loading = ref(false)
@@ -108,6 +119,63 @@ const loadUsers = async () => {
     loading.value = false
     // После загрузки проверяем, нужно ли загрузить еще
     checkIfNeedMoreUsers()
+  }
+}
+
+// Установка роли пользователя
+const setUserRole = async (user, newRole) => {
+  try {
+    const response = await apiPut(`users/${user.id}/role`, { role: newRole })
+    
+    if (response.ok) {
+      // Обновляем роль пользователя в списке
+      const updatedUsers = users.value.map(u =>
+        u.id === user.id ? { ...u, role: { String: newRole, Valid: newRole !== '' } } : u
+      )
+      users.value = updatedUsers
+      
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.showAlert(t('users_view.role_updated'))
+      }
+    } else {
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.showAlert(t('users_view.role_update_error'))
+      }
+    }
+  } catch (error) {
+    console.error('Ошибка при обновлении роли пользователя:', error)
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.showAlert(t('users_view.role_update_error'))
+    }
+  }
+}
+
+// Показ меню управления ролью пользователя
+const showRoleMenu = (user) => {
+  const role = user.role && user.role.String ? user.role.String : ''
+  
+  if (role === 'Архитектор') {
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.showConfirm(
+        t('users_view.remove_role') + '?',
+        (confirmed) => {
+          if (confirmed) {
+            setUserRole(user, '')
+          }
+        }
+      )
+    }
+  } else {
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.showConfirm(
+        t('users_view.set_role') + ' ' + t('users_view.architect') + '?',
+        (confirmed) => {
+          if (confirmed) {
+            setUserRole(user, 'Архитектор')
+          }
+        }
+      )
+    }
   }
 }
 
@@ -232,6 +300,12 @@ onUnmounted(() => {
   color: var(--tg-theme-button-text-color, white);
 }
 
+.user-badge.architect-badge {
+  background: var(--tg-theme-button-color, #667eea);
+  color: var(--tg-theme-button-text-color, white);
+  border: 2px solid #ffd700;
+}
+
 .user-details {
   display: flex;
   flex-direction: column;
@@ -309,5 +383,31 @@ onUnmounted(() => {
   .users-list {
     max-height: calc(100vh - 130px);
   }
+}
+
+.user-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.role-button {
+  background: var(--tg-theme-button-color, #667eea);
+  color: var(--tg-theme-button-text-color, white);
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.role-button:hover {
+  opacity: 0.8;
+  transform: scale(1.1);
 }
 </style>
