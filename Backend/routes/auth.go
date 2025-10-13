@@ -8,7 +8,7 @@ import (
 )
 
 // RegisterAuthRoutes регистрирует маршруты для аутентификации
-func RegisterAuthRoutes(router *gin.Engine) {
+func RegisterAuthRoutes(router gin.IRouter) {
 	// Маршруты для аутентификации Telegram WebApp
 	router.POST("/auth/telegram", handlers.ValidateTelegramToken)
 	router.GET("/auth/telegram/token", handlers.GetTelegramBotToken)

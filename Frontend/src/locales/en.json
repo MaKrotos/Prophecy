@@ -85,6 +85,14 @@
         "description": "Example card content"
       },
       "new": "New"
+    },
+    "sessions": {
+      "title": "Game Sessions",
+      "loading": "Loading sessions...",
+      "no_sessions": "No sessions available",
+      "architect": "Architect",
+      "players": "Players",
+      "create_session": "Create Session"
     }
   },
   "users_view": {
@@ -142,5 +150,75 @@
       "loading": "Loading...",
       "noMore": "All items loaded"
     }
+  },
+  "sessions_view": {
+    "title": "Sessions",
+    "description": "List of game sessions",
+    "loading": "Loading sessions...",
+    "no_more": "All sessions loaded",
+    "create_session": "Create Session",
+    "description_label": "Description",
+    "architect": "Architect",
+    "created": "Created",
+    "players": "Players",
+    "no_description": "No description",
+    "load_error": "Failed to load session list",
+    "load_error_general": "An error occurred while loading the session list",
+    "referral_link": "Referral Link",
+    "copy_link": "Copy Link",
+    "link_copied": "Link copied to clipboard",
+    "copy_error": "Failed to copy link"
+  },
+  "create_session_view": {
+    "title": "Create Session",
+    "description": "Create a new game session",
+    "name_label": "Session Name",
+    "name_placeholder": "Enter session name",
+    "description_label": "Description",
+    "description_placeholder": "Enter session description (optional)",
+    "cancel": "Cancel",
+    "create": "Create",
+    "creating": "Creating...",
+    "success": "Session created successfully",
+    "create_error": "Failed to create session",
+    "create_error_general": "An error occurred while creating the session"
+  },
+  "session_detail_view": {
+    "loading": "Loading session...",
+    "load_error": "Failed to load session",
+    "load_error_general": "An error occurred while loading the session",
+    "edit": "Edit",
+    "delete": "Delete",
+    "no_description": "No description",
+    "architect": "Architect",
+    "created": "Created",
+    "updated": "Updated",
+    "players": "Players",
+    "add_player": "Add Player",
+    "loading_players": "Loading players...",
+    "no_players": "No players in session yet",
+    "edit_not_implemented": "Session editing not implemented yet",
+    "delete_confirm": "Are you sure you want to delete this session?",
+    "delete_success": "Session deleted successfully",
+    "delete_error": "Failed to delete session",
+    "delete_error_general": "An error occurred while deleting the session",
+    "add_player_not_implemented": "Adding players not implemented yet",
+    "remove_player_confirm": "Are you sure you want to remove player",
+    "remove_player_success": "Player removed from session successfully",
+    "remove_player_error": "Failed to remove player from session",
+    "remove_player_error_general": "An error occurred while removing player from session"
+  },
+  "session_join_view": {
+    "title": "Join Session",
+    "description": "You have been invited to join a game session",
+    "loading": "Loading session information...",
+    "join": "Join Session",
+    "joining": "Joining...",
+    "success": "You have successfully joined the session! Redirecting...",
+    "join_error": "Failed to join session",
+    "join_error_general": "An error occurred while trying to join the session",
+    "load_error": "Failed to load session information",
+    "load_error_general": "An error occurred while loading session information",
+    "no_description": "No description"
   }
 }

@@ -3,7 +3,6 @@
     <!-- Компонент статистики пользователей (только для админов) -->
     <UserStats v-if="isAdmin" />
 
-
     <!-- User Info Section -->
     <div class="user-info-section" v-if="userInfo">
       <div class="user-card">
@@ -20,37 +19,17 @@
       </div>
     </div>
 
-    <div class="cards-grid">
-      <AnimatedCard
-        v-for="(card, index) in cards"
-        :key="card.id"
-        :index="index"
-        :animation-delay="0.1"
-        custom-class="card"
-      >
-        <div class="card-icon">{{ card.icon }}</div>
-        <h3 class="card-title">{{ card.title }}</h3>
-        <p class="card-description">{{ card.description }}</p>
-        <div class="card-footer">
-          <span class="card-badge">{{ card.badge }}</span>
-        </div>
-      </AnimatedCard>
-    </div>
+    <!-- Create Session Button (only for architects) -->
+    <button
+      v-if="isArchitect"
+      class="create-session-button"
+      @click="goToCreateSession"
+    >
+      + {{ t('home_view.sessions.create_session') }}
+    </button>
 
-    <div class="stats-section">
-      <div class="stat-item">
-        <div class="stat-value">42</div>
-        <div class="stat-label">{{ t('home_view.stats.items') }}</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">7</div>
-        <div class="stat-label">{{ t('home_view.stats.tasks') }}</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value">99%</div>
-        <div class="stat-label">{{ t('home_view.stats.done') }}</div>
-      </div>
-    </div>
+    <!-- Session List Component -->
+    <SessionList />
   </div>
 </template>
 
@@ -60,185 +39,6 @@
 
   background-color: var(--tg-theme-bg-color, #f5f5f5);
   transition: background-color 0.3s ease;
-}
-
-.page-title {
-  color: var(--tg-theme-text-color, #000000);
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 8px;
-  transition: color 0.3s ease;
-}
-
-.page-description {
-  color: var(--tg-theme-hint-color, #666666);
-  font-size: 1rem;
-  margin-bottom: 24px;
-  transition: color 0.3s ease;
-}
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.card {
-  background: var(--tg-theme-secondary-bg-color, white);
-  padding: 20px;
-  border-radius: 16px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-}
-
-.card-icon {
-  font-size: 2rem;
-  margin-bottom: 12px;
-}
-
-.card-title {
-  color: var(--tg-theme-text-color, #333333);
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin-bottom: 8px;
-  transition: color 0.3s ease;
-}
-
-.card-description {
-  color: var(--tg-theme-hint-color, #666666);
-  font-size: 0.9rem;
-  line-height: 1.4;
-  margin-bottom: 12px;
-  transition: color 0.3s ease;
-}
-
-.card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: auto;
-}
-
-.card-badge {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  padding: 4px 8px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 500;
-}
-
-.stats-section {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.stat-item {
-  background: var(--tg-theme-secondary-bg-color, white);
-  padding: 16px;
-  border-radius: 12px;
-  text-align: center;
-  border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
-  transition: all 0.3s ease;
-}
-
-.stat-value {
-  color: var(--tg-theme-button-color, #667eea);
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 4px;
-  transition: color 0.3s ease;
-}
-
-.stat-label {
-  color: var(--tg-theme-hint-color, #666666);
-  font-size: 0.8rem;
-  transition: color 0.3s ease;
-}
-
-/* Адаптивность для мобильных устройств */
-@media (max-width: 768px) {
-  .cards-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .card {
-    padding: 16px;
-  }
-
-  .stats-section {
-    grid-template-columns: repeat(3, 1fr);
-    gap: 8px;
-  }
-
-  .stat-item {
-    padding: 12px;
-  }
-
-  .stat-value {
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .page {
-    padding: 12px;
-  }
-
-  .page-title {
-    font-size: 1.3rem;
-  }
-
-  .cards-grid {
-    gap: 10px;
-  }
-
-  .stats-section {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
-}
-
-/* Специфические стили для темной темы */
-:global(.tg-theme-dark) .card {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
-}
-
-:global(.tg-theme-dark) .card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
-}
-
-:global(.tg-theme-dark) .stat-item {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-/* Плавные переходы для всех элементов */
-.page,
-.page-title,
-.page-description,
-.card,
-.card-title,
-.card-description,
-.stat-item,
-.stat-value,
-.stat-label {
-  transition: all 0.3s ease;
-}
-
-/* Анимация появления карточек */
-.card {
-  cursor: pointer;
 }
 
 /* User Info Section Styles */
@@ -271,7 +71,6 @@
   margin: 0;
   transition: color 0.3s ease;
 }
-
 
 .user-details {
   display: flex;
@@ -326,34 +125,60 @@
     padding: 16px;
   }
 }
+/* Create Session Button Styles */
+.create-session-button {
+  background: var(--tg-theme-button-color, #667eea);
+  color: var(--tg-theme-button-text-color, white);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 20px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.create-session-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .create-session-button {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+  }
+}
 </style>
 
 <script setup>
 import { getUserInfoFromToken } from '../telegram/auth/user'
 
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import UserStats from '../components/UserStats.vue'
-import AnimatedCard from '../components/AnimatedCard.vue'
+import SessionList from '../components/SessionList.vue'
 import { useLocalization } from '@/locales/index.js'
 
-import { computed } from 'vue'
 const { t } = useLocalization()
+const router = useRouter()
 
 const userInfo = ref(null)
 const isAdmin = computed(() => userInfo.value?.isAdmin || false)
-const cards = ref([
-  { id: 1, icon: '📦', title: t('home_view.cards.card_1.title'), description: t('home_view.cards.card_1.description'), badge: t('home_view.cards.new') },
-  { id: 2, icon: '📦', title: t('home_view.cards.card_2.title'), description: t('home_view.cards.card_2.description'), badge: t('home_view.cards.new') },
-  { id: 3, icon: '📦', title: t('home_view.cards.card_3.title'), description: t('home_view.cards.card_3.description'), badge: t('home_view.cards.new') },
-  { id: 4, icon: '📦', title: t('home_view.cards.card_4.title'), description: t('home_view.cards.card_4.description'), badge: t('home_view.cards.new') },
-  { id: 5, icon: '📦', title: t('home_view.cards.card_5.title'), description: t('home_view.cards.card_5.description'), badge: t('home_view.cards.new') },
-  { id: 6, icon: '📦', title: t('home_view.cards.card_6.title'), description: t('home_view.cards.card_6.description'), badge: t('home_view.cards.new') }
-])
+const isArchitect = computed(() => {
+  if (!userInfo.value) return false
+  return userInfo.value.role && userInfo.value.role === 'Архитектор'
+})
+
+const goToCreateSession = () => {
+  router.push('/sessions/create')
+}
 
 onMounted(() => {
   // Получаем информацию о пользователе из JWT токена
   userInfo.value = getUserInfoFromToken()
-  const isAdmin = computed(() => userInfo.value?.isAdmin || false)
   console.log('User Info:', userInfo.value)
 })
 </script>

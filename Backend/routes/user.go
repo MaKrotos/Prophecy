@@ -8,7 +8,7 @@ import (
 )
 
 // RegisterUserRoutes регистрирует маршруты для работы с пользователями
-func RegisterUserRoutes(router *gin.Engine) {
+func RegisterUserRoutes(router gin.IRouter) {
 	// Маршруты для работы с пользователями
 	router.GET("/users/:id", handlers.GetUser)
 	router.POST("/users", handlers.CreateUser)

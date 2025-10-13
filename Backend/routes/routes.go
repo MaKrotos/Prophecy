@@ -11,4 +11,5 @@ func RegisterRoutes(router *gin.Engine) {
 	RegisterUserRoutes(router)
 	RegisterAuthRoutes(router)
 	RegisterRoleRoutes(router)
+	RegisterSessionRoutes(router)
 }
