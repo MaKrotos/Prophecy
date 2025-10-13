@@ -15,6 +15,7 @@ type JWTClaims struct {
 	TelegramID    int64  `json:"telegram_id"`
 	GeneratedName string `json:"generated_name"`
 	IsAdmin       bool   `json:"is_admin"`
+	Role          string `json:"role"`
 	jwt.RegisteredClaims
 }
 
@@ -28,6 +29,7 @@ func GenerateJWT(user *models.TelegramUser) (string, error) {
 		TelegramID:    user.TelegramID,
 		GeneratedName: user.GeneratedName,
 		IsAdmin:       user.IsAdmin,
+		Role:          user.Role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)), // Токен действует 24 часа
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

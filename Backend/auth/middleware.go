@@ -41,6 +41,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		c.Set("telegram_id", claims.TelegramID)
 		c.Set("generated_name", claims.GeneratedName)
 		c.Set("is_admin", claims.IsAdmin)
+		c.Set("role", claims.Role)
 		c.Set("claims", claims)
 
 		// Продолжение выполнения

@@ -185,3 +185,35 @@ func GetUserStats() (map[string]int, error) {
 
 	return stats, nil
 }
+
+// GetTelegramUserByID получает пользователя Telegram по его внутреннему ID
+func GetTelegramUserByID(id int) (*TelegramUser, error) {
+	var telegramUser TelegramUser
+	query := `
+		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, role, created_at
+		FROM telegram_users
+		WHERE id = $1`
+
+	err := database.DB.QueryRow(query, id).Scan(
+		&telegramUser.ID,
+		&telegramUser.TelegramID,
+		&telegramUser.FirstName,
+		&telegramUser.LastName,
+		&telegramUser.Username,
+		&telegramUser.PhotoURL,
+		&telegramUser.AuthDate,
+		&telegramUser.GeneratedName,
+		&telegramUser.IsAdmin,
+		&telegramUser.Role,
+		&telegramUser.CreatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &telegramUser, nil
+}

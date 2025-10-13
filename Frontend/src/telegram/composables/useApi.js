@@ -16,8 +16,14 @@ export function useApi() {
    * @returns {Promise} Результат запроса
    */
   const apiFetch = async (url, options = {}, autoAuth = true) => {
+    // Отладочный вывод для проверки URL
+    console.log('apiFetch called with url:', url);
 
     const apiUrl = url.startsWith('/api/') ? url : `/api/${url.replace(/^\//, '')}`
+    
+    // Отладочный вывод для проверки результата
+    console.log('Original url:', url, 'Transformed to apiUrl:', apiUrl);
+
     
     // Проверяем наличие токена
     if (autoAuth && !hasValidToken()) {
@@ -52,9 +58,10 @@ export function useApi() {
    * @param {string} url - URL для запроса
    * @param {Object} data - Данные для отправки
    * @param {Object} options - Дополнительные опции запроса
+   * @param {boolean} autoAuth - Автоматически получать токен, если его нет
    * @returns {Promise} Результат запроса
    */
-  const apiPost = (url, data, options = {}) => {
+  const apiPost = (url, data, autoAuth = true, options = {}) => {
     return apiFetch(url, {
       method: 'POST',
       headers: {
@@ -63,7 +70,7 @@ export function useApi() {
       },
       body: JSON.stringify(data),
       ...options
-    })
+    }, autoAuth)
   }
   
   /**
@@ -107,6 +114,13 @@ export function useApi() {
     apiGet,
     apiPost,
     apiPut,
-    apiDelete
+    apiDelete,
+    
+    // Тестовая функция для проверки преобразования URL
+    testUrlTransformation: (url) => {
+      const apiUrl = url.startsWith('/api/') ? url : `/api/${url.replace(/^\//, '')}`;
+      console.log('Test URL transformation:', { original: url, transformed: apiUrl });
+      return apiUrl;
+    }
   }
 }
