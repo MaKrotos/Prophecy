@@ -23,7 +23,7 @@ func generateReferralLink() (string, error) {
 // CreateSession создает новую сессию
 func CreateSession(c *gin.Context) {
 	// Получаем информацию о пользователе из контекста
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -73,7 +73,7 @@ func CreateSession(c *gin.Context) {
 // GetSessions получает список сессий
 func GetSessions(c *gin.Context) {
 	// Получаем информацию о пользователе из контекста
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -118,7 +118,7 @@ func GetSession(c *gin.Context) {
 	}
 
 	// Получаем информацию о пользователе из контекста
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -163,7 +163,7 @@ func UpdateSession(c *gin.Context) {
 	}
 
 	// Получаем информацию о пользователе из контекста
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -231,7 +231,7 @@ func DeleteSession(c *gin.Context) {
 	}
 
 	// Получаем информацию о пользователе из контекста
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -281,7 +281,7 @@ func AddPlayerToSession(c *gin.Context) {
 	}
 
 	// Получаем информацию о пользователе из контекста
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -352,7 +352,7 @@ func RemovePlayerFromSession(c *gin.Context) {
 	}
 
 	// Получаем информацию о пользователе из контекста
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -416,7 +416,7 @@ func GetSessionPlayers(c *gin.Context) {
 	}
 
 	// Получаем информацию о пользователе из контекста
-	_, exists := c.Get("userID")
+	_, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -448,7 +448,7 @@ func GetSessionPlayers(c *gin.Context) {
 // GetPlayerSessions получает все сессии, в которых участвует игрок
 func GetPlayerSessions(c *gin.Context) {
 	// Получаем информацию о пользователе из контекста
-	userID, exists := c.Get("userID")
+	userID, exists := c.Get("user_id")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 		return
@@ -496,7 +496,7 @@ func JoinSessionByReferral(c *gin.Context) {
 	// Проверяем метод запроса
 	if c.Request.Method == "POST" {
 		// Получаем информацию о пользователе из контекста
-		userID, exists := c.Get("userID")
+		userID, exists := c.Get("user_id")
 		if !exists {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
 			return

@@ -14,10 +14,10 @@ func RegisterSessionRoutes(router gin.IRouter) {
 	sessionGroup.Use(auth.JWTAuthMiddleware())
 	{
 		// Создание новой сессии (только для архитекторов и админов)
-		sessionGroup.POST("/", auth.ArchitectOrAdminMiddleware(), handlers.CreateSession)
+		sessionGroup.POST("", auth.ArchitectOrAdminMiddleware(), handlers.CreateSession)
 
 		// Получение списка сессий
-		sessionGroup.GET("/", handlers.GetSessions)
+		sessionGroup.GET("", handlers.GetSessions)
 
 		// Получение информации о конкретной сессии
 		sessionGroup.GET("/:id", handlers.GetSession)
