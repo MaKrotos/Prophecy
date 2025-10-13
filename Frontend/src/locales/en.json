@@ -96,7 +96,12 @@
     "user": "User",
     "registration": "Registration",
     "load_error": "Failed to load user list",
-    "load_error_general": "An error occurred while loading the user list"
+    "load_error_general": "An error occurred while loading the user list",
+    "architect": "Architect",
+    "set_role": "Set role",
+    "remove_role": "Remove role",
+    "role_updated": "User role updated",
+    "role_update_error": "Failed to update user role"
   },
   "user_stats": {
     "title": "📊 User Statistics",

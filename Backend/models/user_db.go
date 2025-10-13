@@ -54,8 +54,8 @@ func GetUserByID(id int) (*User, error) {
 // CreateTelegramUser создает нового пользователя Telegram в базе данных
 func CreateTelegramUser(telegramUser *TelegramUser) error {
 	query := `
-		INSERT INTO telegram_users (telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, created_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+		INSERT INTO telegram_users (telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, role, created_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
 		RETURNING id`
 
 	now := time.Now()
@@ -68,6 +68,7 @@ func CreateTelegramUser(telegramUser *TelegramUser) error {
 		telegramUser.AuthDate,
 		telegramUser.GeneratedName,
 		telegramUser.IsAdmin,
+		telegramUser.Role,
 		now,
 	).Scan(&telegramUser.ID)
 
@@ -84,7 +85,7 @@ func CreateTelegramUser(telegramUser *TelegramUser) error {
 func GetTelegramUserByTelegramID(telegramID int64) (*TelegramUser, error) {
 	var telegramUser TelegramUser
 	query := `
-		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, created_at
+		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, role, created_at
 		FROM telegram_users
 		WHERE telegram_id = $1`
 
@@ -98,6 +99,7 @@ func GetTelegramUserByTelegramID(telegramID int64) (*TelegramUser, error) {
 		&telegramUser.AuthDate,
 		&telegramUser.GeneratedName,
 		&telegramUser.IsAdmin,
+		&telegramUser.Role,
 		&telegramUser.CreatedAt,
 	)
 
@@ -115,7 +117,7 @@ func GetTelegramUserByTelegramID(telegramID int64) (*TelegramUser, error) {
 func GetAllTelegramUsers(limit, offset int) ([]TelegramUser, error) {
 	var users []TelegramUser
 	query := `
-		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, created_at
+		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, role, created_at
 		FROM telegram_users
 		ORDER BY id ASC
 		LIMIT $1 OFFSET $2`
@@ -138,6 +140,7 @@ func GetAllTelegramUsers(limit, offset int) ([]TelegramUser, error) {
 			&user.AuthDate,
 			&user.GeneratedName,
 			&user.IsAdmin,
+			&user.Role,
 			&user.CreatedAt,
 		)
 		if err != nil {
@@ -151,6 +154,13 @@ func GetAllTelegramUsers(limit, offset int) ([]TelegramUser, error) {
 	}
 
 	return users, nil
+}
+
+// SetUserRole устанавливает роль пользователю по его ID
+func SetUserRole(userID int, role string) error {
+	query := `UPDATE telegram_users SET role = $1 WHERE id = $2`
+	_, err := database.DB.Exec(query, role, userID)
+	return err
 }
 
 // GetUserStats получает статистику пользователей
