@@ -38,7 +38,7 @@ import { useLocalization } from '@/locales/index.js'
 const { t } = useLocalization()
 const route = useRoute()
 const router = useRouter()
-const { apiPost } = useApi()
+const { apiPost, apiGet } = useApi()
 
 const loading = ref(true)
 const joining = ref(false)

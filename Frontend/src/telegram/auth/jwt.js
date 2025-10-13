@@ -103,18 +103,14 @@ export function addAuthHeader(headers = {}) {
 export async function authenticatedFetch(url, options = {}, maxRetries = 3) {
   let lastError;
 
-  // Отладочный вывод
-  console.log('Authenticated fetch:', { url, options });
-
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
       const headers = addAuthHeader(options.headers || {});
-      console.log('urlurlurl:', url);
       const response = await fetch(url, {
         ...options,
         headers,
       });
-    console.log('urlurlurl:', url);
+
       if (response.status === 401) {
         // Токен недействителен, очищаем его
         clearJWTToken();
