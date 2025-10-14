@@ -21,7 +21,7 @@ func SetUserRole(c *gin.Context) {
 
 	// Получение роли из тела запроса
 	var requestData struct {
-		Role string `json:"role" binding:"required"`
+		Role string `json:"role"`
 	}
 
 	if err := c.ShouldBindJSON(&requestData); err != nil {

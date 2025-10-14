@@ -164,8 +164,8 @@ func SetUserRole(userID int, role string) error {
 }
 
 // GetUserStats получает статистику пользователей
-func GetUserStats() (map[string]int, error) {
-	stats := make(map[string]int)
+func GetUserStats() (map[string]interface{}, error) {
+	stats := make(map[string]interface{})
 
 	// Получаем общее количество пользователей
 	var totalUsers int
@@ -182,6 +182,30 @@ func GetUserStats() (map[string]int, error) {
 		return nil, err
 	}
 	stats["admin_users"] = adminUsers
+
+	// Получаем количество пользователей по ролям
+	roleStats := make(map[string]int)
+	rows, err := database.DB.Query("SELECT role, COUNT(*) FROM telegram_users WHERE role != '' GROUP BY role")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var role string
+		var count int
+		err := rows.Scan(&role, &count)
+		if err != nil {
+			return nil, err
+		}
+		roleStats[role] = count
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	stats["role_stats"] = roleStats
 
 	return stats, nil
 }

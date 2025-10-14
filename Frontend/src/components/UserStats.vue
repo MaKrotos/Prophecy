@@ -11,6 +11,10 @@
           <span class="stat-label">👑 {{ t('user_stats.admins') }}</span>
           <span class="stat-value">{{ adminUsers }}</span>
         </div>
+        <div v-for="(count, role) in roleStats" :key="role" class="stat-item">
+          <span class="stat-label">👤 {{ role }}</span>
+          <span class="stat-value">{{ count }}</span>
+        </div>
       </div>
       <div class="stats-actions">
         <button @click="fetchStats" class="refresh-btn" :disabled="loading">
@@ -44,6 +48,7 @@ const isAdmin = computed(() => userInfo.value?.isAdmin || false)
 
 const totalUsers = ref(0)
 const adminUsers = ref(0)
+const roleStats = ref({})
 const loading = ref(false)
 
 // Переход к просмотру всех пользователей
@@ -55,14 +60,15 @@ const viewAllUsers = () => {
 const fetchStats = async (showErrors = true) => {
   try {
     loading.value = true
-    
+
     // Запрос к бэкенду для получения статистики через новую composable функцию
     const response = await apiGet('users/stats')
-    
+
     if (response.ok) {
       const data = await response.json()
       totalUsers.value = data.total_users || 0
       adminUsers.value = data.admin_users || 0
+      roleStats.value = data.role_stats || {}
     } else {
       console.error('Ошибка при получении статистики:', response.status)
       // Показываем уведомление об ошибке только если это ручное обновление
@@ -159,7 +165,8 @@ onMounted(() => {
   margin-top: 20px;
 }
 
-.refresh-btn, .view-all-btn {
+.refresh-btn,
+.view-all-btn {
   background-color: var(--tg-theme-button-color, #667eea);
   color: var(--tg-theme-button-text-color, white);
   border: none;
@@ -181,13 +188,15 @@ onMounted(() => {
   border: 1px solid var(--tg-theme-hint-color, #cccccc);
 }
 
-.refresh-btn:hover:not(:disabled), .view-all-btn:hover {
+.refresh-btn:hover:not(:disabled),
+.view-all-btn:hover {
   opacity: 0.9;
   transform: translateY(-1px);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.refresh-btn:active:not(:disabled), .view-all-btn:active {
+.refresh-btn:active:not(:disabled),
+.view-all-btn:active {
   transform: translateY(0);
 }
 
@@ -213,13 +222,14 @@ onMounted(() => {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  
+
 
   .stat-item {
     padding: 12px;
   }
-  
-  .refresh-btn, .view-all-btn {
+
+  .refresh-btn,
+  .view-all-btn {
     padding: 10px 16px;
   }
 }
