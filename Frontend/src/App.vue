@@ -4,10 +4,8 @@
     <MainLayout v-if="isTelegram && isInitialized && hasValidToken" />
 
     <!-- Показываем страницу ошибки авторизации, если есть ошибка -->
-    <AuthErrorLayout v-else-if="isTelegram && isInitialized && authError" 
-      :error-message="authError" 
-      @retry="handleRetryAuth"
-      @try-later="handleTryLater" />
+    <AuthErrorLayout v-else-if="isTelegram && isInitialized && authError" :error-message="authError"
+      @retry="handleRetryAuth" @try-later="handleTryLater" />
 
     <!-- Показываем сообщение о необходимости Telegram, если не в WebApp -->
     <TelegramOnlyLayout v-else-if="!isTelegram && isInitialized" :telegram-link="telegramBotLink" />
@@ -49,7 +47,7 @@ const {
 
 const isInitialized = ref(false)
 const loaderMessage = ref(t('app.initializing'))
-const telegramBotLink = ref('https://t.me/your_bot_username')
+const telegramBotLink = ref(`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'}`)
 
 /**
  * Инициализация приложения
@@ -60,7 +58,7 @@ const initializeApp = async () => {
   try {
     // Инициализируем локализацию
     await initLocalization()
-    
+
     // Если это Telegram, ждем его готовности
     if (isTelegram.value) {
       await initializeTelegramApp()
@@ -89,7 +87,7 @@ const initializeApp = async () => {
 const initializeTelegramApp = async () => {
   loaderMessage.value = t('app.loading')
   console.log('⏳ Ожидание готовности Telegram WebApp...')
-  
+
   await waitForTelegramReady(5000)
   console.log('✅ Telegram WebApp готов')
 
@@ -118,10 +116,10 @@ const initializeTelegramApp = async () => {
 const handleRetryAuth = async () => {
   loaderMessage.value = t('app.retryAuth')
   isInitialized.value = false
-  
+
   await new Promise(resolve => setTimeout(resolve, 500))
   await retryAuth('auth/telegram', 3)
-  
+
   isInitialized.value = true
 }
 
@@ -156,6 +154,7 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
   overflow: hidden;
 }
+
 /* Стили лоадера */
 .app-loader {
   display: flex;

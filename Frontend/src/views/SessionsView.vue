@@ -3,35 +3,25 @@
     <div class="header-section">
       <h2 class="page-title">🎮 {{ t('sessions_view.title') }}</h2>
       <p class="page-description">{{ t('sessions_view.description') }}</p>
-      
-      <button 
-        v-if="isArchitect" 
-        class="create-session-button"
-        @click="goToCreateSession"
-      >
+
+      <button v-if="isArchitect" class="create-session-button" @click="goToCreateSession">
         + {{ t('sessions_view.create_session') }}
       </button>
     </div>
 
-    <AnimatedCardList
-      :items="sessions"
-      :loading="loading"
-      :no-more-items="noMoreSessions"
-      key-field="id"
-      card-class="session-card"
-      :animation-delay="0.1"
-      :loading-text="t('sessions_view.loading')"
-      :no-more-items-text="t('sessions_view.no_more')"
-    >
+    <AnimatedCardList :items="sessions" :loading="loading" :no-more-items="noMoreSessions" key-field="id"
+      card-class="session-card" :animation-delay="0.1" :loading-text="t('sessions_view.loading')"
+      :no-more-items-text="t('sessions_view.no_more')">
       <template #card="{ item: session }">
         <div class="session-header">
           <h3 class="session-name">{{ session.name }}</h3>
           <div class="session-controls">
-            <button
-              class="session-button"
-              @click="viewSession(session)"
-            >
+            <button class="session-button" @click="viewSession(session)">
               👁️
+            </button>
+            <button v-if="canManageSession(session)" class="session-button delete-button"
+              @click="deleteSession(session)" :title="t('session_detail_view.delete')">
+              🗑️
             </button>
           </div>
         </div>
@@ -41,32 +31,28 @@
             <span class="detail-label">{{ t('sessions_view.description') }}:</span>
             <span class="detail-value">{{ session.description || t('sessions_view.no_description') }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">{{ t('sessions_view.architect') }}:</span>
             <span class="detail-value">{{ session.architect_name }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">{{ t('sessions_view.created') }}:</span>
             <span class="detail-value">{{ formatDate(session.created_at) }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">{{ t('sessions_view.players') }}:</span>
             <span class="detail-value">{{ session.player_count }}</span>
           </div>
-          
-          <!-- Реферальная ссылка для админов и архитекторов -->
-          <div v-if="canManageSession(session)" class="detail-item">
+
+          <!-- Реферальная ссылка для всех пользователей -->
+          <div class="detail-item">
             <span class="detail-label">{{ t('sessions_view.referral_link') }}:</span>
             <div class="referral-link-container">
               <span class="detail-value referral-link">{{ getReferralLink(session) }}</span>
-              <button
-                class="copy-button"
-                @click="copyReferralLink(session)"
-                :title="t('sessions_view.copy_link')"
-              >
+              <button class="copy-button" @click="copyReferralLink(session)" :title="t('sessions_view.copy_link')">
                 📋
               </button>
             </div>
@@ -87,7 +73,7 @@ import { getUserInfoFromToken } from '../telegram/auth/user'
 
 const { t } = useLocalization()
 const router = useRouter()
-const { apiGet } = useApi()
+const { apiGet, apiDelete } = useApi()
 
 const sessions = ref([])
 const loading = ref(false)
@@ -105,23 +91,22 @@ const canManageSession = (session) => {
   if (!userInfo.value) return false
   // Администраторы и архитектор, создавший сессию, могут управлять сессией
   return userInfo.value.is_admin ||
-         (userInfo.value.role && userInfo.value.role.String === 'Архитектор' &&
-          userInfo.value.id === session.architect_id)
+    (userInfo.value.role && userInfo.value.role.String === 'Архитектор' &&
+      userInfo.value.id === session.architect_id)
 }
 
 // Получение реферальной ссылки для сессии
 const getReferralLink = (session) => {
-  // В реальном приложении здесь должна быть логика генерации ссылки
-  // Например, если ваше приложение доступно по адресу https://myapp.com
-  // то ссылка может выглядеть так: https://myapp.com/#/sessions/join/${session.referral_link}
-  // Для Telegram WebApp можно использовать window.location.origin
-  return `${window.location.origin}/#/sessions/join/${session.referral_link}`
+  // Используем имя бота из переменных окружения или значение по умолчанию
+  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'
+  // Формируем ссылку в формате Telegram Mini App
+  return `https://t.me/${botUsername}?startapp=${session.referral_link}`
 }
 
 // Копирование реферальной ссылки в буфер обмена
 const copyReferralLink = (session) => {
   const referralLink = getReferralLink(session)
-  
+
   // Используем Clipboard API, если доступно
   if (navigator.clipboard) {
     navigator.clipboard.writeText(referralLink).then(() => {
@@ -143,17 +128,17 @@ const copyReferralLink = (session) => {
 const fallbackCopyTextToClipboard = (text) => {
   const textArea = document.createElement("textarea")
   textArea.value = text
-  
+
   // Избегаем прокрутки страницы
   textArea.style.top = "0"
   textArea.style.left = "0"
   textArea.style.position = "fixed"
   textArea.style.opacity = "0"
-  
+
   document.body.appendChild(textArea)
   textArea.focus()
   textArea.select()
-  
+
   try {
     const successful = document.execCommand('copy')
     if (successful) {
@@ -172,7 +157,7 @@ const fallbackCopyTextToClipboard = (text) => {
       window.Telegram.WebApp.showAlert(t('sessions_view.copy_error'))
     }
   }
-  
+
   document.body.removeChild(textArea)
 }
 
@@ -189,11 +174,11 @@ const formatDate = (dateString) => {
 // Загрузка сессий
 const loadSessions = async () => {
   if (loading.value || noMoreSessions.value) return
-  
+
   try {
     loading.value = true
     const response = await apiGet('sessions')
-    
+
     if (response.ok) {
       const data = await response.json()
       // Проверяем, что data - массив
@@ -228,6 +213,34 @@ const goToCreateSession = () => {
 // Просмотр сессии
 const viewSession = (session) => {
   router.push(`/sessions/${session.id}`)
+}
+
+// Удаление сессии с подтверждением
+const deleteSession = (session) => {
+  if (window.Telegram && window.Telegram.WebApp) {
+    window.Telegram.WebApp.showConfirm(
+      t('session_detail_view.delete_confirm') + ' "' + session.name + '"?',
+      async (confirmed) => {
+        if (confirmed) {
+          try {
+            const response = await apiDelete(`sessions/${session.id}`)
+
+            if (response.ok) {
+              // Успешно удалено, обновляем список сессий
+              window.Telegram.WebApp.showAlert(t('session_detail_view.delete_success'))
+              loadSessions() // Перезагружаем список сессий
+            } else {
+              console.error('Ошибка при удалении сессии:', response.status)
+              window.Telegram.WebApp.showAlert(t('session_detail_view.delete_error'))
+            }
+          } catch (error) {
+            console.error('Ошибка при запросе удаления сессии:', error)
+            window.Telegram.WebApp.showAlert(t('session_detail_view.delete_error_general'))
+          }
+        }
+      }
+    )
+  }
 }
 
 // Первоначальная загрузка
@@ -378,6 +391,10 @@ onMounted(() => {
   opacity: 0.8;
 }
 
+.delete-button {
+  background: #ff4757 !important;
+}
+
 /* Плавные переходы для всех элементов */
 .page,
 .page-title,
@@ -394,11 +411,11 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .session-name {
     font-size: 1rem;
   }
-  
+
   .session-card {
     padding: 12px;
   }

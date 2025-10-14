@@ -4,79 +4,70 @@
       <div class="session-header">
         <h2 class="session-title">{{ session.name }}</h2>
         <div class="session-actions">
-          <button 
-            v-if="canManageSession" 
-            class="edit-button"
-            @click="editSession"
-          >
+          <button v-if="canManageSession" class="edit-button" @click="editSession">
             ✏️ {{ t('session_detail_view.edit') }}
           </button>
-          <button 
-            v-if="canManageSession" 
-            class="delete-button"
-            @click="deleteSession"
-          >
+          <button v-if="canManageSession" class="delete-button" @click="deleteSession">
             🗑️ {{ t('session_detail_view.delete') }}
           </button>
         </div>
       </div>
-      
+
       <p class="session-description">{{ session.description || t('session_detail_view.no_description') }}</p>
-      
+
       <div class="session-info">
         <div class="info-item">
           <span class="info-label">{{ t('session_detail_view.architect') }}:</span>
           <span class="info-value">{{ session.architect_name }}</span>
         </div>
-        
+
         <div class="info-item">
           <span class="info-label">{{ t('session_detail_view.created') }}:</span>
           <span class="info-value">{{ formatDate(session.created_at) }}</span>
         </div>
-        
+
         <div class="info-item">
           <span class="info-label">{{ t('session_detail_view.updated') }}:</span>
           <span class="info-value">{{ formatDate(session.updated_at) }}</span>
         </div>
       </div>
-      
+
+      <!-- Реферальная ссылка -->
+      <div class="referral-section">
+        <h3 class="section-title">🔗 {{ t('sessions_view.referral_link') }}</h3>
+        <div class="referral-link-container">
+          <span class="referral-link">{{ getReferralLink(session) }}</span>
+          <button class="copy-button" @click="copyReferralLink" :title="t('sessions_view.copy_link')">
+            📋
+          </button>
+        </div>
+      </div>
+
       <div class="players-section">
         <div class="section-header">
           <h3 class="section-title">👥 {{ t('session_detail_view.players') }}</h3>
-          <button 
-            v-if="canManageSession" 
-            class="add-player-button"
-            @click="showAddPlayerDialog"
-          >
+          <button v-if="canManageSession" class="add-player-button" @click="showAddPlayerDialog">
             + {{ t('session_detail_view.add_player') }}
           </button>
         </div>
-        
+
         <div v-if="loadingPlayers" class="loading">{{ t('session_detail_view.loading_players') }}</div>
         <div v-else-if="players.length === 0" class="no-players">{{ t('session_detail_view.no_players') }}</div>
         <div v-else class="players-list">
-          <div 
-            v-for="player in players" 
-            :key="player.id" 
-            class="player-card"
-          >
+          <div v-for="player in players" :key="player.id" class="player-card">
             <div class="player-info">
               <span class="player-name">{{ player.generated_name }}</span>
               <span v-if="player.username" class="player-username">@{{ player.username }}</span>
             </div>
-            <button 
-              v-if="canManageSession" 
-              class="remove-player-button"
-              @click="removePlayer(player)"
-            >
+            <button v-if="canManageSession" class="remove-player-button" @click="removePlayer(player)">
               🗑️
             </button>
           </div>
         </div>
       </div>
-      
+
     </div>
-    
+
     <div v-else-if="loading" class="loading">{{ t('session_detail_view.loading') }}</div>
     <div v-else class="error">{{ t('session_detail_view.load_error') }}</div>
   </div>
@@ -104,9 +95,9 @@ const userInfo = ref(null)
 const canManageSession = computed(() => {
   if (!userInfo.value || !session.value) return false
   // Администраторы и архитектор, создавший сессию, могут управлять сессией
-  return userInfo.value.is_admin || 
-         (userInfo.value.role && userInfo.value.role.String === 'Архитектор' && 
-          userInfo.value.id === session.value.architect_id)
+  return userInfo.value.is_admin ||
+    (userInfo.value.role && userInfo.value.role.String === 'Архитектор' &&
+      userInfo.value.id === session.value.architect_id)
 })
 
 // Форматирование даты
@@ -121,12 +112,80 @@ const formatDate = (dateString) => {
   })
 }
 
+// Получение реферальной ссылки для сессии
+const getReferralLink = (session) => {
+  // Используем имя бота из переменных окружения или значение по умолчанию
+  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'
+  // Формируем ссылку в формате Telegram Mini App
+  return `https://t.me/${botUsername}?startapp=${session.referral_link}`
+}
+
+// Копирование реферальной ссылки в буфер обмена
+const copyReferralLink = () => {
+  if (!session.value) return
+
+  const referralLink = getReferralLink(session.value)
+
+  // Используем Clipboard API, если доступно
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(referralLink).then(() => {
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.showAlert(t('sessions_view.link_copied'))
+      }
+    }).catch(err => {
+      console.error('Не удалось скопировать ссылку: ', err)
+      // Альтернативный метод копирования
+      fallbackCopyTextToClipboard(referralLink)
+    })
+  } else {
+    // Альтернативный метод копирования для старых браузеров
+    fallbackCopyTextToClipboard(referralLink)
+  }
+}
+
+// Альтернативный метод копирования текста в буфер обмена
+const fallbackCopyTextToClipboard = (text) => {
+  const textArea = document.createElement("textarea")
+  textArea.value = text
+
+  // Избегаем прокрутки страницы
+  textArea.style.top = "0"
+  textArea.style.left = "0"
+  textArea.style.position = "fixed"
+  textArea.style.opacity = "0"
+
+  document.body.appendChild(textArea)
+  textArea.focus()
+  textArea.select()
+
+  try {
+    const successful = document.execCommand('copy')
+    if (successful) {
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.showAlert(t('sessions_view.link_copied'))
+      }
+    } else {
+      console.error('Не удалось скопировать ссылку')
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.showAlert(t('sessions_view.copy_error'))
+      }
+    }
+  } catch (err) {
+    console.error('Ошибка при копировании ссылки: ', err)
+    if (window.Telegram && window.Telegram.WebApp) {
+      window.Telegram.WebApp.showAlert(t('sessions_view.copy_error'))
+    }
+  }
+
+  document.body.removeChild(textArea)
+}
+
 // Загрузка сессии
 const loadSession = async () => {
   try {
     loading.value = true
     const response = await apiGet(`sessions/${route.params.id}`)
-    
+
     if (response.ok) {
       const data = await response.json()
       session.value = data
@@ -153,7 +212,7 @@ const loadPlayers = async () => {
   try {
     loadingPlayers.value = true
     const response = await apiGet(`sessions/${route.params.id}/players`)
-    
+
     if (response.ok) {
       const data = await response.json()
       players.value = Array.isArray(data) ? data : []
@@ -184,7 +243,7 @@ const deleteSession = () => {
         if (confirmed) {
           try {
             const response = await apiDelete(`sessions/${route.params.id}`)
-            
+
             if (response.ok) {
               if (window.Telegram && window.Telegram.WebApp) {
                 window.Telegram.WebApp.showAlert(t('session_detail_view.delete_success'))
@@ -225,7 +284,7 @@ const removePlayer = (player) => {
             const response = await apiDelete(`sessions/${route.params.id}/players`, {
               body: JSON.stringify({ user_id: player.id })
             })
-            
+
             if (response.ok) {
               // Обновляем список игроков
               loadPlayers()
@@ -479,44 +538,85 @@ onMounted(() => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .session-title {
     font-size: 1.3rem;
   }
-  
+
   .session-actions {
     width: 100%;
     justify-content: space-between;
   }
-  
+
   .edit-button,
   .delete-button {
     flex: 1;
     justify-content: center;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .add-player-button {
     width: 100%;
     justify-content: center;
   }
-  
+
   .player-card {
     flex-direction: column;
     align-items: flex-start;
     gap: 12px;
   }
-  
+
   .player-info {
     width: 100%;
   }
-  
+
   .remove-player-button {
     align-self: flex-end;
   }
+}
+
+.referral-section {
+  background: var(--tg-theme-secondary-bg-color, white);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.referral-link-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+}
+
+.referral-link {
+  flex: 1;
+  word-break: break-all;
+  font-size: 0.9rem;
+  color: var(--tg-theme-text-color, #333333);
+  background: var(--tg-theme-bg-color, #f5f5f5);
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.copy-button {
+  background: var(--tg-theme-button-color, #667eea);
+  color: var(--tg-theme-button-text-color, white);
+  border: none;
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.copy-button:hover {
+  opacity: 0.8;
 }
 </style>
