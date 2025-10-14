@@ -126,6 +126,7 @@ func GetUserStats(c *gin.Context) {
 	response := gin.H{
 		"total_users": stats["total_users"],
 		"admin_users": stats["admin_users"],
+		"role_stats":  stats["role_stats"],
 	}
 
 	c.JSON(http.StatusOK, response)

@@ -1,6 +1,5 @@
 <template>
     <div class="rules-page">
-        <HeaderNav title="Правила Игры" />
 
         <main class="rules-content">
             <section class="game-description">
