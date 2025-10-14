@@ -1,10 +1,14 @@
 <script setup>
+import { useRouter } from 'vue-router'
+
 defineProps({
   title: String
 })
 
-const showNotifications = () => {
-  console.log('Show notifications')
+const router = useRouter()
+
+const showRules = () => {
+  router.push('/rules')
 }
 </script>
 
@@ -13,9 +17,10 @@ const showNotifications = () => {
     <div class="header-content">
       <h1 class="header-title">{{ title }}</h1>
       <div class="header-actions">
-        <button class="icon-button" @click="showNotifications">
+        <button class="icon-button" @click="showRules">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.93 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            <path
+              d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" />
           </svg>
         </button>
       </div>
@@ -87,9 +92,8 @@ const showNotifications = () => {
 
 /* Альтернативный вариант с градиентом, если цвет кнопки не задан */
 .header-nav {
-  background: var(--tg-theme-button-color, 
-    linear-gradient(135deg, #667eea 0%, #764ba2 100%)
-  );
+  background: var(--tg-theme-button-color,
+      linear-gradient(135deg, #667eea 0%, #764ba2 100%));
 }
 
 /* Улучшенная анимация для кнопок */
@@ -122,15 +126,15 @@ const showNotifications = () => {
   .header-nav {
     padding: 12px 16px;
   }
-  
+
   .header-title {
     font-size: 1.1rem;
   }
-  
+
   .icon-button {
     padding: 6px;
   }
-  
+
   .icon-button svg {
     width: 18px;
     height: 18px;
@@ -141,11 +145,11 @@ const showNotifications = () => {
   .header-nav {
     padding: 10px 12px;
   }
-  
+
   .header-title {
     font-size: 1rem;
   }
-  
+
   .header-actions {
     gap: 8px;
   }
