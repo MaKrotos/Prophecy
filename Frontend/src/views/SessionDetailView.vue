@@ -4,10 +4,10 @@
       <div class="session-header">
         <h2 class="session-title">{{ session.name }}</h2>
         <div class="session-actions">
-          <button v-if="canManageSession" class="edit-button" @click="editSession">
+          <button class="edit-button" @click="editSession">
             ✏️ {{ t('session_detail_view.edit') }}
           </button>
-          <button v-if="canManageSession" class="delete-button" @click="deleteSession">
+          <button class="delete-button" @click="deleteSession">
             🗑️ {{ t('session_detail_view.delete') }}
           </button>
         </div>
@@ -94,10 +94,8 @@ const userInfo = ref(null)
 // Проверяем, может ли пользователь управлять сессией
 const canManageSession = computed(() => {
   if (!userInfo.value || !session.value) return false
-  // Администраторы и архитектор, создавший сессию, могут управлять сессией
-  return userInfo.value.is_admin ||
-    (userInfo.value.role && userInfo.value.role.String === 'Архитектор' &&
-      userInfo.value.id === session.value.architect_id)
+  // Администраторы и владелец сессии могут управлять сессией
+  return userInfo.value.is_admin || userInfo.value.id === session.value.architect_id
 })
 
 // Форматирование даты
