@@ -77,7 +77,7 @@ const routes = [
   {
     path: "/sessions/:id",
     name: "session-detail",
-    component: () => import("../views/s.vue"),
+    component: () => import("../views/SessionDetailView.vue"),
     meta: {
       title: "Детали сессии",
       order: 9,
