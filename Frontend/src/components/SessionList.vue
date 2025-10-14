@@ -1,47 +1,32 @@
 <template>
   <div class="session-list-component">
     <h3 class="section-title">🎮 {{ t('home_view.sessions.title') }}</h3>
-    
+
     <div v-if="loading" class="loading">
       {{ t('home_view.sessions.loading') }}
     </div>
-    
+
     <div v-else-if="sessions.length === 0" class="no-sessions">
       {{ t('home_view.sessions.no_sessions') }}
     </div>
-    
+
     <div v-else class="sessions-grid">
-      <AnimatedCard
-        v-for="(session, index) in sessions"
-        :key="session.id"
-        :index="index"
-        :animation-delay="0.1"
-        custom-class="session-card"
-        @click="viewSession(session)"
-      >
+      <AnimatedCard v-for="(session, index) in sessions" :key="session.id" :index="index" :animation-delay="0.1"
+        custom-class="session-card" @click="viewSession(session)">
         <div class="session-header">
           <h4 class="session-name">{{ session.name }}</h4>
         </div>
-        
+
         <div class="session-details">
           <div class="detail-item">
             <span class="detail-label">{{ t('home_view.sessions.architect') }}:</span>
             <span class="detail-value">{{ session.architect_name }}</span>
           </div>
-          
-          <div class="detail-item">
-            <span class="detail-label">{{ t('home_view.sessions.players') }}:</span>
-            <span class="detail-value">{{ session.player_count }}</span>
-          </div>
         </div>
       </AnimatedCard>
     </div>
-    
-    <button 
-      v-if="isArchitect" 
-      class="create-session-button"
-      @click="goToCreateSession"
-    >
+
+    <button v-if="isArchitect" class="create-session-button" @click="goToCreateSession">
       + {{ t('home_view.sessions.create_session') }}
     </button>
   </div>
@@ -74,7 +59,7 @@ const loadSessions = async () => {
   try {
     loading.value = true
     const response = await apiGet('sessions')
-    
+
     if (response.ok) {
       const data = await response.json()
       // Проверяем, что data - массив
@@ -121,7 +106,8 @@ onMounted(() => {
   transition: color 0.3s ease;
 }
 
-.loading, .no-sessions {
+.loading,
+.no-sessions {
   color: var(--tg-theme-hint-color, #666666);
   font-size: 1rem;
   text-align: center;
@@ -205,7 +191,7 @@ onMounted(() => {
   .session-card {
     padding: 12px;
   }
-  
+
   .session-name {
     font-size: 0.95rem;
   }

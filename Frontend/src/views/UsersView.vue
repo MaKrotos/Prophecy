@@ -3,32 +3,22 @@
     <h2 class="page-title">👥 {{ t('users_view.title') }}</h2>
     <p class="page-description">{{ t('users_view.description') }}</p>
 
-    <AnimatedCardList
-      :items="users"
-      :loading="loading"
-      :no-more-items="noMoreUsers"
-      key-field="id"
-      card-class="user-card"
-      :animation-delay="0.1"
-      :loading-text="t('users_view.loading')"
-      :no-more-items-text="t('users_view.no_more')"
-    >
+    <AnimatedCardList :items="users" :loading="loading" :no-more-items="noMoreUsers" key-field="id"
+      card-class="user-card" :animation-delay="0.1" :loading-text="t('users_view.loading')"
+      :no-more-items-text="t('users_view.no_more')">
       <template #card="{ item: user }">
         <div class="user-header">
           <div class="user-info">
             <h3 class="user-name">{{ user.generated_name }}</h3>
           </div>
           <div class="user-controls">
-            <div class="user-badge" :class="{ 'admin-badge': user.is_admin, 'architect-badge': user.role && user.role.String === 'Архитектор' }">
+            <div class="user-badge"
+              :class="{ 'admin-badge': user.is_admin, 'architect-badge': user.role && user.role.String === 'Архитектор' }">
               <span v-if="user.role && user.role.String === 'Архитектор'">{{ t('users_view.architect') }}</span>
               <span v-else-if="user.is_admin">{{ t('users_view.admin') }}</span>
               <span v-else>{{ t('users_view.user') }}</span>
             </div>
-            <button
-              v-if="user.is_admin"
-              class="role-button"
-              @click="showRoleMenu(user)"
-            >
+            <button class="role-button" @click="showRoleMenu(user)">
               ⚙️
             </button>
           </div>
@@ -39,12 +29,12 @@
             <span class="detail-label">ID:</span>
             <span class="detail-value">{{ user.id }}</span>
           </div>
-          
+
           <div class="detail-item" v-if="user.username">
             <span class="detail-label">Username:</span>
             <span class="detail-value">@{{ user.username }}</span>
           </div>
-          
+
           <div class="detail-item">
             <span class="detail-label">{{ t('users_view.registration') }}:</span>
             <span class="detail-value">{{ formatDate(user.created_at) }}</span>
@@ -83,11 +73,11 @@ const formatDate = (dateString) => {
 // Загрузка пользователей
 const loadUsers = async () => {
   if (loading.value || noMoreUsers.value) return
-  
+
   try {
     loading.value = true
     const response = await apiGet(`users?limit=${limit.value}&offset=${offset.value}`)
-    
+
     if (response.ok) {
       const data = await response.json()
       // Проверяем, что data - массив
@@ -95,7 +85,7 @@ const loadUsers = async () => {
         if (data.length > 0) {
           users.value = [...users.value, ...data]
           offset.value += data.length
-          
+
           // Если получено меньше пользователей, чем запрашивали, значит больше нет
           if (data.length < limit.value) {
             noMoreUsers.value = true
@@ -126,14 +116,14 @@ const loadUsers = async () => {
 const setUserRole = async (user, newRole) => {
   try {
     const response = await apiPut(`users/${user.id}/role`, { role: newRole })
-    
+
     if (response.ok) {
       // Обновляем роль пользователя в списке
       const updatedUsers = users.value.map(u =>
         u.id === user.id ? { ...u, role: { String: newRole, Valid: newRole !== '' } } : u
       )
       users.value = updatedUsers
-      
+
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.showAlert(t('users_view.role_updated'))
       }
@@ -153,7 +143,7 @@ const setUserRole = async (user, newRole) => {
 // Показ меню управления ролью пользователя
 const showRoleMenu = (user) => {
   const role = user.role && user.role.String ? user.role.String : ''
-  
+
   if (role === 'Архитектор') {
     if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.showConfirm(
@@ -166,6 +156,7 @@ const showRoleMenu = (user) => {
       )
     }
   } else {
+    // Для не-админов можно только назначить архитектором
     if (window.Telegram && window.Telegram.WebApp) {
       window.Telegram.WebApp.showConfirm(
         t('users_view.set_role') + ' ' + t('users_view.architect') + '?',
@@ -185,7 +176,7 @@ const checkIfNeedMoreUsers = () => {
   if (mainContent) {
     const { scrollTop, scrollHeight, clientHeight } = mainContent
     const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
-    
+
     // Если скролл находится в пределах, где нужно подгружать, и еще есть что подгружать
     if (scrollPercentage > 0.8 && !noMoreUsers.value && !loading.value) {
       loadUsers()
@@ -197,7 +188,7 @@ const checkIfNeedMoreUsers = () => {
 const handleScroll = () => {
   const mainContent = document.querySelector('.main-content')
   if (!mainContent) return
-  
+
   const { scrollTop, scrollHeight, clientHeight } = mainContent
   const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
 
@@ -346,15 +337,15 @@ onUnmounted(() => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .user-name {
     font-size: 1rem;
   }
-  
+
   .user-card {
     padding: 12px;
   }
-  
+
   .users-list {
     max-height: calc(100vh - 130px);
   }
@@ -371,15 +362,15 @@ onUnmounted(() => {
     flex-direction: column;
     align-items: flex-start;
   }
-  
+
   .user-name {
     font-size: 1rem;
   }
-  
+
   .user-card {
     padding: 12px;
   }
-  
+
   .users-list {
     max-height: calc(100vh - 130px);
   }
