@@ -92,6 +92,15 @@ const routes = [
       order: 10,
     },
   },
+  {
+    path: "/rules",
+    name: "rules",
+    component: () => import("../views/RulesView.vue"),
+    meta: {
+      title: "Правила Игры",
+      order: 11,
+    },
+  },
 ];
 
 const router = createRouter({
