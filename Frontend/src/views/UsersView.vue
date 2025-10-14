@@ -83,7 +83,40 @@ const loadUsers = async () => {
       // Проверяем, что data - массив
       if (Array.isArray(data)) {
         if (data.length > 0) {
-          users.value = [...users.value, ...data]
+          // Нормализуем данные пользователей, чтобы убедиться, что role имеет правильную структуру
+          const normalizedData = data.map(user => {
+            // Убедимся, что у пользователя есть корректная структура role
+            if (user.role && typeof user.role === 'string') {
+              // Если role - строка, преобразуем в ожидаемую структуру
+              return {
+                ...user,
+                role: {
+                  String: user.role,
+                  Valid: user.role !== ''
+                }
+              }
+            } else if (user.role && typeof user.role === 'object') {
+              // Если role уже объект, убедимся, что он имеет правильную структуру
+              return {
+                ...user,
+                role: {
+                  String: user.role.String || '',
+                  Valid: user.role.Valid !== undefined ? user.role.Valid : (user.role.String !== undefined && user.role.String !== '')
+                }
+              }
+            } else {
+              // Если role отсутствует или null/undefined, создаем пустую структуру
+              return {
+                ...user,
+                role: {
+                  String: '',
+                  Valid: false
+                }
+              }
+            }
+          })
+
+          users.value = [...users.value, ...normalizedData]
           offset.value += data.length
 
           // Если получено меньше пользователей, чем запрашивали, значит больше нет

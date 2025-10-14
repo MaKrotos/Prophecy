@@ -64,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '../telegram/composables/useApi'
 import AnimatedCardList from '../components/AnimatedCardList.vue'
@@ -77,6 +77,8 @@ const { apiGet, apiDelete } = useApi()
 
 const sessions = ref([])
 const loading = ref(false)
+const offset = ref(0)
+const limit = ref(20)
 const noMoreSessions = ref(false)
 const userInfo = ref(null)
 
@@ -177,14 +179,23 @@ const loadSessions = async () => {
 
   try {
     loading.value = true
-    const response = await apiGet('sessions')
+    const response = await apiGet(`sessions?limit=${limit.value}&offset=${offset.value}`)
 
     if (response.ok) {
       const data = await response.json()
       // Проверяем, что data - массив
       if (Array.isArray(data)) {
-        sessions.value = data
-        noMoreSessions.value = true
+        if (data.length > 0) {
+          sessions.value = [...sessions.value, ...data]
+          offset.value += data.length
+
+          // Если получено меньше сессий, чем запрашивали, значит больше нет
+          if (data.length < limit.value) {
+            noMoreSessions.value = true
+          }
+        } else {
+          noMoreSessions.value = true
+        }
       } else {
         console.warn('Получен неожиданный формат данных:', data)
         noMoreSessions.value = true
@@ -202,8 +213,66 @@ const loadSessions = async () => {
     }
   } finally {
     loading.value = false
+    // После загрузки проверяем, нужно ли загрузить еще
+    checkIfNeedMoreSessions()
   }
 }
+
+// Проверка, нужно ли загрузить еще сессий
+const checkIfNeedMoreSessions = () => {
+  const mainContent = document.querySelector('.main-content')
+  if (mainContent) {
+    const { scrollTop, scrollHeight, clientHeight } = mainContent
+    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
+
+    // Если скролл находится в пределах, где нужно подгружать, и еще есть что подгружать
+    if (scrollPercentage > 0.8 && !noMoreSessions.value && !loading.value) {
+      loadSessions()
+    }
+  }
+}
+
+// Обработка скролла главного контента
+const handleScroll = () => {
+  const mainContent = document.querySelector('.main-content')
+  if (!mainContent) return
+
+  const { scrollTop, scrollHeight, clientHeight } = mainContent
+  const scrollPercentage = (scrollTop + clientHeight) / scrollHeight
+
+  // Загружаем больше сессий, когда пользователь прокрутил 80% контента
+  if (scrollPercentage > 0.8 && !noMoreSessions.value && !loading.value) {
+    loadSessions()
+  }
+}
+
+// Сброс пагинации и перезагрузка сессий
+const resetAndReloadSessions = () => {
+  sessions.value = []
+  offset.value = 0
+  noMoreSessions.value = false
+  loadSessions()
+}
+
+// Первоначальная загрузка
+onMounted(() => {
+  // Получаем информацию о пользователе из JWT токена
+  userInfo.value = getUserInfoFromToken()
+  resetAndReloadSessions()
+  // Добавляем обработчик скролла к main-content
+  const mainContent = document.querySelector('.main-content')
+  if (mainContent) {
+    mainContent.addEventListener('scroll', handleScroll)
+  }
+})
+
+// Удаляем обработчик скролла при размонтировании компонента
+onUnmounted(() => {
+  const mainContent = document.querySelector('.main-content')
+  if (mainContent) {
+    mainContent.removeEventListener('scroll', handleScroll)
+  }
+})
 
 // Переход к созданию сессии
 const goToCreateSession = () => {
@@ -226,9 +295,11 @@ const deleteSession = (session) => {
             const response = await apiDelete(`sessions/${session.id}`)
 
             if (response.ok) {
-              // Успешно удалено, обновляем список сессий
+              // Успешно удалено, удаляем сессию из списка
               window.Telegram.WebApp.showAlert(t('session_detail_view.delete_success'))
-              loadSessions() // Перезагружаем список сессий
+              sessions.value = sessions.value.filter(s => s.id !== session.id)
+              // Уменьшаем offset, чтобы компенсировать удаление
+              offset.value = Math.max(0, offset.value - 1)
             } else {
               console.error('Ошибка при удалении сессии:', response.status)
               window.Telegram.WebApp.showAlert(t('session_detail_view.delete_error'))

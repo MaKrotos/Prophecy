@@ -1,109 +1,109 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import { createRouter, createWebHistory } from "vue-router";
+import HomeView from "../views/HomeView.vue";
 
 const routes = [
   {
-    path: '/',
-    name: 'home',
+    path: "/",
+    name: "home",
     component: HomeView,
     meta: {
-      title: 'Главная',
-      order: 1
-    }
+      title: "Главная",
+      order: 1,
+    },
   },
   {
-    path: '/messages',
-    name: 'messages',
-    component: () => import('../views/MessagesView.vue'),
+    path: "/messages",
+    name: "messages",
+    component: () => import("../views/MessagesView.vue"),
     meta: {
-      title: 'Сообщения',
-      order: 2
-    }
+      title: "Сообщения",
+      order: 2,
+    },
   },
   {
-    path: '/profile',
-    name: 'profile',
-    component: () => import('../views/ProfileView.vue'),
+    path: "/profile",
+    name: "profile",
+    component: () => import("../views/ProfileView.vue"),
     meta: {
-      title: 'Профиль',
-      order: 3
-    }
+      title: "Профиль",
+      order: 3,
+    },
   },
   {
-    path: '/settings',
-    name: 'settings',
-    component: () => import('../views/SettingsView.vue'),
+    path: "/settings",
+    name: "settings",
+    component: () => import("../views/SettingsView.vue"),
     meta: {
-      title: 'Настройки',
-      order: 4
-    }
+      title: "Настройки",
+      order: 4,
+    },
   },
   {
-    path: '/scan',
-    name: 'scan',
-    component: () => import('../views/ScanView.vue'),
+    path: "/scan",
+    name: "scan",
+    component: () => import("../views/ScanView.vue"),
     meta: {
-      title: 'Сканер',
-      order: 5
-    }
+      title: "Сканер",
+      order: 5,
+    },
   },
   {
-    path: '/users',
-    name: 'users',
-    component: () => import('../views/UsersView.vue'),
+    path: "/users",
+    name: "users",
+    component: () => import("../views/UsersView.vue"),
     meta: {
-      title: 'Все пользователи',
-      order: 6
-    }
+      title: "Все пользователи",
+      order: 6,
+    },
   },
   {
-    path: '/sessions',
-    name: 'sessions',
-    component: () => import('../views/SessionsView.vue'),
+    path: "/sessions",
+    name: "sessions",
+    component: () => import("../views/SessionsView.vue"),
     meta: {
-      title: 'Сессии',
-      order: 7
-    }
+      title: "Сессии",
+      order: 7,
+    },
   },
   {
-    path: '/sessions/create',
-    name: 'create-session',
-    component: () => import('../views/CreateSessionView.vue'),
+    path: "/sessions/create",
+    name: "create-session",
+    component: () => import("../views/CreateSessionView.vue"),
     meta: {
-      title: 'Создать сессию',
-      order: 8
-    }
+      title: "Создать сессию",
+      order: 8,
+    },
   },
   {
-    path: '/sessions/:id',
-    name: 'session-detail',
-    component: () => import('../views/SessionDetailView.vue'),
+    path: "/sessions/:id",
+    name: "session-detail",
+    component: () => import("../views/s.vue"),
     meta: {
-      title: 'Детали сессии',
-      order: 9
-    }
+      title: "Детали сессии",
+      order: 9,
+    },
   },
   {
-    path: '/sessions/join/:referral_link',
-    name: 'session-join',
-    component: () => import('../views/SessionJoinView.vue'),
+    path: "/sessions/join/:referral_link",
+    name: "session-join",
+    component: () => import("../views/SessionJoinView.vue"),
     meta: {
-      title: 'Присоединиться к сессии',
-      order: 10
-    }
-  }
-]
+      title: "Присоединиться к сессии",
+      order: 10,
+    },
+  },
+];
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
-})
+  routes,
+});
 
 // Глобальный обработчик для заголовков страниц
 router.beforeEach((to, from, next) => {
   // Можно также установить заголовок документа здесь
-  document.title = to.meta.title || 'Мое Приложение'
-  next()
-})
+  document.title = to.meta.title || "Мое Приложение";
+  next();
+});
 
-export default router
+export default router;
