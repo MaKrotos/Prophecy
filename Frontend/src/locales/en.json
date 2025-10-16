@@ -219,6 +219,8 @@
     "join_error_general": "An error occurred while trying to join the session",
     "load_error": "Failed to load session information",
     "load_error_general": "An error occurred while loading session information",
-    "no_description": "No description"
+    "no_description": "No description",
+    "yes": "Yes",
+    "no": "No"
   }
 }

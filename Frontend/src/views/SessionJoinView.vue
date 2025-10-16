@@ -12,19 +12,21 @@
     <div v-else class="join-content">
       <h2 class="page-title">🎮 {{ t('session_join_view.title') }}</h2>
       <p class="page-description">{{ t('session_join_view.description') }}</p>
-      
+
       <div class="session-info">
         <h3 class="session-name">{{ sessionName }}</h3>
         <p class="session-description">{{ sessionDescription || t('session_join_view.no_description') }}</p>
       </div>
-      
-      <button 
-        class="join-button"
-        @click="joinSession"
-        :disabled="joining"
-      >
-        {{ joining ? t('session_join_view.joining') : t('session_join_view.join') }}
-      </button>
+
+      <div class="button-group">
+        <button class="join-button confirm-button" @click="joinSession" :disabled="joining">
+          {{ joining ? t('session_join_view.joining') : t('session_join_view.yes') }}
+        </button>
+
+        <button class="cancel-button" @click="cancelJoin">
+          {{ t('session_join_view.no') }}
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -34,11 +36,13 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi } from '../telegram/composables/useApi'
 import { useLocalization } from '@/locales/index.js'
+import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
 
 const { t } = useLocalization()
 const route = useRoute()
 const router = useRouter()
 const { apiPost, apiGet } = useApi()
+const { startParam } = useTelegramWebApp()
 
 const loading = ref(true)
 const joining = ref(false)
@@ -49,12 +53,15 @@ const sessionDescription = ref('')
 
 // Присоединение к сессии
 const joinSession = async () => {
+  console.log("🔍 Присоединение к сессии по реферальной ссылке:", route.params.referral_link);
+  console.log("🔍 Все параметры маршрута в joinSession:", route.params);
   if (joining.value) return
-  
+
   try {
     joining.value = true
     const response = await apiPost(`sessions/join/${route.params.referral_link}`)
-    
+    console.log("🔍 Ответ от сервера при присоединении к сессии:", response.status);
+
     if (response.ok) {
       success.value = true
       if (window.Telegram && window.Telegram.WebApp) {
@@ -62,11 +69,14 @@ const joinSession = async () => {
       }
       // Переход к списку сессий через 2 секунды
       setTimeout(() => {
+        // Обнуляем startParam, чтобы окно подтверждения не открывалось повторно
+        startParam.value = null
         router.push('/sessions')
       }, 2000)
     } else {
       const errorData = await response.json()
       error.value = errorData.error || t('session_join_view.join_error')
+      console.log("⚠️ Ошибка при присоединении к сессии:", error.value);
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.showAlert(error.value)
       }
@@ -82,19 +92,33 @@ const joinSession = async () => {
   }
 }
 
+// Отмена присоединения и возврат к списку сессий
+const cancelJoin = () => {
+  console.log("🔍 Отмена присоединения к сессии");
+  console.log("🔍 Значение startParam перед обнулением:", startParam.value);
+  // Обнуляем startParam, чтобы окно подтверждения не открывалось повторно
+  startParam.value = null;
+  console.log("🔍 Значение startParam после обнуления:", startParam.value);
+  router.push('/sessions')
+}
+
 // Получение информации о сессии
 const loadSessionInfo = async () => {
   try {
+    console.log("🔍 Загрузка информации о сессии по реферальной ссылке:", route.params.referral_link);
+    console.log("🔍 Все параметры маршрута в loadSessionInfo:", route.params);
     loading.value = true
     // Сначала получаем информацию о сессии по реферальной ссылке
     const sessionResponse = await apiGet(`sessions/join/${route.params.referral_link}`)
-    
+
     if (sessionResponse.ok) {
       const sessionData = await sessionResponse.json()
       sessionName.value = sessionData.name
       sessionDescription.value = sessionData.description
+      console.log("✅ Информация о сессии загружена:", sessionData);
     } else {
       error.value = t('session_join_view.load_error')
+      console.log("⚠️ Ошибка загрузки информации о сессии:", sessionResponse.status);
     }
   } catch (err) {
     console.error('Ошибка при загрузке информации о сессии:', err)
@@ -106,6 +130,8 @@ const loadSessionInfo = async () => {
 
 // Первоначальная загрузка
 onMounted(() => {
+  console.log("🔍 SessionJoinView mounted, referral_link:", route.params.referral_link);
+  console.log("🔍 SessionJoinView mounted, все параметры маршрута:", route.params);
   loadSessionInfo()
 })
 </script>
@@ -169,9 +195,15 @@ onMounted(() => {
   transition: color 0.3s ease;
 }
 
-.join-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
+.button-group {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.join-button,
+.cancel-button {
+  flex: 1;
   border: none;
   border-radius: 12px;
   padding: 14px 20px;
@@ -179,7 +211,11 @@ onMounted(() => {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  width: 100%;
+}
+
+.join-button {
+  background: var(--tg-theme-button-color, #667eea);
+  color: var(--tg-theme-button-text-color, white);
 }
 
 .join-button:hover:not(:disabled) {
@@ -190,6 +226,16 @@ onMounted(() => {
 .join-button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.cancel-button {
+  background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  color: var(--tg-theme-text-color, #333333);
+}
+
+.cancel-button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .loading,
@@ -223,11 +269,11 @@ onMounted(() => {
   .page {
     padding: 12px;
   }
-  
+
   .page-title {
     font-size: 1.3rem;
   }
-  
+
   .session-info {
     padding: 16px;
   }

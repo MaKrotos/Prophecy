@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 import HomeView from "../views/HomeView.vue";
 
 const routes = [
@@ -91,6 +91,13 @@ const routes = [
       title: "Присоединиться к сессии",
       order: 10,
     },
+    beforeEnter: (to, from, next) => {
+      console.log(
+        "🔍 Роутер: Переход на страницу присоединения к сессии",
+        to.params.referral_link
+      );
+      next();
+    },
   },
   {
     path: "/rules",
@@ -104,15 +111,31 @@ const routes = [
 ];
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes,
 });
 
 // Глобальный обработчик для заголовков страниц
 router.beforeEach((to, from, next) => {
+  console.log(
+    "🔍 Роутер: переход со страницы",
+    from.path,
+    "на страницу",
+    to.path
+  );
   // Можно также установить заголовок документа здесь
   document.title = to.meta.title || "Мое Приложение";
   next();
+});
+
+// Глобальный обработчик для отладки навигации
+router.afterEach((to, from) => {
+  console.log(
+    "✅ Роутер: переход завершен со страницы",
+    from.path,
+    "на страницу",
+    to.path
+  );
 });
 
 export default router;

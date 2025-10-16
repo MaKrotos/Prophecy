@@ -93,9 +93,19 @@ const userInfo = ref(null)
 
 // Проверяем, может ли пользователь управлять сессией
 const canManageSession = computed(() => {
-  if (!userInfo.value || !session.value) return false
+  if (!userInfo.value || !session.value) {
+    console.log("🔍 Проверка прав пользователя: userInfo или session отсутствует");
+    return false;
+  }
   // Администраторы и владелец сессии могут управлять сессией
-  return userInfo.value.is_admin || userInfo.value.id === session.value.architect_id
+  const canManage = userInfo.value.is_admin || userInfo.value.id === session.value.architect_id;
+  console.log("🔍 Проверка прав пользователя:", {
+    userId: userInfo.value.id,
+    isAdmin: userInfo.value.is_admin,
+    architectId: session.value.architect_id,
+    canManage: canManage
+  });
+  return canManage;
 })
 
 // Форматирование даты
@@ -114,8 +124,10 @@ const formatDate = (dateString) => {
 const getReferralLink = (session) => {
   // Используем имя бота из переменных окружения или значение по умолчанию
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'
-  // Формируем ссылку в формате Telegram Mini App
-  return `https://t.me/${botUsername}?startapp=${session.referral_link}`
+  // Формируем ссылку в формате Telegram Mini App с префиксом действия
+  const referralLink = `https://t.me/${botUsername}?startapp=join_session_${session.referral_link}`
+  console.log("🔍 Формирование реферальной ссылки:", referralLink);
+  return referralLink
 }
 
 // Копирование реферальной ссылки в буфер обмена
@@ -123,10 +135,12 @@ const copyReferralLink = () => {
   if (!session.value) return
 
   const referralLink = getReferralLink(session.value)
+  console.log("🔍 Копирование реферальной ссылки в буфер обмена:", referralLink);
 
   // Используем Clipboard API, если доступно
   if (navigator.clipboard) {
     navigator.clipboard.writeText(referralLink).then(() => {
+      console.log("✅ Реферальная ссылка успешно скопирована в буфер обмена");
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.showAlert(t('sessions_view.link_copied'))
       }
@@ -137,12 +151,14 @@ const copyReferralLink = () => {
     })
   } else {
     // Альтернативный метод копирования для старых браузеров
+    console.log("⚠️ Clipboard API недоступен, используем альтернативный метод");
     fallbackCopyTextToClipboard(referralLink)
   }
 }
 
 // Альтернативный метод копирования текста в буфер обмена
 const fallbackCopyTextToClipboard = (text) => {
+  console.log("🔍 Использование альтернативного метода копирования:", text);
   const textArea = document.createElement("textarea")
   textArea.value = text
 
@@ -159,6 +175,7 @@ const fallbackCopyTextToClipboard = (text) => {
   try {
     const successful = document.execCommand('copy')
     if (successful) {
+      console.log("✅ Реферальная ссылка успешно скопирована альтернативным методом");
       if (window.Telegram && window.Telegram.WebApp) {
         window.Telegram.WebApp.showAlert(t('sessions_view.link_copied'))
       }
@@ -181,12 +198,15 @@ const fallbackCopyTextToClipboard = (text) => {
 // Загрузка сессии
 const loadSession = async () => {
   try {
+    console.log("🔍 Загрузка сессии с ID:", route.params.id);
     loading.value = true
     const response = await apiGet(`sessions/${route.params.id}`)
+    console.log("🔍 Ответ от сервера при загрузке сессии:", response.status);
 
     if (response.ok) {
       const data = await response.json()
       session.value = data
+      console.log("✅ Сессия загружена:", data);
       // Загружаем связанные данные
       loadPlayers()
     } else {
@@ -208,12 +228,15 @@ const loadSession = async () => {
 // Загрузка игроков
 const loadPlayers = async () => {
   try {
+    console.log("🔍 Загрузка игроков для сессии с ID:", route.params.id);
     loadingPlayers.value = true
     const response = await apiGet(`sessions/${route.params.id}/players`)
+    console.log("🔍 Ответ от сервера при загрузке игроков:", response.status);
 
     if (response.ok) {
       const data = await response.json()
       players.value = Array.isArray(data) ? data : []
+      console.log("✅ Игроки загружены:", players.value);
     } else {
       console.error('Ошибка при загрузке игроков:', response.status)
     }
@@ -308,8 +331,10 @@ const removePlayer = (player) => {
 
 // Первоначальная загрузка
 onMounted(() => {
+  console.log("🔍 SessionDetailView mounted, session ID:", route.params.id);
   // Получаем информацию о пользователе из JWT токена
   userInfo.value = getUserInfoFromToken()
+  console.log("🔍 Информация о пользователе:", userInfo.value);
   loadSession()
 })
 </script>
