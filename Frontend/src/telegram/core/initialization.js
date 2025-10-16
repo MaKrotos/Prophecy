@@ -106,11 +106,13 @@ function loadTelegramSDK(callbacks) {
 
 function initializeTelegramFeatures(callbacks) {
   try {
+    console.log("🔍 initializeTelegramFeatures called");
     if (!window.Telegram?.WebApp) {
       throw new Error("Telegram WebApp API not available");
     }
 
     const webApp = window.Telegram.WebApp;
+    console.log("🔍 Telegram WebApp object:", webApp);
 
     // Дополнительная проверка через initData
     if (!isValidTelegramWebApp(webApp)) {
@@ -146,14 +148,22 @@ function setupWebApp(webApp) {
 }
 
 function processAuthData(webApp, callbacks) {
+  console.log("🔍 processAuthData called");
   const authData = extractAuthData(webApp);
+  console.log("🔍 authData extracted:", authData);
 
   if (authData.hash) {
     console.log(
       "🔐 Authentication HASH for server verification:",
       authData.hash
     );
-    callbacks.onHashReceived(authData.hash, authData.initData);
+    callbacks.onHashReceived(
+      authData.hash,
+      authData.initData,
+      authData.startParam
+    );
+  } else {
+    console.log("⚠️ No authentication hash found");
   }
 
   if (authData.user) {

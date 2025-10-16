@@ -48,6 +48,7 @@ const {
 const isInitialized = ref(false)
 const loaderMessage = ref(t('app.initializing'))
 const telegramBotLink = ref(`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'}`)
+const startParam = ref(null)
 
 /**
  * Инициализация приложения
