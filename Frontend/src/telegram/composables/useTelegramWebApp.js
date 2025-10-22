@@ -166,9 +166,9 @@ export function useTelegramWebApp() {
 
     // Обработчики для разных действий
     const handlers = {
-      join_session: (sessionId) => {
+      joinSession: (sessionId) => {
         console.log(
-          "🔍 Обработка действия join_session с sessionId:",
+          "🔍 Обработка действия joinSession с sessionId:",
           sessionId
         );
         if (sessionId) {

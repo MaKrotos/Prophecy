@@ -125,7 +125,7 @@ const getReferralLink = (session) => {
   // Используем имя бота из переменных окружения или значение по умолчанию
   const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'
   // Формируем ссылку в формате Telegram Mini App с префиксом действия
-  const referralLink = `https://t.me/${botUsername}?startapp=join_session_${session.referral_link}`
+  const referralLink = `https://t.me/${botUsername}?startapp=joinSession_${session.referral_link}`
   console.log("🔍 Формирование реферальной ссылки:", referralLink);
   return referralLink
 }
