@@ -10,6 +10,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useLocalization } from '@/locales/index.js'
+import ThemedButton from './ThemedButton.vue'
 
 const { t } = useLocalization()
 

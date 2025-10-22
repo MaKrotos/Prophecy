@@ -21,9 +21,9 @@
           <span v-if="loading">⏳ {{ t('user_stats.loading') }}</span>
           <span v-else>🔄 {{ t('user_stats.refresh') }}</span>
         </ThemedButton>
-        <ThemedButton buttonType="secondary" @click="viewAllUsers" class="view-all-btn">
+        <ThemedButtonLined buttonType="secondary" @click="viewAllUsers" class="view-all-btn">
           👥 {{ t('user_stats.view_all') }}
-        </ThemedButton>
+        </ThemedButtonLined>
       </div>
     </div>
   </div>
@@ -37,6 +37,7 @@ import { getUserInfoFromToken } from '../telegram/auth/user'
 import { useApi } from '../telegram/composables/useApi'
 import { useLocalization } from '@/locales/index.js'
 import ThemedButton from './ThemedButton.vue'
+import ThemedButtonLined from './ThemedButtonLined.vue'
 
 const { t } = useLocalization()
 

@@ -17,20 +17,3 @@ export function calculateBrightness(hexColor) {
   
   return (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
 }
-
-export function applyThemeClassToBody(themeParams) {
-  if (!themeParams?.bg_color) return;
-  
-  const brightness = calculateBrightness(themeParams.bg_color);
-  const isDark = brightness < 128;
-  
-  if (isDark) {
-    document.body.classList.add('tg-theme-dark');
-    document.body.classList.remove('tg-theme-light');
-  } else {
-    document.body.classList.add('tg-theme-light');
-    document.body.classList.remove('tg-theme-dark');
-  }
-  
-  return isDark;
-}
