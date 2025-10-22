@@ -20,18 +20,50 @@
     </div>
 
     <!-- Create Session Button (only for architects) -->
-    <button
+    <ThemedButton
       v-if="isArchitect"
+      buttonType="primary"
       class="create-session-button"
       @click="goToCreateSession"
     >
       + {{ t('home_view.sessions.create_session') }}
-    </button>
+    </ThemedButton>
 
     <!-- Session List Component -->
     <SessionList />
   </div>
 </template>
+
+<script setup>
+import { getUserInfoFromToken } from '../telegram/auth/user'
+
+import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import UserStats from '../components/UserStats.vue'
+import SessionList from '../components/SessionList.vue'
+import ThemedButton from '../components/ThemedButton.vue'
+import { useLocalization } from '@/locales/index.js'
+
+const { t } = useLocalization()
+const router = useRouter()
+
+const userInfo = ref(null)
+const isAdmin = computed(() => userInfo.value?.isAdmin || false)
+const isArchitect = computed(() => {
+  if (!userInfo.value) return false
+  return userInfo.value.role && userInfo.value.role === 'Архитектор'
+})
+
+const goToCreateSession = () => {
+  router.push('/sessions/create')
+}
+
+onMounted(() => {
+  // Получаем информацию о пользователе из JWT токена
+  userInfo.value = getUserInfoFromToken()
+  console.log('User Info:', userInfo.value)
+})
+</script>
 
 <style scoped>
 .page {
@@ -125,60 +157,5 @@
     padding: 16px;
   }
 }
-/* Create Session Button Styles */
-.create-session-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  border-radius: 12px;
-  padding: 12px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-  margin-bottom: 24px;
-}
 
-.create-session-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-@media (max-width: 768px) {
-  .create-session-button {
-    padding: 10px 16px;
-    font-size: 0.95rem;
-  }
-}
 </style>
-
-<script setup>
-import { getUserInfoFromToken } from '../telegram/auth/user'
-
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import UserStats from '../components/UserStats.vue'
-import SessionList from '../components/SessionList.vue'
-import { useLocalization } from '@/locales/index.js'
-
-const { t } = useLocalization()
-const router = useRouter()
-
-const userInfo = ref(null)
-const isAdmin = computed(() => userInfo.value?.isAdmin || false)
-const isArchitect = computed(() => {
-  if (!userInfo.value) return false
-  return userInfo.value.role && userInfo.value.role === 'Архитектор'
-})
-
-const goToCreateSession = () => {
-  router.push('/sessions/create')
-}
-
-onMounted(() => {
-  // Получаем информацию о пользователе из JWT токена
-  userInfo.value = getUserInfoFromToken()
-  console.log('User Info:', userInfo.value)
-})
-</script>

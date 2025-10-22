@@ -29,10 +29,10 @@
         </div>
 
         <div class="bot-link">
-          <a href="https://t.me/MyExampleBot" target="_blank" class="telegram-button" @click="openTelegram">
+          <ThemedButton buttonType="primary" class="telegram-button" @click="openTelegram">
             <span class="button-icon">📱</span>
             {{ t('telegram.only.button') }}
-          </a>
+          </ThemedButton>
         </div>
 
         <div class="features">
@@ -57,6 +57,7 @@
 
 <script setup>
 import { useLocalization } from '@/locales/index.js';
+import ThemedButton from '@/components/ThemedButton.vue';
 const { t } = useLocalization();
 
 const openTelegram = () => {
@@ -139,31 +140,6 @@ const openTelegram = () => {
   margin-bottom: 8px;
 }
 
-.telegram-button {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  background: #0088cc;
-  color: white;
-  text-decoration: none;
-  padding: 15px 30px;
-  border-radius: 50px;
-  font-weight: 600;
-  font-size: 1.1rem;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 136, 204, 0.3);
-}
-
-.telegram-button:hover {
-  background: #0077b3;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 136, 204, 0.4);
-}
-
-.button-icon {
-  font-size: 1.2rem;
-}
-
 .features {
   margin-top: 30px;
   text-align: left;
@@ -219,10 +195,6 @@ const openTelegram = () => {
     padding: 20px;
   }
 
-  .telegram-button {
-    padding: 12px 25px;
-    font-size: 1rem;
-  }
 }
 
 /* Дополнительные стили для очень маленьких экранов */

@@ -7,15 +7,23 @@
     </div>
     
     <div class="profile-actions">
-      <button class="action-btn">{{ t('profile_view.edit_profile') }}</button>
-      <button class="action-btn">{{ t('profile_view.privacy_settings') }}</button>
-      <button class="action-btn">{{ t('profile_view.logout') }}</button>
+      <ThemedButton buttonType="secondary" class="action-btn">
+        {{ t('profile_view.edit_profile') }}
+      </ThemedButton>
+      <ThemedButton buttonType="secondary" class="action-btn">
+        {{ t('profile_view.privacy_settings') }}
+      </ThemedButton>
+      <ThemedButton buttonType="danger" class="action-btn">
+        {{ t('profile_view.logout') }}
+      </ThemedButton>
     </div>
   </div>
 </template>
 
 <script setup>
 import { useLocalization } from '@/locales/index.js'
+import ThemedButton from '@/components/ThemedButton.vue'
+
 const { t } = useLocalization()
 </script>
 
@@ -44,16 +52,6 @@ const { t } = useLocalization()
 }
 
 .action-btn {
-  background: white;
-  border: 1px solid #ddd;
-  padding: 16px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.action-btn:hover {
-  background: #f5f5f5;
-  border-color: #667eea;
+  width: 100%;
 }
 </style>

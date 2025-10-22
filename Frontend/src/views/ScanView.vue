@@ -33,9 +33,9 @@
     
     <div v-if="error" class="error">
       <p>{{ error }}</p>
-      <button v-if="cameraAccessDenied" @click="retryCameraAccess">
+      <ThemedButton v-if="cameraAccessDenied" buttonType="danger" @click="retryCameraAccess">
         {{ t('scan_view.retry_camera') }}
-      </button>
+      </ThemedButton>
     </div>
   </div>
 </template>
@@ -45,6 +45,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
 import QrcodeVue from 'qrcode.vue'
 import { useLocalization } from '@/locales/index.js'
+import ThemedButton from '@/components/ThemedButton.vue'
 
 const { t } = useLocalization()
 
@@ -181,17 +182,7 @@ onUnmounted(() => {
   text-align: center;
 }
 
-.error button {
+.error :deep(.themed-button) {
   margin-top: 10px;
-  padding: 8px 16px;
-  background-color: #d32f2f;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.error button:hover {
-  background-color: #c62828;
 }
 </style>

@@ -45,7 +45,9 @@
                 <div class="cta-card">
                     <h2>ГОТОВЫ К ПРИКЛЮЧЕНИЯМ?</h2>
                     <p>Присоединяйтесь к битве и докажите, что вы достойны легенд!</p>
-                    <button class="cta-button" @click="goToHome">Начать Игру</button>
+                    <ThemedButton buttonType="primary" class="cta-button" @click="goToHome">
+                        Начать Игру
+                    </ThemedButton>
                 </div>
             </section>
         </main>
@@ -55,6 +57,7 @@
 <script setup>
 import { useRouter } from 'vue-router'
 import HeaderNav from '@/components/HeaderNav.vue'
+import ThemedButton from '@/components/ThemedButton.vue'
 
 const router = useRouter()
 
@@ -316,26 +319,6 @@ const roles = [
     transition: color 0.3s ease;
 }
 
-.cta-button {
-    background: var(--tg-theme-button-color, #667eea);
-    color: var(--tg-theme-button-text-color, white);
-    border: none;
-    padding: 15px 40px;
-    font-size: 1.2rem;
-    border-radius: 50px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.cta-button:hover {
-    opacity: 0.9;
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
 @keyframes fadeInUp {
     to {
         opacity: 1;
@@ -393,11 +376,6 @@ const roles = [
 
     .cta-card p {
         font-size: 1.1rem;
-    }
-
-    .cta-button {
-        padding: 12px 30px;
-        font-size: 1rem;
     }
 }
 

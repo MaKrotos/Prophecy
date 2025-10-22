@@ -218,13 +218,6 @@ const deleteSession = (session) => {
     )
   }
 }
-
-// Первоначальная загрузка
-onMounted(() => {
-  // Получаем информацию о пользователе из JWT токена
-  userInfo.value = getUserInfoFromToken()
-  loadSessions()
-})
 </script>
 
 <style scoped>
@@ -251,24 +244,6 @@ onMounted(() => {
   font-size: 1rem;
   margin-bottom: 16px;
   transition: color 0.3s ease;
-}
-
-.create-session-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  border-radius: 12px;
-  padding: 12px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.create-session-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
 }
 
 .session-header {
@@ -318,26 +293,6 @@ onMounted(() => {
   gap: 8px;
 }
 
-.session-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.session-button:hover {
-  opacity: 0.8;
-  transform: scale(1.1);
-}
-
 .referral-link-container {
   display: flex;
   align-items: center;
@@ -349,26 +304,6 @@ onMounted(() => {
   flex: 1;
   word-break: break-all;
   font-size: 0.8rem;
-}
-
-.copy-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  font-size: 12px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.copy-button:hover {
-  opacity: 0.8;
-}
-
-.delete-button {
-  background: #ff4757 !important;
 }
 
 /* Плавные переходы для всех элементов */

@@ -13,10 +13,11 @@
       <h2 class="page-title">🎮 {{ t('session_join_view.title') }}</h2>
       <p class="page-description">{{ t('session_join_view.description') }}</p>
 
-      <div class="session-info">
-        <h3 class="session-name">{{ sessionName }}</h3>
-        <p class="session-description">{{ sessionDescription || t('session_join_view.no_description') }}</p>
-      </div>
+      <SessionInfo
+        :session="{ name: sessionName, description: sessionDescription, architect_name: '', created_at: '' }"
+        :show-name="true"
+        :show-description="true"
+      />
 
       <div class="button-group">
         <ThemedButton button-type="primary" class="join-button confirm-button" @click="joinSession" :disabled="joining">
@@ -36,6 +37,7 @@ import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi } from '../telegram/composables/useApi'
 import ThemedButton from '../components/ThemedButton.vue'
+import SessionInfo from '../components/SessionInfo.vue'
 import { useLocalization } from '@/locales/index.js'
 import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
 
@@ -172,72 +174,6 @@ onMounted(() => {
   text-align: center;
 }
 
-.session-info {
-  background: var(--tg-theme-secondary-bg-color, white);
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.session-name {
-  color: var(--tg-theme-text-color, #333333);
-  font-size: 1.25rem;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  transition: color 0.3s ease;
-}
-
-.session-description {
-  color: var(--tg-theme-text-color, #333333);
-  font-size: 1rem;
-  line-height: 1.5;
-  margin: 0;
-  transition: color 0.3s ease;
-}
-
-.button-group {
-  display: flex;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.join-button,
-.cancel-button {
-  flex: 1;
-  border: none;
-  border-radius: 12px;
-  padding: 14px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.join-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-}
-
-.join-button:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.join-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.cancel-button {
-  background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-  color: var(--tg-theme-text-color, #333333);
-}
-
-.cancel-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
 
 .loading,
 .success,
@@ -259,9 +195,7 @@ onMounted(() => {
 /* Плавные переходы для всех элементов */
 .page,
 .page-title,
-.page-description,
-.session-name,
-.session-description {
+.page-description {
   transition: all 0.3s ease;
 }
 
@@ -275,8 +209,5 @@ onMounted(() => {
     font-size: 1.3rem;
   }
 
-  .session-info {
-    padding: 16px;
-  }
 }
 </style>

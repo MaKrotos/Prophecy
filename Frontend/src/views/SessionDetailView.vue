@@ -293,33 +293,6 @@ onMounted(() => {
   transition: color 0.3s ease;
 }
 
-.session-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  background: var(--tg-theme-secondary-bg-color, white);
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.info-label {
-  color: var(--tg-theme-hint-color, #666666);
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.info-value {
-  color: var(--tg-theme-text-color, #333333);
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
 
 .section-header {
   display: flex;
@@ -396,8 +369,6 @@ onMounted(() => {
 .page,
 .session-title,
 .session-description,
-.info-label,
-.info-value,
 .section-title,
 .player-name,
 .player-username {
@@ -420,8 +391,12 @@ onMounted(() => {
     justify-content: space-between;
   }
 
-  .edit-button,
-  .delete-button {
+  .session-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .session-actions :deep(.themed-button) {
     flex: 1;
     justify-content: center;
   }
@@ -431,7 +406,7 @@ onMounted(() => {
     align-items: flex-start;
   }
 
-  .add-player-button {
+  .section-header :deep(.themed-button) {
     width: 100%;
     justify-content: center;
   }
@@ -446,7 +421,7 @@ onMounted(() => {
     width: 100%;
   }
 
-  .remove-player-button {
+  .player-card :deep(.themed-button) {
     align-self: flex-end;
   }
 }
@@ -474,21 +449,5 @@ onMounted(() => {
   background: var(--tg-theme-bg-color, #f5f5f5);
   padding: 8px 12px;
   border-radius: 8px;
-}
-
-.copy-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.copy-button:hover {
-  opacity: 0.8;
 }
 </style>

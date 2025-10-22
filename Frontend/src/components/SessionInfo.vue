@@ -1,26 +1,37 @@
 <template>
   <div class="session-info">
-    <div class="info-item">
+    <!-- Session name (for SessionJoinView) -->
+    <div v-if="showName" class="info-item">
+      <span class="info-label">{{ t('session_join_view.session') }}:</span>
+      <span class="info-value">{{ session.name }}</span>
+    </div>
+
+    <!-- Architect name -->
+    <div v-if="session.architect_name" class="info-item">
       <span class="info-label">{{ t('session_detail_view.architect') }}:</span>
       <span class="info-value">{{ session.architect_name }}</span>
     </div>
 
-    <div class="info-item">
+    <!-- Created at -->
+    <div v-if="session.created_at" class="info-item">
       <span class="info-label">{{ t('session_detail_view.created') }}:</span>
       <span class="info-value">{{ formatDate(session.created_at) }}</span>
     </div>
 
-    <div v-if="showUpdatedAt" class="info-item">
+    <!-- Updated at -->
+    <div v-if="showUpdatedAt && session.updated_at" class="info-item">
       <span class="info-label">{{ t('session_detail_view.updated') }}:</span>
       <span class="info-value">{{ formatDate(session.updated_at) }}</span>
     </div>
 
+    <!-- Description -->
     <div v-if="showDescription" class="info-item">
       <span class="info-label">{{ t('sessions_view.description') }}:</span>
       <span class="info-value">{{ session.description || t('sessions_view.no_description') }}</span>
     </div>
 
-    <div v-if="showPlayerCount" class="info-item">
+    <!-- Player count -->
+    <div v-if="showPlayerCount && session.player_count !== undefined" class="info-item">
       <span class="info-label">{{ t('sessions_view.players') }}:</span>
       <span class="info-value">{{ session.player_count }}</span>
     </div>
@@ -36,6 +47,10 @@ const props = defineProps({
   session: {
     type: Object,
     required: true
+  },
+  showName: {
+    type: Boolean,
+    default: false
   },
   showDescription: {
     type: Boolean,

@@ -165,24 +165,6 @@ onMounted(() => {
   transition: color 0.3s ease;
 }
 
-.create-session-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  border-radius: 12px;
-  padding: 12px 20px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.create-session-button:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .session-card {

@@ -18,9 +18,9 @@
               <span v-else-if="user.is_admin">{{ t('users_view.admin') }}</span>
               <span v-else>{{ t('users_view.user') }}</span>
             </div>
-            <button class="role-button" @click="showRoleMenu(user)">
+            <ThemedButton button-type="icon" @click="showRoleMenu(user)">
               ⚙️
-            </button>
+            </ThemedButton>
           </div>
         </div>
 
@@ -49,6 +49,7 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useApi } from '../telegram/composables/useApi'
 import AnimatedCardList from '../components/AnimatedCardList.vue'
+import ThemedButton from '../components/ThemedButton.vue'
 import { useLocalization } from '@/locales/index.js'
 const { t } = useLocalization()
 
@@ -413,25 +414,5 @@ onUnmounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.role-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  border-radius: 50%;
-  width: 22px;
-  height: 22px;
-  font-size: 16px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.role-button:hover {
-  opacity: 0.8;
-  transform: scale(1.1);
 }
 </style>

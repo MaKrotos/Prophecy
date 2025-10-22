@@ -29,6 +29,7 @@
 import { ref, watch, onMounted, computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useLocalization } from '@/locales/index.js'
+import ThemedButton from '@/components/ThemedButton.vue'
 
 const { t } = useLocalization()
 
@@ -93,7 +94,7 @@ const navigateTo = (path) => {
 <template>
   <nav class="bottom-nav">
     <div class="nav-container">
-      <button
+      <ThemedButton
         v-for="item in navItemsToUse"
         :key="item.path"
         class="nav-item"
@@ -104,7 +105,7 @@ const navigateTo = (path) => {
           <path :d="item.icon" />
         </svg>
         <span class="nav-label">{{ item.label }}</span>
-      </button>
+      </ThemedButton>
     </div>
   </nav>
 </template>
@@ -134,27 +135,26 @@ const navigateTo = (path) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: none;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 12px;
-  cursor: pointer;
+  background: none !important;
+  border: none !important;
+  padding: 8px 12px !important;
+  border-radius: 12px !important;
   transition: all 0.3s ease;
-  color: var(--tg-theme-hint-color, #666);
+  color: var(--tg-theme-hint-color, #666) !important;
   min-width: 60px;
 }
 
 .nav-item:hover {
-  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0) !important;
 }
 
 .nav-item.active {
-  color: var(--tg-theme-button-color, #667eea);
-  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  color: var(--tg-theme-button-color, #667eea) !important;
+  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0) !important;
 }
 
 .nav-item.active .nav-label {
-  color: var(--tg-theme-button-color, #667eea);
+  color: var(--tg-theme-button-color, #667eea) !important;
 }
 
 .nav-label {

@@ -20,13 +20,13 @@
                 </div>
 
                 <div class="actions">
-                    <button class="retry-button" @click="retryAuth">
+                    <ThemedButton buttonType="primary" class="retry-button" @click="retryAuth">
                         {{ t('auth.error.retry') }}
-                    </button>
+                    </ThemedButton>
 
-                    <button class="later-button" @click="tryLater">
+                    <ThemedButton buttonType="secondary" class="later-button" @click="tryLater">
                         {{ t('auth.error.later') }}
-                    </button>
+                    </ThemedButton>
                 </div>
 
                 <div class="info">
@@ -52,6 +52,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useLocalization } from '/src/locales/index.js'
+import ThemedButton from '@/components/ThemedButton.vue'
 
 const { t } = useLocalization()
 
@@ -148,49 +149,6 @@ const tryLater = () => {
     line-height: 1.6;
 }
 
-.actions {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 30px;
-}
-
-.retry-button {
-    background: #4299e1;
-    color: white;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(66, 153, 225, 0.3);
-}
-
-.retry-button:hover {
-    background: #3182ce;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(66, 153, 225, 0.4);
-}
-
-.later-button {
-    background: #edf2f7;
-    color: #4a5568;
-    border: none;
-    padding: 15px 30px;
-    border-radius: 50px;
-    font-weight: 600;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.later-button:hover {
-    background: #e2e8f0;
-    transform: translateY(-2px);
-}
-
 .info {
     text-align: left;
     background: #f8f9fa;
@@ -251,12 +209,6 @@ const tryLater = () => {
 
     .actions {
         gap: 10px;
-    }
-
-    .retry-button,
-    .later-button {
-        padding: 12px 25px;
-        font-size: 1rem;
     }
 }
 

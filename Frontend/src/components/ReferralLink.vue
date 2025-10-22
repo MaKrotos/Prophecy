@@ -1,9 +1,9 @@
 <template>
   <div class="referral-link-container">
     <span class="referral-link">{{ referralLink }}</span>
-    <button class="copy-button" @click="copyReferralLink" :title="t('sessions_view.copy_link')">
+    <ThemedButton buttonType="icon" class="copy-button" @click="copyReferralLink" :title="t('sessions_view.copy_link')">
       📋
-    </button>
+    </ThemedButton>
   </div>
 </template>
 
@@ -108,21 +108,5 @@ const fallbackCopyTextToClipboard = (text) => {
   background: var(--tg-theme-bg-color, #f5f5f5);
   padding: 8px 12px;
   border-radius: 8px;
-}
-
-.copy-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  border-radius: 4px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  flex-shrink: 0;
-}
-
-.copy-button:hover {
-  opacity: 0.8;
 }
 </style>

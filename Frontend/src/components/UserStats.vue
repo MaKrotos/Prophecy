@@ -17,13 +17,13 @@
         </div>
       </div>
       <div class="stats-actions">
-        <button @click="fetchStats" class="refresh-btn" :disabled="loading">
+        <ThemedButton @click="fetchStats" class="refresh-btn" :disabled="loading">
           <span v-if="loading">⏳ {{ t('user_stats.loading') }}</span>
           <span v-else>🔄 {{ t('user_stats.refresh') }}</span>
-        </button>
-        <button @click="viewAllUsers" class="view-all-btn">
+        </ThemedButton>
+        <ThemedButton buttonType="secondary" @click="viewAllUsers" class="view-all-btn">
           👥 {{ t('user_stats.view_all') }}
-        </button>
+        </ThemedButton>
       </div>
     </div>
   </div>
@@ -36,6 +36,8 @@ import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
 import { getUserInfoFromToken } from '../telegram/auth/user'
 import { useApi } from '../telegram/composables/useApi'
 import { useLocalization } from '@/locales/index.js'
+import ThemedButton from './ThemedButton.vue'
+
 const { t } = useLocalization()
 
 const router = useRouter()
@@ -167,43 +169,10 @@ onMounted(() => {
 
 .refresh-btn,
 .view-all-btn {
-  background-color: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-  border: none;
-  padding: 12px 20px;
-  border-radius: 12px;
-  cursor: pointer;
-  font-size: 1rem;
-  font-weight: 500;
   width: 100%;
-  transition: all 0.3s ease;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-.view-all-btn {
-  background-color: var(--tg-theme-secondary-bg-color, #f0f0f0);
-  color: var(--tg-theme-text-color, #333333);
-  border: 1px solid var(--tg-theme-hint-color, #cccccc);
-}
-
-.refresh-btn:hover:not(:disabled),
-.view-all-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.refresh-btn:active:not(:disabled),
-.view-all-btn:active {
-  transform: translateY(0);
-}
-
-.refresh-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-  transform: none;
 }
 
 /* Dark theme adjustments */
@@ -216,8 +185,7 @@ onMounted(() => {
 }
 
 :global(.tg-theme-dark) .view-all-btn {
-  background: var(--tg-theme-bg-color, #2a3b4d);
-  border-color: var(--tg-theme-hint-color, #4a5b6d);
+  /* Dark theme styles now handled by ThemedButton component */
 }
 
 /* Responsive adjustments */

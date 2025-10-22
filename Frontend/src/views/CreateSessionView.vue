@@ -5,41 +5,38 @@
     
     <form @submit.prevent="createSession" class="session-form">
       <div class="form-group">
-        <label class="form-label">{{ t('create_session_view.name_label') }}</label>
-        <input 
-          v-model="sessionData.name" 
-          type="text" 
-          class="form-input"
+        <ThemedInput
+          v-model="sessionData.name"
+          :label="t('create_session_view.name_label')"
+          type="text"
           :placeholder="t('create_session_view.name_placeholder')"
-          required
         />
       </div>
       
       <div class="form-group">
-        <label class="form-label">{{ t('create_session_view.description_label') }}</label>
-        <textarea 
-          v-model="sessionData.description" 
-          class="form-textarea"
+        <ThemedInput
+          v-model="sessionData.description"
+          :label="t('create_session_view.description_label')"
+          type="textarea"
           :placeholder="t('create_session_view.description_placeholder')"
-          rows="4"
-        ></textarea>
+          inputType="large"
+        />
       </div>
       
       <div class="form-actions">
-        <button 
-          type="button" 
-          class="cancel-button"
+        <ThemedButton
+          buttonType="secondary"
           @click="goBack"
         >
           {{ t('create_session_view.cancel') }}
-        </button>
-        <button 
-          type="submit" 
-          class="submit-button"
+        </ThemedButton>
+        <ThemedButton
+          buttonType="primary"
           :disabled="isSubmitting"
+          type="submit"
         >
           {{ isSubmitting ? t('create_session_view.creating') : t('create_session_view.create') }}
-        </button>
+        </ThemedButton>
       </div>
     </form>
   </div>
@@ -50,6 +47,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '../telegram/composables/useApi'
 import { useLocalization } from '@/locales/index.js'
+import ThemedInput from '@/components/ThemedInput.vue'
+import ThemedButton from '@/components/ThemedButton.vue'
 
 const { t } = useLocalization()
 const router = useRouter()
@@ -138,85 +137,17 @@ const goBack = () => {
   gap: 8px;
 }
 
-.form-label {
-  color: var(--tg-theme-text-color, #333333);
-  font-weight: 500;
-  transition: color 0.3s ease;
-}
-
-.form-input,
-.form-textarea {
-  background: var(--tg-theme-secondary-bg-color, white);
-  border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 1rem;
-  color: var(--tg-theme-text-color, #333333);
+/* Плавные переходы для всех элементов */
+.page,
+.page-title,
+.page-description {
   transition: all 0.3s ease;
-}
-
-.form-input:focus,
-.form-textarea:focus {
-  outline: none;
-  border-color: var(--tg-theme-button-color, #667eea);
-  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
-}
-
-.form-textarea {
-  resize: vertical;
-  min-height: 100px;
 }
 
 .form-actions {
   display: flex;
   gap: 12px;
   margin-top: 8px;
-}
-
-.cancel-button,
-.submit-button {
-  flex: 1;
-  padding: 14px 20px;
-  border: none;
-  border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.cancel-button {
-  background: var(--tg-theme-secondary-bg-color, #f0f0f0);
-  color: var(--tg-theme-text-color, #333333);
-}
-
-.submit-button {
-  background: var(--tg-theme-button-color, #667eea);
-  color: var(--tg-theme-button-text-color, white);
-}
-
-.cancel-button:hover {
-  opacity: 0.8;
-}
-
-.submit-button:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-.submit-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Плавные переходы для всех элементов */
-.page,
-.page-title,
-.page-description,
-.form-label,
-.form-input,
-.form-textarea {
-  transition: all 0.3s ease;
 }
 
 /* Responsive adjustments */
