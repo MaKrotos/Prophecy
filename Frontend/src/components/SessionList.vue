@@ -17,18 +17,13 @@
           <h4 class="session-name">{{ session.name }}</h4>
         </div>
 
-        <div class="session-details">
-          <div class="detail-item">
-            <span class="detail-label">{{ t('home_view.sessions.architect') }}:</span>
-            <span class="detail-value">{{ session.architect_name }}</span>
-          </div>
-        </div>
+        <SessionInfo :session="session" :show-description="false" :show-player-count="false" />
       </AnimatedCard>
     </div>
 
-    <button v-if="isArchitect" class="create-session-button" @click="goToCreateSession">
+    <ThemedButton v-if="isArchitect" button-type="primary" class="create-session-button" @click="goToCreateSession">
       + {{ t('home_view.sessions.create_session') }}
-    </button>
+    </ThemedButton>
   </div>
 </template>
 
@@ -37,6 +32,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '../telegram/composables/useApi'
 import AnimatedCard from './AnimatedCard.vue'
+import SessionInfo from './SessionInfo.vue'
+import ThemedButton from './ThemedButton.vue'
 import { useLocalization } from '@/locales/index.js'
 import { getUserInfoFromToken } from '../telegram/auth/user'
 

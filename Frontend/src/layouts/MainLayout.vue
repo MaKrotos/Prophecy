@@ -1,29 +1,28 @@
 <template>
-  <div class="app" :class="{ 
-    'telegram-env': isTelegram,
-    'tg-theme-dark': isDarkTheme,
-    'tg-theme-light': !isDarkTheme
-  }">
-    <HeaderNav :title="pageTitle" />
-    
-    <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <transition :name="transitionName" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
-    </main>
-    
-    <BottomNav />
-  </div>
+  <ThemeManager>
+    <div class="app">
+      <HeaderNav :title="pageTitle" />
+      
+      <main class="main-content">
+        <router-view v-slot="{ Component }">
+          <transition :name="transitionName" mode="out-in">
+            <component :is="Component" />
+          </transition>
+        </router-view>
+      </main>
+      
+      <BottomNav />
+    </div>
+  </ThemeManager>
 </template>
 
 <script setup>
-import { ref, computed, watch, onMounted, nextTick } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HeaderNav from '../components/HeaderNav.vue'
 import BottomNav from '../components/BottomNav.vue'
 import UserStats from '../components/UserStats.vue'
+import ThemeManager from '../components/ThemeManager.vue'
 import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
 import { getUserInfoFromToken } from '../telegram/auth/user'
 
@@ -32,13 +31,9 @@ const router = useRouter()
 const transitionName = ref('slide-left')
 
 // Используем рефакторизованный композабл
-const { 
-  isTelegram, 
-  themeParams, 
-  isDarkTheme,
+const {
+  isTelegram,
   telegramUser,
-  applyThemeToApp,
-  refreshTheme,
   sendAuthToServer
 } = useTelegramWebApp()
 
@@ -69,23 +64,6 @@ watch(() => route.path, (newPath, oldPath) => {
   }
 })
 
-// Следим за изменениями темы
-watch(themeParams, (newTheme) => {
-  if (newTheme) {
-    console.log('🎨 Theme changed in MainLayout:', newTheme)
-    applyThemeToApp(newTheme)
-    
-    // Обновляем заголовок и фон в Telegram WebApp
-    updateTelegramAppColors(newTheme)
-  }
-})
-
-// Следим за изменениями темы (темная/светлая)
-watch(isDarkTheme, (newIsDark) => {
-  console.log('🌓 Dark theme changed:', newIsDark)
-  // Можно добавить дополнительную логику при смене темы
-})
-
 // Следим за пользователем Telegram
 watch(telegramUser, (newUser) => {
   if (newUser) {
@@ -98,68 +76,6 @@ watch(telegramUser, (newUser) => {
 // Заголовок страницы из meta данных текущего route
 const pageTitle = computed(() => {
   return route.meta?.title || 'Мое Приложение'
-})
-
-// Функция для обновления цветов в Telegram WebApp
-const updateTelegramAppColors = (theme) => {
-  if (!isTelegram.value || !window.Telegram?.WebApp) return
-  
-  const webApp = window.Telegram.WebApp
-  
-  try {
-    // Устанавливаем цвет заголовка
-    if (theme.bg_color) {
-      webApp.setHeaderColor(theme.bg_color)
-    }
-    
-    // Устанавливаем цвет фона
-    if (theme.bg_color) {
-      webApp.setBackgroundColor(theme.bg_color)
-    }
-    
-    console.log('📱 Telegram WebApp colors updated')
-  } catch (error) {
-    console.error('❌ Error updating Telegram WebApp colors:', error)
-  }
-}
-
-// Дополнительная инициализация при монтировании
-onMounted(async () => {
-  console.log('🚀 MainLayout mounted - Telegram environment:', isTelegram.value)
-  
-  // Ждем следующего тика для гарантии применения стилей
-  await nextTick()
-  
-  // Применяем тему сразу при загрузке, если она уже доступна
-  if (themeParams.value) {
-    console.log('🎨 Applying initial theme:', themeParams.value)
-    applyThemeToApp(themeParams.value)
-    updateTelegramAppColors(themeParams.value)
-  } else {
-    // Если тема еще не загружена, пробуем обновить
-    refreshTheme()
-  }
-  
-  // Добавляем глобальные обработчики для тем
-  if (isTelegram.value && window.Telegram?.WebApp) {
-    const webApp = window.Telegram.WebApp
-    
-    // Обработчик изменения темы
-    webApp.onEvent('themeChanged', (themeParams) => {
-      console.log('🎨 Global theme changed:', themeParams)
-      applyThemeToApp(themeParams)
-      updateTelegramAppColors(themeParams)
-    })
-    
-    // Обработчик изменения viewport
-    webApp.onEvent('viewportChanged', () => {
-      console.log('📱 Viewport changed:', {
-        height: webApp.viewportHeight,
-        stableHeight: webApp.viewportStableHeight,
-        isExpanded: webApp.isExpanded
-      })
-    })
-  }
 })
 </script>
 
@@ -182,12 +98,6 @@ onMounted(async () => {
   background-color: var(--tg-theme-bg-color, #ffffff);
   color: var(--tg-theme-text-color, #000000);
   position: relative;
-}
-
-/* Стили для Telegram среды */
-.app.telegram-env {
-  background-color: var(--tg-theme-bg-color);
-  color: var(--tg-theme-text-color);
 }
 
 /* Анимации переходов */

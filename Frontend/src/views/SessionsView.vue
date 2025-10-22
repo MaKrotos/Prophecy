@@ -4,9 +4,9 @@
       <h2 class="page-title">🎮 {{ t('sessions_view.title') }}</h2>
       <p class="page-description">{{ t('sessions_view.description') }}</p>
 
-      <button v-if="isArchitect" class="create-session-button" @click="goToCreateSession">
+      <ThemedButton v-if="isArchitect" button-type="primary" class="create-session-button" @click="goToCreateSession">
         + {{ t('sessions_view.create_session') }}
-      </button>
+      </ThemedButton>
     </div>
 
     <AnimatedCardList :items="sessions" :loading="loading" :no-more-items="noMoreSessions" key-field="id"
@@ -16,46 +16,22 @@
         <div class="session-header">
           <h3 class="session-name">{{ session.name }}</h3>
           <div class="session-controls">
-            <button class="session-button" @click="viewSession(session)">
+            <ThemedButton button-type="icon" @click="viewSession(session)">
               👁️
-            </button>
-            <button v-if="canManageSession(session)" class="session-button delete-button"
-              @click="deleteSession(session)" :title="t('session_detail_view.delete')">
+            </ThemedButton>
+            <ThemedButton v-if="canManageSession(session)" button-type="danger" @click="deleteSession(session)" :title="t('session_detail_view.delete')">
               🗑️
-            </button>
+            </ThemedButton>
           </div>
         </div>
 
         <div class="session-details">
-          <div class="detail-item">
-            <span class="detail-label">{{ t('sessions_view.description') }}:</span>
-            <span class="detail-value">{{ session.description || t('sessions_view.no_description') }}</span>
-          </div>
-
-          <div class="detail-item">
-            <span class="detail-label">{{ t('sessions_view.architect') }}:</span>
-            <span class="detail-value">{{ session.architect_name }}</span>
-          </div>
-
-          <div class="detail-item">
-            <span class="detail-label">{{ t('sessions_view.created') }}:</span>
-            <span class="detail-value">{{ formatDate(session.created_at) }}</span>
-          </div>
-
-          <div class="detail-item">
-            <span class="detail-label">{{ t('sessions_view.players') }}:</span>
-            <span class="detail-value">{{ session.player_count }}</span>
-          </div>
-
+          <SessionInfo :session="session" :show-description="true" :show-player-count="true" />
+          
           <!-- Реферальная ссылка для всех пользователей -->
           <div class="detail-item">
             <span class="detail-label">{{ t('sessions_view.referral_link') }}:</span>
-            <div class="referral-link-container">
-              <span class="detail-value referral-link">{{ getReferralLink(session) }}</span>
-              <button class="copy-button" @click="copyReferralLink(session)" :title="t('sessions_view.copy_link')">
-                📋
-              </button>
-            </div>
+            <ReferralLink :session="session" />
           </div>
         </div>
       </template>
@@ -68,6 +44,9 @@ import { ref, onMounted, computed, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '../telegram/composables/useApi'
 import AnimatedCardList from '../components/AnimatedCardList.vue'
+import ReferralLink from '../components/ReferralLink.vue'
+import SessionInfo from '../components/SessionInfo.vue'
+import ThemedButton from '../components/ThemedButton.vue'
 import { useLocalization } from '@/locales/index.js'
 import { getUserInfoFromToken } from '../telegram/auth/user'
 
@@ -97,81 +76,7 @@ const canManageSession = (session) => {
       userInfo.value.id === session.architect_id)
 }
 
-// Получение реферальной ссылки для сессии
-const getReferralLink = (session) => {
-  // Используем имя бота из переменных окружения или значение по умолчанию
-  const botUsername = import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'
-  // Формируем ссылку в формате Telegram Mini App
-  return `https://t.me/${botUsername}?startapp=${session.referral_link}`
-}
 
-// Копирование реферальной ссылки в буфер обмена
-const copyReferralLink = (session) => {
-  const referralLink = getReferralLink(session)
-
-  // Используем Clipboard API, если доступно
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(referralLink).then(() => {
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.showAlert(t('sessions_view.link_copied'))
-      }
-    }).catch(err => {
-      console.error('Не удалось скопировать ссылку: ', err)
-      // Альтернативный метод копирования
-      fallbackCopyTextToClipboard(referralLink)
-    })
-  } else {
-    // Альтернативный метод копирования для старых браузеров
-    fallbackCopyTextToClipboard(referralLink)
-  }
-}
-
-// Альтернативный метод копирования текста в буфер обмена
-const fallbackCopyTextToClipboard = (text) => {
-  const textArea = document.createElement("textarea")
-  textArea.value = text
-
-  // Избегаем прокрутки страницы
-  textArea.style.top = "0"
-  textArea.style.left = "0"
-  textArea.style.position = "fixed"
-  textArea.style.opacity = "0"
-
-  document.body.appendChild(textArea)
-  textArea.focus()
-  textArea.select()
-
-  try {
-    const successful = document.execCommand('copy')
-    if (successful) {
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.showAlert(t('sessions_view.link_copied'))
-      }
-    } else {
-      console.error('Не удалось скопировать ссылку')
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.showAlert(t('sessions_view.copy_error'))
-      }
-    }
-  } catch (err) {
-    console.error('Ошибка при копировании ссылки: ', err)
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.showAlert(t('sessions_view.copy_error'))
-    }
-  }
-
-  document.body.removeChild(textArea)
-}
-
-// Форматирование даты
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('ru-RU', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric'
-  })
-}
 
 // Загрузка сессий
 const loadSessions = async () => {

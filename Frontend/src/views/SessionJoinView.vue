@@ -19,13 +19,13 @@
       </div>
 
       <div class="button-group">
-        <button class="join-button confirm-button" @click="joinSession" :disabled="joining">
+        <ThemedButton button-type="primary" class="join-button confirm-button" @click="joinSession" :disabled="joining">
           {{ joining ? t('session_join_view.joining') : t('session_join_view.yes') }}
-        </button>
+        </ThemedButton>
 
-        <button class="cancel-button" @click="cancelJoin">
+        <ThemedButton button-type="secondary" @click="cancelJoin">
           {{ t('session_join_view.no') }}
-        </button>
+        </ThemedButton>
       </div>
     </div>
   </div>
@@ -35,6 +35,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useApi } from '../telegram/composables/useApi'
+import ThemedButton from '../components/ThemedButton.vue'
 import { useLocalization } from '@/locales/index.js'
 import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
 
