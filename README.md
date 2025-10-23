@@ -31,7 +31,7 @@ version: "3.8"
 services:
   frontend:
     build:
-      context: .
+      context: ./Frontend
       dockerfile: Dockerfile
     restart: unless-stopped
     container_name: frontend
