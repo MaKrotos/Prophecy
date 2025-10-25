@@ -12,6 +12,7 @@ import { useRouter } from "vue-router";
 export function useTelegramWebApp() {
   // Router
   const router = useRouter();
+  const processedStartParams = ref(new Set());
 
   // Reactive state
   const telegramUser = ref(null);
@@ -157,6 +158,12 @@ export function useTelegramWebApp() {
       return;
     }
 
+    if (processedStartParams.value.has(param)) {
+      console.log("⚠️ Этот startParam уже был обработан в текущей сессии");
+      startParam.value = null;
+      return;
+    }
+
     // Разбиваем параметр на части по "_"
     const parts = param.split("_");
     const action = parts[0];
@@ -176,6 +183,10 @@ export function useTelegramWebApp() {
             "🔗 Перенаправление на страницу присоединения к сессии:",
             sessionId
           );
+
+          // Добавляем в обработанные
+          processedStartParams.value.add(param);
+
           // Небольшая задержка для уверенности в инициализации
           setTimeout(() => {
             router.push(`/sessions/join/${sessionId}`);

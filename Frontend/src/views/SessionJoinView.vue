@@ -3,21 +3,32 @@
     <div v-if="loading" class="loading">
       {{ t('session_join_view.loading') }}
     </div>
-    <div v-else-if="success" class="success">
-      {{ t('session_join_view.success') }}
+    <div v-else-if="success" class="success-container">
+      <div class="success-card">
+        <div class="success-icon">✅</div>
+        <h2 class="success-title">{{ t('session_join_view.success') }}</h2>
+        <p class="success-message">{{ t('session_join_view.description') }}</p>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      </div>
     </div>
-    <div v-else-if="error" class="error">
-      {{ error }}
+    <div v-else-if="error" class="error-container">
+      <div class="error-card">
+        <div class="error-icon">⚠️</div>
+        <h2 class="error-title">{{ t('session_join_view.join_error') }}</h2>
+        <p class="error-message">{{ error }}</p>
+        <ThemedButton button-type="primary" @click="retryLoad">
+          {{ t('auth.error.retry') }}
+        </ThemedButton>
+      </div>
     </div>
     <div v-else class="join-content">
       <h2 class="page-title">🎮 {{ t('session_join_view.title') }}</h2>
       <p class="page-description">{{ t('session_join_view.description') }}</p>
 
-      <SessionInfo
-        :session="{ name: sessionName, description: sessionDescription, architect_name: '', created_at: '' }"
-        :show-name="true"
-        :show-description="true"
-      />
+      <SessionInfo :session="{ name: sessionName, description: sessionDescription, architect_name: '', created_at: '' }"
+        :show-name="true" :show-description="true" />
 
       <div class="button-group">
         <ThemedButton button-type="primary" class="join-button confirm-button" @click="joinSession" :disabled="joining">
@@ -54,6 +65,12 @@ const error = ref('')
 const sessionName = ref('')
 const sessionDescription = ref('')
 
+// Функция для повторной загрузки информации о сессии
+const retryLoad = () => {
+  error.value = ''
+  loadSessionInfo()
+}
+
 // Присоединение к сессии
 const joinSession = async () => {
   console.log("🔍 Присоединение к сессии по реферальной ссылке:", route.params.referral_link);
@@ -67,42 +84,33 @@ const joinSession = async () => {
 
     if (response.ok) {
       success.value = true
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.showAlert(t('session_join_view.success'))
-      }
       // Переход к списку сессий через 2 секунды
       setTimeout(() => {
         // Обнуляем startParam, чтобы окно подтверждения не открывалось повторно
         startParam.value = null
-        router.push('/sessions')
+        router.push('/')
       }, 2000)
     } else {
       const errorData = await response.json()
       error.value = errorData.error || t('session_join_view.join_error')
       console.log("⚠️ Ошибка при присоединении к сессии:", error.value);
-      if (window.Telegram && window.Telegram.WebApp) {
-        window.Telegram.WebApp.showAlert(error.value)
-      }
     }
   } catch (err) {
     console.error('Ошибка при присоединении к сессии:', err)
     error.value = t('session_join_view.join_error_general')
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.showAlert(error.value)
-    }
   } finally {
     joining.value = false
   }
 }
 
-// Отмена присоединения и возврат к списку сессий
+// Отмена присоединения и возврат на главную страницу
 const cancelJoin = () => {
   console.log("🔍 Отмена присоединения к сессии");
   console.log("🔍 Значение startParam перед обнулением:", startParam.value);
   // Обнуляем startParam, чтобы окно подтверждения не открывалось повторно
   startParam.value = null;
   console.log("🔍 Значение startParam после обнуления:", startParam.value);
-  router.push('/sessions')
+  router.push('/')
 }
 
 // Получение информации о сессии
@@ -175,21 +183,139 @@ onMounted(() => {
 }
 
 
-.loading,
-.success,
-.error {
+.loading {
   text-align: center;
   padding: 24px;
   color: var(--tg-theme-hint-color, #666666);
   transition: color 0.3s ease;
 }
 
-.success {
-  color: #2ed573;
+/* Success Container Styles */
+.success-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 24px;
 }
 
-.error {
+.success-card {
+  background: var(--tg-theme-secondary-bg-color, white);
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.success-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.success-title {
+  color: var(--tg-theme-text-color, #333333);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.success-message {
+  color: var(--tg-theme-hint-color, #666666);
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+.progress-bar {
+  height: 4px;
+  background: var(--tg-theme-secondary-bg-color, #f0f0f0);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 24px;
+}
+
+.progress-fill {
+  height: 100%;
+  width: 100%;
+  background: var(--tg-theme-button-color, #667eea);
+  animation: progress 2s linear forwards;
+  transform-origin: left;
+}
+
+/* Error Container Styles */
+.error-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 24px;
+}
+
+.error-card {
+  background: var(--tg-theme-secondary-bg-color, white);
+  border-radius: 16px;
+  padding: 32px 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 500px;
+  width: 100%;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.error-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.error-title {
+  color: var(--tg-theme-text-color, #333333);
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.error-message {
   color: #ff4757;
+  font-size: 1rem;
+  margin-bottom: 24px;
+}
+
+/* Button Group Styles */
+.button-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.join-button,
+.confirm-button {
+  width: 100%;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes progress {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
 }
 
 /* Плавные переходы для всех элементов */
@@ -209,5 +335,14 @@ onMounted(() => {
     font-size: 1.3rem;
   }
 
+  .success-card,
+  .error-card {
+    padding: 24px 16px;
+  }
+
+  .success-title,
+  .error-title {
+    font-size: 1.3rem;
+  }
 }
 </style>
