@@ -201,11 +201,12 @@ func GetSessionPlayers(sessionID int) ([]TelegramUser, error) {
 }
 
 // GetPlayerSessions получает все сессии, в которых участвует игрок
-func GetPlayerSessions(playerID int) ([]Session, error) {
+func GetPlayerSessions(playerID int) ([]SessionWithArchitect, error) {
 	query := `
-		SELECT s.id, s.name, s.description, s.architect_id, s.created_at, s.updated_at
+		SELECT s.id, s.name, s.description, s.architect_id, s.referral_link, s.created_at, s.updated_at, u.generated_name as architect_name
 		FROM player_sessions ps
 		JOIN sessions s ON ps.session_id = s.id
+		JOIN telegram_users u ON s.architect_id = u.id
 		WHERE ps.player_id = $1
 		ORDER BY s.created_at DESC`
 
@@ -215,16 +216,18 @@ func GetPlayerSessions(playerID int) ([]Session, error) {
 	}
 	defer rows.Close()
 
-	var sessions []Session
+	var sessions []SessionWithArchitect
 	for rows.Next() {
-		var session Session
+		var session SessionWithArchitect
 		err := rows.Scan(
 			&session.ID,
 			&session.Name,
 			&session.Description,
 			&session.ArchitectID,
+			&session.ReferralLink,
 			&session.CreatedAt,
 			&session.UpdatedAt,
+			&session.ArchitectName,
 		)
 		if err != nil {
 			return nil, err

@@ -25,7 +25,7 @@
     </div>
     <div v-else class="join-content">
       <h2 class="page-title">🎮 {{ t('session_join_view.title') }}</h2>
-      <p class="page-description">{{ t('session_join_view.description') }}</p>
+      <p class="page-description">{{ t('session_join_view.you_invite_join') }}</p>
 
       <SessionInfo :session="{ name: sessionName, description: sessionDescription, architect_name: '', created_at: '' }"
         :show-name="true" :show-description="true" />

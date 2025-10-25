@@ -12,11 +12,11 @@ const routes = [
     },
   },
   {
-    path: "/messages",
-    name: "messages",
-    component: () => import("../views/MessagesView.vue"),
+    path: "/player-sessions",
+    name: "player-sessions",
+    component: () => import("../views/PlayerSessionsView.vue"),
     meta: {
-      title: "Сообщения",
+      title: "Мои Сессии",
       order: 2,
     },
   },
@@ -106,6 +106,42 @@ const routes = [
     meta: {
       title: "Правила Игры",
       order: 11,
+    },
+  },
+  {
+    path: "/session/role",
+    name: "session-role",
+    component: () => import("../views/SessionRoleView.vue"),
+    meta: {
+      title: "Моя роль",
+      order: 12,
+    },
+  },
+  {
+    path: "/session/friends",
+    name: "session-friends",
+    component: () => import("../views/SessionFriendsView.vue"),
+    meta: {
+      title: "Список друзей",
+      order: 13,
+    },
+  },
+  {
+    path: "/session/my-qr",
+    name: "session-my-qr",
+    component: () => import("../views/SessionMyQRView.vue"),
+    meta: {
+      title: "Мой QR код",
+      order: 14,
+    },
+  },
+  {
+    path: "/session/qr-scanner",
+    name: "session-qr-scanner",
+    component: () => import("../views/SessionQRScannerView.vue"),
+    meta: {
+      title: "Сканер QR кодов",
+      order: 15,
     },
   },
 ];

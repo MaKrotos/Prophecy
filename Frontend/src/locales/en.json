@@ -47,10 +47,14 @@
   },
   "bottom_nav": {
     "home": "Home",
-    "messages": "Messages",
+    "sessions": "Sessions",
     "profile": "Profile",
     "settings": "Settings",
-    "scanner": "Scanner"
+    "scanner": "Scanner",
+    "my_role": "My Role",
+    "friends_list": "Friends List",
+    "my_qr": "My QR Code",
+    "qr_scanner": "QR Code Scanner"
   },
   "home_view": {
     "admin": "Administrator",
@@ -212,6 +216,7 @@
     "remove_player_error_general": "An error occurred while removing player from session"
   },
   "session_join_view": {
+     "session": "Сессия",
     "title": "Join Session",
     "description": "You have been invited to join a game session",
     "loading": "Loading session information...",
@@ -226,4 +231,53 @@
     "yes": "Join",
     "no": "Decline"
   }
+,
+  "player_sessions_view": {
+    "title": "My Sessions",
+    "description": "List of game sessions you are participating in",
+    "loading": "Loading sessions...",
+    "no_sessions": "You are not participating in any sessions yet",
+    "load_error": "Failed to load session list",
+    "load_error_general": "An error occurred while loading the session list"
+  },
+  "session_role_view": {
+    "title": "My Role",
+    "description": "Your role and character in the current session",
+    "your_role": "Your Role",
+    "role_description": "You are a player in this session. Follow the host's instructions and interact with other participants.",
+    "character": "Your Character",
+    "character_description": "Your character is a mysterious stranger. You have hidden motives and secrets that need to be revealed during the game."
+  },
+  "session_friends_view": {
+    "title": "Friends List",
+    "description": "Friends participating in the current session",
+    "loading": "Loading friends list...",
+    "no_friends": "There are no friends in the session yet",
+    "online": "Online",
+    "offline": "Offline"
+  },
+  "session_my_qr_view": {
+    "title": "My QR Code",
+    "description": "Your personal QR code for participating in the session",
+    "your_qr_code": "Your QR Code",
+    "share_qr": "Show this code to other participants for quick joining",
+    "copy_link": "Copy Link",
+    "share": "Share",
+    "how_to_use": "How to use QR code",
+    "instruction_1": "Open the camera on your device",
+    "instruction_2": "Point the camera at another participant's QR code",
+    "instruction_3": "Tap on the notification about the recognized QR code"
+  },
+  "session_qr_scanner_view": {
+    "title": "QR Code Scanner",
+    "description": "Scan other participants' QR codes",
+    "camera_access": "Camera access is required to scan QR codes",
+    "enable_camera": "Enable Camera",
+    "how_to_scan": "How to scan QR codes",
+    "step_1": "Tap the 'Enable Camera' button above",
+    "step_2": "Point the camera at another participant's QR code",
+    "step_3": "Wait for the code to be recognized",
+    "step_4": "Follow the on-screen instructions"
+  }
 }
+
