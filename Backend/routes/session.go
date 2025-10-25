@@ -40,6 +40,9 @@ func RegisterSessionRoutes(router gin.IRouter) {
 		// Присоединение к сессии по реферальной ссылке
 		sessionGroup.POST("/join/:referral_link", handlers.JoinSessionByReferral)
 		sessionGroup.GET("/join/:referral_link", handlers.JoinSessionByReferral)
+
+		// Получение данных для QR-кода
+		sessionGroup.GET("/:id/qr-data", handlers.GetQRCodeData)
 	}
 
 	// Группа маршрутов для получения сессий игрока

@@ -150,7 +150,10 @@
     "no_cameras_found": "No cameras found",
     "camera_not_readable": "Camera is not readable. It might be used by another application.",
     "camera_overconstrained": "Selected camera is not suitable for use.",
-    "stream_api_not_supported": "Your browser does not support the required features to work with the camera."
+    "stream_api_not_supported": "Your browser does not support the required features to work with the camera.",
+    "error": "Error",
+    "decryption_failed": "Failed to decrypt QR code data",
+    "decryption_error": "Error decrypting QR code data"
   },
   "components": {
     "animatedCards": {
@@ -213,7 +216,12 @@
     "remove_player_confirm": "Are you sure you want to remove player",
     "remove_player_success": "Player removed from session successfully",
     "remove_player_error": "Failed to remove player from session",
-    "remove_player_error_general": "An error occurred while removing player from session"
+    "remove_player_error_general": "An error occurred while removing player from session",
+    "session": "Session",
+    "player_id": "Player ID",
+    "session_id": "Session ID",
+    "timestamp": "Timestamp",
+    "show_qr_code": "Show QR Code"
   },
   "session_join_view": {
      "session": "Сессия",
@@ -266,7 +274,11 @@
     "how_to_use": "How to use QR code",
     "instruction_1": "Open the camera on your device",
     "instruction_2": "Point the camera at another participant's QR code",
-    "instruction_3": "Tap on the notification about the recognized QR code"
+    "instruction_3": "Tap on the notification about the recognized QR code",
+    "loading": "Loading QR code data...",
+    "load_error": "Failed to load QR code data",
+    "load_error_general": "An error occurred while loading QR code data",
+    "refresh": "Refresh QR Code"
   },
   "session_qr_scanner_view": {
     "title": "QR Code Scanner",
@@ -277,7 +289,8 @@
     "step_1": "Tap the 'Enable Camera' button above",
     "step_2": "Point the camera at another participant's QR code",
     "step_3": "Wait for the code to be recognized",
-    "step_4": "Follow the on-screen instructions"
+    "step_4": "Follow the on-screen instructions",
+    "scan_again": "Scan Again"
   }
 }
 

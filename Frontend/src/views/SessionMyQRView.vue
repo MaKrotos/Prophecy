@@ -6,27 +6,29 @@
     </div>
     
     <div class="qr-content">
-      <ThemedCard card-type="default" class="qr-card">
+      <ThemedCard v-if="loading" card-type="default" class="qr-card">
+        <div class="loading">{{ t('session_my_qr_view.loading') }}</div>
+      </ThemedCard>
+      
+      <ThemedCard v-else-if="error" card-type="default" class="qr-card">
+        <div class="error">{{ error }}</div>
+      </ThemedCard>
+      
+      <ThemedCard v-else-if="qrData" card-type="default" class="qr-card">
         <div class="qr-header">
           <h3>{{ t('session_my_qr_view.your_qr_code') }}</h3>
           <p class="qr-subtitle">{{ t('session_my_qr_view.share_qr') }}</p>
         </div>
         
-        <div class="qr-display">
-          <div class="qr-placeholder">
-            <div class="qr-grid"></div>
-          </div>
-          <div class="qr-info">
-            <p class="qr-text">prophecy://session/player/12345</p>
-          </div>
-        </div>
+        <EncryptedQRDisplay 
+          :player-id="qrData.player_id" 
+          :session-id="qrData.session_id" 
+          :session-name="qrData.session_name" 
+        />
         
         <div class="qr-actions">
-          <ThemedButton button-type="primary" class="action-button">
-            📋 {{ t('session_my_qr_view.copy_link') }}
-          </ThemedButton>
-          <ThemedButton button-type="secondary" class="action-button">
-            📤 {{ t('session_my_qr_view.share') }}
+          <ThemedButton button-type="primary" class="action-button" @click="refreshQRData">
+            🔄 {{ t('session_my_qr_view.refresh') }}
           </ThemedButton>
         </div>
       </ThemedCard>
@@ -44,11 +46,53 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useLocalization } from '@/locales/index.js'
+import { useApi } from '@/telegram/composables/useApi.js'
 import ThemedCard from '../components/ThemedCard.vue'
 import ThemedButton from '../components/ThemedButton.vue'
+import EncryptedQRDisplay from '../components/EncryptedQRDisplay.vue'
 
 const { t } = useLocalization()
+const route = useRoute()
+const { apiGet } = useApi()
+
+const qrData = ref(null)
+const loading = ref(false)
+const error = ref(null)
+
+// Загрузка данных для QR-кода
+const loadQRData = async () => {
+  try {
+    loading.value = true
+    error.value = null
+    
+    const response = await apiGet(`sessions/${route.params.id}/qr-data`)
+    
+    if (response.ok) {
+      const data = await response.json()
+      qrData.value = data
+    } else {
+      error.value = t('session_my_qr_view.load_error')
+    }
+  } catch (err) {
+    console.error('Ошибка при загрузке данных QR-кода:', err)
+    error.value = t('session_my_qr_view.load_error_general')
+  } finally {
+    loading.value = false
+  }
+}
+
+// Обновление данных QR-кода
+const refreshQRData = () => {
+  loadQRData()
+}
+
+// Первоначальная загрузка
+onMounted(() => {
+  loadQRData()
+})
 </script>
 
 <style scoped>
@@ -117,58 +161,11 @@ const { t } = useLocalization()
   transition: color 0.3s ease;
 }
 
-.qr-display {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.qr-placeholder {
-  width: 200px;
-  height: 200px;
-  border: 2px solid var(--tg-theme-hint-color, #666666);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: white;
-}
-
-.qr-grid {
-  width: 180px;
-  height: 180px;
-  background: 
-    linear-gradient(to right, #000 2px, transparent 2px) 0 0,
-    linear-gradient(to right, #000 2px, transparent 2px) 0 100%,
-    linear-gradient(to left, #000 2px, transparent 2px) 100% 0,
-    linear-gradient(to left, #000 2px, transparent 2px) 100% 100%,
-    linear-gradient(to bottom, #000 2px, transparent 2px) 0 0,
-    linear-gradient(to bottom, #000 2px, transparent 2px) 100% 0,
-    linear-gradient(to top, #000 2px, transparent 2px) 0 100%,
-    linear-gradient(to top, #000 2px, transparent 2px) 100% 100%;
-  background-repeat: no-repeat;
-  background-size: 20px 20px;
-}
-
-.qr-info {
-  text-align: center;
-}
-
-.qr-text {
-  color: var(--tg-theme-text-color, #333333);
-  font-size: 0.875rem;
-  font-family: monospace;
-  word-break: break-all;
-  margin: 0;
-  transition: color 0.3s ease;
-}
-
 .qr-actions {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  margin-top: 20px;
 }
 
 .action-button {
@@ -201,13 +198,24 @@ const { t } = useLocalization()
   margin-bottom: 0;
 }
 
+.loading,
+.error {
+  text-align: center;
+  padding: 24px;
+  color: var(--tg-theme-hint-color, #666666);
+  transition: color 0.3s ease;
+}
+
+.error {
+  color: #ff4757;
+}
+
 /* Плавные переходы для всех элементов */
 .page,
 .page-title,
 .page-description,
 .qr-header h3,
 .qr-subtitle,
-.qr-text,
 .instructions-card h3,
 .instructions-list {
   transition: all 0.3s ease;
@@ -221,17 +229,6 @@ const { t } = useLocalization()
   
   .page-title {
     font-size: 1.3rem;
-  }
-  
-  .qr-placeholder {
-    width: 160px;
-    height: 160px;
-  }
-  
-  .qr-grid {
-    width: 140px;
-    height: 140px;
-    background-size: 16px 16px;
   }
   
   .qr-actions {

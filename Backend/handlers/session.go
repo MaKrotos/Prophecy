@@ -555,3 +555,60 @@ func JoinSessionByReferral(c *gin.Context) {
 		c.JSON(http.StatusOK, session)
 	}
 }
+
+// GetQRCodeData получает данные для QR-кода
+func GetQRCodeData(c *gin.Context) {
+	// Получаем ID сессии из параметров URL
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session ID"})
+		return
+	}
+
+	// Получаем информацию о пользователе из контекста
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Получаем сессию из базы данных
+	session, err := models.GetSessionByID(sessionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session"})
+		return
+	}
+
+	if session == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+		return
+	}
+
+	// Проверяем, участвует ли пользователь в сессии
+	isPlayer, err := models.IsPlayerInSession(userID.(int), session.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check player status"})
+		return
+	}
+
+	// Если пользователь не участник сессии и не админ, возвращаем ошибку
+	user, err := models.GetTelegramUserByID(userID.(int))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user information"})
+		return
+	}
+
+	if !isPlayer && !user.IsAdmin && user.Role != "Архитектор" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	// Формируем данные для QR-кода
+	qrData := map[string]interface{}{
+		"player_id":   userID,
+		"session_id":  session.ID,
+		"session_name": session.Name,
+	}
+
+	c.JSON(http.StatusOK, qrData)
+}

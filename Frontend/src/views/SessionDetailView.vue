@@ -23,6 +23,13 @@
         <ReferralLink :session="session" action-prefix="joinSession" />
       </div>
 
+      <!-- QR код -->
+      <div class="qr-section">
+        <ThemedButton button-type="primary" @click="goToQRCode">
+          📱 {{ t('session_detail_view.show_qr_code') }}
+        </ThemedButton>
+      </div>
+
       <div class="players-section">
         <div class="section-header">
           <h3 class="section-title">👥 {{ t('session_detail_view.players') }}</h3>
@@ -155,6 +162,11 @@ const loadPlayers = async () => {
   } finally {
     loadingPlayers.value = false
   }
+}
+
+// Переход к странице QR-кода
+const goToQRCode = () => {
+  router.push(`/session/my-qr/${route.params.id}`)
 }
 
 // Редактирование сессии
@@ -449,5 +461,13 @@ onMounted(() => {
   background: var(--tg-theme-bg-color, #f5f5f5);
   padding: 8px 12px;
   border-radius: 8px;
+}
+
+.qr-section {
+  background: var(--tg-theme-secondary-bg-color, white);
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  text-align: center;
 }
 </style>

@@ -6,14 +6,28 @@
     </div>
     
     <div class="scanner-content">
-      <ThemedCard card-type="default" class="scanner-card">
+      <!-- Отображение дешифрованных данных -->
+      <DecryptedQRDisplay 
+        v-if="scannedData" 
+        :encrypted-value="scannedData" 
+      />
+      
+      <!-- Сканер QR-кода -->
+      <ThemedCard v-if="!scannedData" card-type="default" class="scanner-card">
         <div class="scanner-placeholder">
           <div class="scanner-icon">📷</div>
           <p class="scanner-text">{{ t('session_qr_scanner_view.camera_access') }}</p>
-          <ThemedButton button-type="primary" class="scanner-button">
+          <ThemedButton button-type="primary" class="scanner-button" @click="startScanning">
             {{ t('session_qr_scanner_view.enable_camera') }}
           </ThemedButton>
         </div>
+      </ThemedCard>
+      
+      <!-- Кнопка для сброса сканирования -->
+      <ThemedCard v-if="scannedData" card-type="default" class="reset-card">
+        <ThemedButton button-type="secondary" class="reset-button" @click="resetScanning">
+          🔄 {{ t('session_qr_scanner_view.scan_again') }}
+        </ThemedButton>
       </ThemedCard>
       
       <ThemedCard card-type="default" class="instructions-card">
@@ -30,11 +44,33 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useLocalization } from '@/locales/index.js'
 import ThemedCard from '../components/ThemedCard.vue'
 import ThemedButton from '../components/ThemedButton.vue'
+import DecryptedQRDisplay from '../components/DecryptedQRDisplay.vue'
 
 const { t } = useLocalization()
+
+const scannedData = ref(null)
+
+// Запуск сканирования (имитация)
+const startScanning = () => {
+  // В реальной реализации здесь будет код для доступа к камере
+  // и сканирования QR-кода
+  
+  // Для демонстрации имитируем сканирование
+  setTimeout(() => {
+    // Здесь будет зашифрованное значение из QR-кода
+    // В реальной реализации это значение будет получено от сканера
+    scannedData.value = "зашифрованные_данные_из_qr_кода" // Заглушка
+  }, 1000)
+}
+
+// Сброс сканирования
+const resetScanning = () => {
+  scannedData.value = null
+}
 </script>
 
 <style scoped>
@@ -70,7 +106,8 @@ const { t } = useLocalization()
 }
 
 .scanner-card,
-.instructions-card {
+.instructions-card,
+.reset-card {
   background: var(--tg-theme-secondary-bg-color, white);
   border-radius: 12px;
   padding: 20px;
@@ -131,6 +168,11 @@ const { t } = useLocalization()
 
 .instructions-list li:last-child {
   margin-bottom: 0;
+}
+
+.reset-button {
+  width: 100%;
+  justify-content: center;
 }
 
 /* Плавные переходы для всех элементов */

@@ -127,7 +127,7 @@ const routes = [
     },
   },
   {
-    path: "/session/my-qr",
+    path: "/session/my-qr/:id",
     name: "session-my-qr",
     component: () => import("../views/SessionMyQRView.vue"),
     meta: {
