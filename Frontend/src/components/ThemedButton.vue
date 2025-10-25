@@ -33,9 +33,9 @@ const handleClick = (event) => {
 .themed-button {
   border: none;
   border-radius: 8px;
-  padding: 12px 20px;
+  padding: 8px 8px;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
   display: inline-flex;

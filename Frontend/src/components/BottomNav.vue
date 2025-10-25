@@ -118,7 +118,7 @@ const navigateTo = (path) => {
   right: 0;
   background: var(--tg-theme-bg-color, white);
   border-top: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
-  padding: 8px 0;
+  padding: 4px 0;
   z-index: 100;
   transition: all 0.3s ease;
 }
@@ -159,8 +159,8 @@ const navigateTo = (path) => {
 
 .nav-label {
   font-size: 0.75rem;
-  margin-top: 4px;
-  font-weight: 500;
+  margin-top: 0px;
+  font-weight: 200;
   color: var(--tg-theme-hint-color, #666);
   transition: all 0.3s ease;
 }

@@ -143,7 +143,10 @@
     "select_camera": "Select camera:",
     "camera_access_denied": "Camera access denied. Please allow camera access in your browser settings.",
     "camera_access_requested": "Requesting camera access...",
-    "no_cameras_found": "No cameras found"
+    "no_cameras_found": "No cameras found",
+    "camera_not_readable": "Camera is not readable. It might be used by another application.",
+    "camera_overconstrained": "Selected camera is not suitable for use.",
+    "stream_api_not_supported": "Your browser does not support the required features to work with the camera."
   },
   "components": {
     "animatedCards": {
