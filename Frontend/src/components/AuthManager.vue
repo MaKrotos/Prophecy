@@ -6,7 +6,7 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
+import { useTelegramWebAppSingleton } from '../telegram/composables/useTelegramWebAppSingleton'
 import { useLocalization } from '../locales/index.js'
 
 const { t } = useLocalization()
@@ -18,7 +18,7 @@ const {
   sendAuthToServer,
   hasValidToken,
   checkTelegramIdConsistency
-} = useTelegramWebApp()
+} = useTelegramWebAppSingleton()
 
 // Инициализация аутентификации
 const initializeAuth = async () => {

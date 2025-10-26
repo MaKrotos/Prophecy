@@ -1,12 +1,12 @@
 import { ref } from 'vue'
 import { authenticatedFetch, hasValidToken, getJWTToken } from '../auth/jwt.js'
-import { useTelegramWebApp } from './useTelegramWebApp.js'
+import { useTelegramWebAppSingleton } from './useTelegramWebAppSingleton.js'
 
 /**
  * Композиция для выполнения API запросов с автоматическим добавлением токена
  */
 export function useApi() {
-  const { jwtToken, sendAuthToServer } = useTelegramWebApp()
+  const { jwtToken, sendAuthToServer } = useTelegramWebAppSingleton()
   
   /**
    * Выполняет API запрос с автоматическим добавлением префикса /api/ и токена

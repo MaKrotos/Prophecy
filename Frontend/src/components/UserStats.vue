@@ -32,7 +32,7 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
+import { useTelegramWebAppSingleton } from '../telegram/composables/useTelegramWebAppSingleton'
 import { getUserInfoFromToken } from '../telegram/auth/user'
 import { useApi } from '../telegram/composables/useApi'
 import { useLocalization } from '@/locales/index.js'
@@ -42,7 +42,7 @@ import ThemedButtonLined from './ThemedButtonLined.vue'
 const { t } = useLocalization()
 
 const router = useRouter()
-const { sendAuthToServer, jwtToken } = useTelegramWebApp()
+const { sendAuthToServer, jwtToken } = useTelegramWebAppSingleton()
 const { apiGet } = useApi()
 
 // Получаем информацию о пользователе из токена

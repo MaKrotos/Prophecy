@@ -50,13 +50,13 @@ import { useApi } from '../telegram/composables/useApi'
 import ThemedButton from '../components/ThemedButton.vue'
 import SessionInfo from '../components/SessionInfo.vue'
 import { useLocalization } from '@/locales/index.js'
-import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
+import { useTelegramWebAppSingleton } from '../telegram/composables/useTelegramWebAppSingleton'
 
 const { t } = useLocalization()
 const route = useRoute()
 const router = useRouter()
 const { apiPost, apiGet } = useApi()
-const { startParam } = useTelegramWebApp()
+const { startParam } = useTelegramWebAppSingleton()
 
 const loading = ref(true)
 const joining = ref(false)

@@ -6,7 +6,7 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted } from 'vue'
-import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
+import { useTelegramWebAppSingleton } from '../telegram/composables/useTelegramWebAppSingleton'
 
 const props = defineProps({
   applyToBody: {
@@ -20,7 +20,7 @@ const {
   themeParams, 
   isDarkTheme,
   applyThemeToApp 
-} = useTelegramWebApp()
+} = useTelegramWebAppSingleton()
 
 // Вычисляем класс темы
 const themeClass = computed(() => {

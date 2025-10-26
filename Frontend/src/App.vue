@@ -25,7 +25,7 @@ import { ref, onMounted } from 'vue'
 import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
 import AuthErrorLayout from '/src/layouts/AuthErrorLayout.vue'
-import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp'
+import { useTelegramWebAppSingleton } from '/src/telegram/composables/useTelegramWebAppSingleton'
 import { useLocalization, initLocalization } from '/src/locales/index.js'
 
 const { t } = useLocalization()
@@ -43,7 +43,7 @@ const {
   retryAuth,
   clearAuthError,
   authError
-} = useTelegramWebApp()
+} = useTelegramWebAppSingleton()
 
 const isInitialized = ref(false)
 const loaderMessage = ref(t('app.initializing'))

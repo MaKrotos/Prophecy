@@ -158,11 +158,7 @@ export function useTelegramWebApp() {
       return;
     }
 
-    if (processedStartParams.value.has(param)) {
-      console.log("⚠️ Этот startParam уже был обработан в текущей сессии");
-      startParam.value = null;
-      return;
-    }
+
 
     // Разбиваем параметр на части по "_"
     const parts = param.split("_");
@@ -184,16 +180,23 @@ export function useTelegramWebApp() {
             sessionId
           );
 
+              if (processedStartParams.value.has(param)) {
+                console.log("⚠️ Этот startParam уже был обработан в текущей сессии");
+                startParam.value = null;
+                return;
+              }else
+              {
+
+                console.log("Join alr sessions", processedStartParams)
+              }
+
           // Добавляем в обработанные
           processedStartParams.value.add(param);
 
-          // Небольшая задержка для уверенности в инициализации
-          setTimeout(() => {
-            router.push(`/sessions/join/${sessionId}`);
-          }, 100);
-        } else {
+          router.push(`/sessions/join/${sessionId}`);
+             } else {
           console.log("⚠️ Не указан sessionId для действия join_session");
-        }
+             }
         // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
         console.log("🧹 Обнуление startParam после обработки join_session");
         startParam.value = null;

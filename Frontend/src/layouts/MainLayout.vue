@@ -24,9 +24,8 @@ import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HeaderNav from '../components/HeaderNav.vue'
 import BottomNav from '../components/BottomNav.vue'
-import UserStats from '../components/UserStats.vue'
 import ThemeManager from '../components/ThemeManager.vue'
-import { useTelegramWebApp } from '../telegram/composables/useTelegramWebApp'
+import { useTelegramWebAppSingleton } from '../telegram/composables/useTelegramWebAppSingleton'
 import { getUserInfoFromToken } from '../telegram/auth/user'
 import { useLocalization } from '../locales/index.js'
 
@@ -40,7 +39,7 @@ const {
   isTelegram,
   telegramUser,
   sendAuthToServer
-} = useTelegramWebApp()
+} = useTelegramWebAppSingleton()
 
 // Проверяем, является ли пользователь администратором
 const userInfo = computed(() => getUserInfoFromToken())
