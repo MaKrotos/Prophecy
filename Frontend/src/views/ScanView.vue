@@ -40,7 +40,6 @@
 <script setup>
 import { ref, onUnmounted } from 'vue'
 import { QrcodeStream } from 'vue-qrcode-reader'
-import QrcodeVue from 'qrcode.vue'
 import { useLocalization } from '@/locales/index.js'
 import CameraSelector from '@/components/CameraSelector.vue'
 import QRDisplay from '@/components/QRDisplay.vue'

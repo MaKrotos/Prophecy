@@ -224,9 +224,10 @@
     "show_qr_code": "Show QR Code"
   },
   "session_join_view": {
+    "description": "Description",
      "session": "Сессия",
     "title": "Join Session",
-    "description": "You have been invited to join a game session",
+    "you_invite_join": "You have been invited to join a game session",
     "loading": "Loading session information...",
     "join": "Join Session",
     "joining": "Joining...",
