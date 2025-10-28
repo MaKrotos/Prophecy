@@ -51,10 +51,10 @@
     "profile": "Профиль",
     "settings": "Настройки",
     "scanner": "Сканер",
-    "my_role": "Моя роль",
-    "friends_list": "Список друзей",
-    "my_qr": "Мой QR код",
-    "qr_scanner": "Сканер QR кодов"
+    "my_role": "Роль",
+    "friends_list": "Друзья",
+    "my_qr": "QR код",
+    "qr_scanner": "Сканер"
   },
   "home_view": {
     "admin": "Администратор",
@@ -263,10 +263,12 @@
     "loading": "Загрузка списка друзей...",
     "no_friends": "В сессии пока нет ваших друзей",
     "online": "В сети",
-    "offline": "Не в сети"
+    "offline": "Не в сети",
+    "remove_friend": "Удалить",
+    "confirm_remove_friend": "Вы уверены, что хотите удалить этого друга из списка?"
   },
   "session_my_qr_view": {
-    "title": "Мой QR код",
+    "title": "QR код",
     "description": "Ваш персональный QR код для участия в сессии",
     "your_qr_code": "Ваш QR код",
     "share_qr": "Покажите этот код другим участникам для быстрого присоединения",

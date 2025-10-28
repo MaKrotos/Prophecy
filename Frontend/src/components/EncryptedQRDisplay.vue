@@ -1,7 +1,6 @@
 <template>
   <ThemedCard v-if="encryptedValue" class="qr-display-card">
     <h3>{{ t('scan_view.scanned_qr') }}</h3>
-    <p class="scanned-value">{{ encryptedValue }}</p>
     <div class="qr-code-container">
       <qrcode-vue :value="encryptedValue" :size="200" />
     </div>

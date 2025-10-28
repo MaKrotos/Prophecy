@@ -13,7 +13,7 @@
       
       <transition name="nav" mode="out-in">
         <BottomNav v-if="!isInSession" key="default-nav" />
-        <BottomNav v-else key="session-nav" :nav-items="sessionNavItems" />
+        <BottomNav v-else key="session-nav" :nav-items="sessionNavItemsWithId" />
       </transition>
     </div>
   </ThemeManager>
@@ -51,13 +51,43 @@ const isInSession = computed(() => {
          (route.path.startsWith('/sessions/') && route.params.id)
 })
 
-// Навигационные элементы для сессии
-const sessionNavItems = computed(() => [
-  { path: '/session/role', label: t('bottom_nav.my_role'), icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' },
-  { path: '/session/friends', label: t('bottom_nav.friends_list'), icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' },
-  { path: '/session/my-qr', label: t('bottom_nav.my_qr'), icon: 'M3 11h8V3H3v8zm2-6h4v4H5V5zm8 14h8v-8h-8v8zm2-6h4v4h-4v-4zm-8 2v4h8v-4H3zm10 0v4h8v-4h-8z' },
-  { path: '/session/qr-scanner', label: t('bottom_nav.qr_scanner'), icon: 'M4 4h16v16H4V4zm2 2v12h12V6H6zm3 3h6v2H9V9zm0 4h6v2H9v-2z' }
-])
+// Получаем ID сессии из текущего маршрута
+const sessionId = computed(() => {
+  // Проверяем, есть ли ID в параметрах маршрута
+  if (route.params && route.params.id) {
+    return route.params.id
+  }
+  
+  // Если нет, пытаемся получить из пути
+  const sessionPathMatch = route.path.match(/\/sessions\/([^\/]+)/)
+  if (sessionPathMatch && sessionPathMatch[1]) {
+    return sessionPathMatch[1]
+  }
+  
+  // Если не удалось определить, возвращаем null
+  return null
+})
+
+// Навигационные элементы для сессии с передачей ID
+const sessionNavItemsWithId = computed(() => {
+  // Если у нас нет ID сессии, возвращаем стандартные элементы
+  if (!sessionId.value) {
+    return [
+      { path: '/session/role', label: t('bottom_nav.my_role'), icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' },
+      { path: '/session/friends', label: t('bottom_nav.friends_list'), icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' },
+      { path: '/session/my-qr', label: t('bottom_nav.my_qr'), icon: 'M3 11h8V3H3v8zm2-6h4v4H5V5zm8 14h8v-8h-8v8zm2-6h4v4h-4v-4zm-8 2v4h8v-4H3zm10 0v4h8v-4h-8z' },
+      { path: '/session/qr-scanner', label: t('bottom_nav.qr_scanner'), icon: 'M4 4h16v16H4V4zm2 2v12h12V6H6zm3 3h6v2H9V9zm0 4h6v2H9v-2z' }
+    ]
+  }
+  
+  // Если у нас есть ID сессии, добавляем его к путям, где это необходимо
+  return [
+    { path: '/session/role', label: t('bottom_nav.my_role'), icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' },
+    { path: '/session/friends', label: t('bottom_nav.friends_list'), icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' },
+    { path: `/session/my-qr/${sessionId.value}`, label: t('bottom_nav.my_qr'), icon: 'M3 11h8V3H3v8zm2-6h4v4H5V5zm8 14h8v-8h-8v8zm2-6h4v4h-4v-4zm-8 2v4h8v-4H3zm10 0v4h8v-4h-8z' },
+    { path: '/session/qr-scanner', label: t('bottom_nav.qr_scanner'), icon: 'M4 4h16v16H4V4zm2 2v12h12V6H6zm3 3h6v2H9V9zm0 4h6v2H9v-2z' }
+  ]
+})
 
 // Получаем порядок маршрутов из meta данных
 const getRoutesOrder = () => {

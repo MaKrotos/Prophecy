@@ -53,8 +53,8 @@
     "scanner": "Scanner",
     "my_role": "My Role",
     "friends_list": "Friends List",
-    "my_qr": "My QR Code",
-    "qr_scanner": "QR Code Scanner"
+    "my_qr": "Code",
+    "qr_scanner": " Scanner"
   },
   "home_view": {
     "admin": "Administrator",
@@ -225,7 +225,7 @@
   },
   "session_join_view": {
     "description": "Description",
-     "session": "Сессия",
+     "session": "Session",
     "title": "Join Session",
     "you_invite_join": "You have been invited to join a game session",
     "loading": "Loading session information...",
@@ -263,10 +263,12 @@
     "loading": "Loading friends list...",
     "no_friends": "There are no friends in the session yet",
     "online": "Online",
-    "offline": "Offline"
+    "offline": "Offline",
+    "remove_friend": "Remove",
+    "confirm_remove_friend": "Are you sure you want to remove this friend from the list?"
   },
   "session_my_qr_view": {
-    "title": "My QR Code",
+    "title": "QR Code",
     "description": "Your personal QR code for participating in the session",
     "your_qr_code": "Your QR Code",
     "share_qr": "Show this code to other participants for quick joining",

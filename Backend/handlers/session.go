@@ -144,8 +144,14 @@ func GetSession(c *gin.Context) {
 	}
 
 	// Проверяем права доступа к сессии
-	// Админы и архитектор, создавший сессию, могут получить к ней доступ
-	if !user.IsAdmin && user.Role != "Архитектор" && session.ArchitectID != user.ID {
+	// Админы, архитектор, создавший сессию, и участники сессии могут получить к ней доступ
+	isPlayer, err := models.IsPlayerInSession(user.ID, session.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check player status"})
+		return
+	}
+
+	if !user.IsAdmin && user.Role != "Архитектор" && session.ArchitectID != user.ID && !isPlayer {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
 	}
@@ -611,4 +617,206 @@ func GetQRCodeData(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, qrData)
+}
+
+
+// AddFriendToSession добавляет друга к пользователю в конкретной сессии
+func AddFriendToSession(c *gin.Context) {
+	// Получаем ID сессии из параметров URL
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session ID"})
+		return
+	}
+
+	// Получаем информацию о пользователе из контекста (пользователь, который добавляет друга)
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Получаем ID друга из параметров запроса
+	friendID, err := strconv.Atoi(c.Query("friend_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid friend ID"})
+		return
+	}
+
+	// Проверяем, что пользователь не пытается добавить себя в друзья
+	if userID == friendID {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot add yourself as friend"})
+		return
+	}
+
+	// Получаем сессию из базы данных
+	session, err := models.GetSessionByID(sessionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session"})
+		return
+	}
+
+	if session == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+		return
+	}
+
+	// Проверяем, участвует ли пользователь в сессии
+	isPlayer, err := models.IsPlayerInSession(userID.(int), session.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check player status"})
+		return
+	}
+
+	// Если пользователь не участник сессии и не админ, возвращаем ошибку
+	user, err := models.GetTelegramUserByID(userID.(int))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user information"})
+		return
+	}
+
+	if !isPlayer && !user.IsAdmin && user.Role != "Архитектор" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	// Проверяем, участвует ли друг в сессии
+	isFriendPlayer, err := models.IsPlayerInSession(friendID, session.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check friend status"})
+		return
+	}
+
+	if !isFriendPlayer {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Friend is not a player in this session"})
+		return
+	}
+
+	// Добавляем друга в список друзей пользователя в сессии
+	if err := models.AddFriendToSession(sessionID, userID.(int), friendID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to add friend to session"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Friend added to session successfully"})
+}
+
+// RemoveFriendFromSession удаляет друга пользователя из конкретной сессии
+func RemoveFriendFromSession(c *gin.Context) {
+	// Получаем ID сессии из параметров URL
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session ID"})
+		return
+	}
+
+	// Получаем информацию о пользователе из контекста (пользователь, который удаляет друга)
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Получаем ID друга из параметров запроса
+	friendID, err := strconv.Atoi(c.Query("friend_id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid friend ID"})
+		return
+	}
+
+	// Получаем сессию из базы данных
+	session, err := models.GetSessionByID(sessionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session"})
+		return
+	}
+
+	if session == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+		return
+	}
+
+	// Проверяем, участвует ли пользователь в сессии
+	isPlayer, err := models.IsPlayerInSession(userID.(int), session.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check player status"})
+		return
+	}
+
+	// Если пользователь не участник сессии и не админ, возвращаем ошибку
+	user, err := models.GetTelegramUserByID(userID.(int))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user information"})
+		return
+	}
+
+	if !isPlayer && !user.IsAdmin && user.Role != "Архитектор" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	// Удаляем друга из списка друзей пользователя в сессии
+	if err := models.RemoveFriendFromSession(sessionID, userID.(int), friendID); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to remove friend from session"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Friend removed from session successfully"})
+}
+
+// GetSessionFriends получает список друзей пользователя в сессии
+func GetSessionFriends(c *gin.Context) {
+	// Получаем ID сессии из параметров URL
+	sessionID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid session ID"})
+		return
+	}
+
+	// Получаем информацию о пользователе из контекста
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
+	// Получаем сессию из базы данных
+	session, err := models.GetSessionByID(sessionID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session"})
+		return
+	}
+
+	if session == nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Session not found"})
+		return
+	}
+
+	// Проверяем, участвует ли пользователь в сессии
+	isPlayer, err := models.IsPlayerInSession(userID.(int), session.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check player status"})
+		return
+	}
+
+	// Если пользователь не участник сессии и не админ, возвращаем ошибку
+	user, err := models.GetTelegramUserByID(userID.(int))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user information"})
+		return
+	}
+
+	if !isPlayer && !user.IsAdmin && user.Role != "Архитектор" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	// Получаем список друзей пользователя в сессии
+	friends, err := models.GetSessionFriends(sessionID, userID.(int))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get session friends"})
+		return
+	}
+
+	c.JSON(http.StatusOK, friends)
 }

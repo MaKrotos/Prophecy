@@ -3,18 +3,23 @@
     <div class="header-section">
       <h2 class="page-title">👥 {{ t('session_friends_view.title') }}</h2>
       <p class="page-description">{{ t('session_friends_view.description') }}</p>
+      <button class="scan-qr-btn" @click="scanQRCode">
+        {{ t('session_friends_view.scan_qr') }}
+      </button>
     </div>
     
-    <div class="friends-list">
-      <div v-if="loading" class="loading">{{ t('session_friends_view.loading') }}</div>
-      <div v-else-if="friends.length === 0" class="no-friends">{{ t('session_friends_view.no_friends') }}</div>
-      <div v-else class="friends-grid">
-        <ThemedCard 
-          v-for="friend in friends" 
-          :key="friend.id" 
-          card-type="default" 
-          class="friend-card"
-        >
+    <AnimatedCardList
+      :items="friends"
+      :loading="loading"
+      :no-more-items="true"
+      key-field="id"
+      card-class="friend-card"
+      :animation-delay="0.1"
+      :loading-text="t('session_friends_view.loading')"
+      :no-more-items-text="t('session_friends_view.no_friends')"
+    >
+      <template #card="{ item: friend }">
+        <div class="friend-content">
           <div class="friend-avatar">
             <div class="avatar-placeholder">{{ friend.name.charAt(0) }}</div>
           </div>
@@ -24,38 +29,93 @@
               {{ friend.online ? t('session_friends_view.online') : t('session_friends_view.offline') }}
             </p>
           </div>
-        </ThemedCard>
-      </div>
-    </div>
+          <div class="friend-actions">
+            <button class="remove-friend-btn" @click="removeFriend(friend.id)">
+              {{ t('session_friends_view.remove_friend') }}
+            </button>
+          </div>
+        </div>
+      </template>
+    </AnimatedCardList>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useLocalization } from '@/locales/index.js'
-import ThemedCard from '../components/ThemedCard.vue'
+import AnimatedCardList from '../components/AnimatedCardList.vue'
+import { useApi } from '@/telegram/composables/useApi.js'
+import { useRoute } from 'vue-router'
 
 const { t } = useLocalization()
+const { apiGet, apiPost, apiDelete } = useApi()
+const route = useRoute()
 
 const friends = ref([])
 const loading = ref(false)
 
-// Заглушка для списка друзей
-const loadFriends = () => {
+// Функция для сканирования QR кода
+const scanQRCode = () => {
+  // Переход на страницу сканирования QR кода
+  window.location.hash = `#/session/${route.params.id}/qr-scanner`
+}
+
+// Получение списка друзей с бэкенда
+const loadFriends = async () => {
   loading.value = true
   
-  // Имитация загрузки данных
-  setTimeout(() => {
-    friends.value = [
-      { id: 1, name: 'Алексей', online: true },
-      { id: 2, name: 'Мария', online: true },
-      { id: 3, name: 'Дмитрий', online: false },
-      { id: 4, name: 'Елена', online: true },
-      { id: 5, name: 'Иван', online: false },
-      { id: 6, name: 'Ольга', online: true }
-    ]
+  try {
+    // Получаем ID сессии из параметров маршрута
+    const sessionId = route.params.id
+    
+    // Запрашиваем данные у бэкенда
+    const response = await apiGet(`/sessions/${sessionId}/friends`)
+    const data = await response.json()
+    
+    // Обновляем список друзей
+    friends.value = data.map(friend => ({
+      id: friend.id,
+      name: friend.friend_name,
+      online: friend.online || false
+    }))
+  } catch (error) {
+    console.error('Failed to load friends:', error)
+    // В случае ошибки очищаем список друзей
+    friends.value = []
+  } finally {
     loading.value = false
-  }, 1000)
+  }
+}
+
+// Добавление друга в сессию
+const addFriend = async (friendId) => {
+  try {
+    const sessionId = route.params.id
+    await apiPost(`/sessions/${sessionId}/friends?friend_id=${friendId}`, {})
+    // После добавления друга перезагружаем список
+    await loadFriends()
+  } catch (error) {
+    console.error('Failed to add friend:', error)
+  }
+}
+
+// Удаление друга из сессии
+const removeFriend = async (friendId) => {
+  // Подтверждение удаления
+  if (!confirm(t('session_friends_view.confirm_remove_friend'))) {
+    return
+  }
+  
+  try {
+    const sessionId = route.params.id
+    await apiDelete(`/sessions/${sessionId}/friends?friend_id=${friendId}`)
+    // После успешного удаления удаляем друга из списка
+    friends.value = friends.value.filter(friend => friend.id !== friendId)
+  } catch (error) {
+    console.error('Failed to remove friend:', error)
+    // В случае ошибки перезагружаем список
+    await loadFriends()
+  }
 }
 
 onMounted(() => {
@@ -109,19 +169,10 @@ onMounted(() => {
   gap: 16px;
 }
 
-.friend-card {
-  background: var(--tg-theme-secondary-bg-color, white);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+.friend-content {
   display: flex;
   align-items: center;
   gap: 16px;
-  transition: all 0.3s ease;
-}
-
-.friend-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .friend-avatar {
@@ -175,6 +226,27 @@ onMounted(() => {
 .friend-name,
 .friend-status {
   transition: all 0.3s ease;
+}
+
+.friend-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.remove-friend-btn {
+  background-color: #ff4757;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.remove-friend-btn:hover {
+  background-color: #ff2e43;
 }
 
 /* Responsive adjustments */

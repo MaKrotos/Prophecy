@@ -43,6 +43,13 @@ func RegisterSessionRoutes(router gin.IRouter) {
 
 		// Получение данных для QR-кода
 		sessionGroup.GET("/:id/qr-data", handlers.GetQRCodeData)
+
+		// Получение списка друзей в сессии
+		sessionGroup.GET("/:id/friends", handlers.GetSessionFriends)
+
+		// Управление списком друзей в сессии
+		sessionGroup.POST("/:id/friends", handlers.AddFriendToSession)
+		sessionGroup.DELETE("/:id/friends", handlers.RemoveFriendFromSession)
 	}
 
 	// Группа маршрутов для получения сессий игрока
