@@ -1,5 +1,31 @@
 ﻿services:
 
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.letsencrypt.acme.email=admin@example.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - Prophecy-network
+
   frontend:
     build:
       context: .
@@ -8,17 +34,24 @@
     restart: unless-stopped
     pull_policy: always
     container_name: frontend
-    ports:
-      - "80:80"
-      - "443:443"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`prophecy.example.com`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.frontend.service=frontend-service"
+      - "traefik.http.services.frontend-service.loadbalancer.server.port=80"
+      - "traefik.http.routers.frontend-http.rule=Host(`prophecy.example.com`)"
+      - "traefik.http.routers.frontend-http.entrypoints=web"
+      - "traefik.http.routers.frontend-http.middlewares=redirect-to-https"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
     environment:
       - NODE_ENV=production
-      - DOMAIN=Prophecy.ru
+      - DOMAIN=prophecy.example.com
     networks:
       - Prophecy-network
-    volumes:
-      - ./nginx/ssl:/etc/letsencrypt
-      - ./nginx/www:/var/www/certbot
+    depends_on:
+      - backend
 
   watchtower:
     image: containrrr/watchtower
@@ -57,8 +90,6 @@
     container_name: backend-prophecy
     restart: unless-stopped
     pull_policy: always
-    ports:
-      - "8080:8080"
     environment:
       - SERVER_PORT=8080
       - DB_HOST=postgres
@@ -68,8 +99,8 @@
       - DB_PASSWORD=prophecy_password
       - DB_NAME=prophecy_db
       - JWT_SECRET=prophecy_jwt_secret_key_change_in_production
-      - TELEGRAM_BOT_TOKEN=123456789:ABCDEFabcdef1234567890ABCDEFabcd
-      - ADMIN_TELEGRAM_ID=123456789
+      - TELEGRAM_BOT_TOKEN=1234567890:ABC_DEF_GHI_JKL_MNO_PQR_STU
+    # - ADMIN_TELEGRAM_ID=123456789
     networks:
       - Prophecy-network
     volumes:
