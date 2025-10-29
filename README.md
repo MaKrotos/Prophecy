@@ -84,24 +84,6 @@ services:
     networks:
       - Prophecy-network
 
-  frontend-dev-Prophecy:
-    image: node:lts-alpine
-    container_name: frontend-dev-Prophecy
-    command: sh -c "npm install debug@4.3.4 && npm ci --include=dev && npm run dev -- --host 0.0.0.0"
-    ports:
-      - "5173:5173"
-    working_dir: /app
-    volumes:
-      - ./Frontend:/app
-      - ./Frontend/tmp:/app/tmp
-    environment:
-      - NODE_ENV=development
-      - CHOKIDAR_USEPOLLING=true
-    networks:
-      - Prophecy-network
-    depends_on:
-      - backend
-
   backend:
     build:
       context: ./Backend
