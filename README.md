@@ -26,19 +26,61 @@ docker-compose up -d
 ## Пример упрощенного docker-compose для быстрого запуска
 
 ```yaml
-version: "3.8"
-
 services:
-  frontend:
-    build:
-      context: ./Frontend
-      dockerfile: Dockerfile
+
+  traefik:
+    image: traefik:v2.10
+    container_name: traefik
     restart: unless-stopped
-    container_name: frontend
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.myresolver.acme.tlschallenge=true
+      - --certificatesresolvers.myresolver.acme.email=your-email@example.com
+      - --certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json
     ports:
       - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt:/letsencrypt
+    networks:
+      - Prophecy-network
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # image: ip/makrotos/prophecy:latest
+    restart: unless-stopped
+    pull_policy: always
+    container_name: frontend
     environment:
       - NODE_ENV=production
+    networks:
+      - Prophecy-network
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`your-domain.com`)"
+      - "traefik.http.routers.frontend.entrypoints=websecure"
+      - "traefik.http.routers.frontend.tls.certresolver=myresolver"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+  watchtower:
+    image: containrrr/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    environment:
+      - WATCHTOWER_CLEANUP=true
+      - WATCHTOWER_POLL_INTERVAL=300
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - Prophecy-network
 
@@ -48,19 +90,18 @@ services:
       dockerfile: Dockerfile
     container_name: backend-prophecy
     restart: unless-stopped
-    ports:
-      - "8080:8080"
+    pull_policy: always
     environment:
       - SERVER_PORT=8080
       - DB_HOST=postgres
       - DB_PORT=5432
       - DB_INTERNAL_PORT=5432
-      - DB_USER=prophecy_user
-      - DB_PASSWORD=prophecy_password
-      - DB_NAME=prophecy_db
-      - JWT_SECRET=prophecy_jwt_secret_key_change_in_production
-      - TELEGRAM_BOT_TOKEN=123456789:ABCDEFabcdef1234567890ABCDEFabcd
-      - ADMIN_TELEGRAM_ID=123456789
+      - DB_USER=example_user
+      - DB_PASSWORD=example_password
+      - DB_NAME=example_db
+      - JWT_SECRET=example_jwt_secret
+      - TELEGRAM_BOT_TOKEN=1234567890:ABC_DEF_GHI_JKL_MNO_PQR_STU
+    # - ADMIN_TELEGRAM_ID=123456789
     networks:
       - Prophecy-network
     depends_on:
@@ -71,9 +112,9 @@ services:
     container_name: postgres-prophecy
     restart: unless-stopped
     environment:
-      - POSTGRES_DB=prophecy_db
-      - POSTGRES_USER=prophecy_user
-      - POSTGRES_PASSWORD=prophecy_password
+      - POSTGRES_DB=example_db
+      - POSTGRES_USER=example_user
+      - POSTGRES_PASSWORD=example_password
     ports:
       - "5432:5432"
     networks:
