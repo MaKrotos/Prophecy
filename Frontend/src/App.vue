@@ -4,7 +4,7 @@
     <MainLayout v-if="isTelegram && isInitialized && hasValidToken" />
 
     <!-- Показываем страницу ошибки авторизации, если есть ошибка -->
-    <AuthErrorLayout v-else-if="isTelegram && isInitialized && authError" :error-message="authError"
+    <AuthErrorLayout v-else-if="isTelegram && isInitialized && authError && authError.value" :error-message="authError.value"
       @retry="handleRetryAuth" @try-later="handleTryLater" />
 
     <!-- Показываем сообщение о необходимости Telegram, если не в WebApp -->

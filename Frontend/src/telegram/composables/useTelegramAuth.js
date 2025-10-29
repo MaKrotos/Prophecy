@@ -89,9 +89,22 @@ export function useTelegramAuth(telegramUser, getTelegramAuthData, hasValidToken
           
           if (!response.ok) {
             const errorText = await response.text();
-            throw new Error(
-              `Server responded with ${response.status}: ${errorText}`
-            );
+            let errorMessage = `Server responded with ${response.status}: ${errorText}`;
+            
+            // Пытаемся распарсить JSON ошибку
+            try {
+              const errorData = JSON.parse(errorText);
+              if (errorData.message) {
+                errorMessage = errorData.message;
+              } else if (errorData.error) {
+                errorMessage = errorData.error;
+              }
+            } catch (parseError) {
+              // Если не удалось распарсить JSON, используем текст ошибки как есть
+              console.warn('Не удалось распарсить JSON ошибку:', parseError);
+            }
+            
+            throw new Error(errorMessage);
           }
           
           const data = await response.json();
