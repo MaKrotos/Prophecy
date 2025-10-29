@@ -54,7 +54,8 @@
     "my_role": "My Role",
     "friends_list": "Friends List",
     "my_qr": "Code",
-    "qr_scanner": " Scanner"
+    "qr_scanner": " Scanner",
+    "clan": "Clan"
   },
   "home_view": {
     "admin": "Administrator",
@@ -294,6 +295,22 @@
     "step_3": "Wait for the code to be recognized",
     "step_4": "Follow the on-screen instructions",
     "scan_again": "Scan Again"
+  },
+  "clan_view": {
+    "title": "Clan",
+    "description": "Your game clan",
+    "not_in_clan": "You are not in a clan",
+    "not_in_clan_description": "You are not currently in a clan. To join a clan, find the clan creator, add them as a friend, and they will be able to invite you to the clan.",
+    "how_to_join_title": "How to join a clan",
+    "how_to_join_description": "To join a clan, follow these steps:",
+    "how_to_join_step1": "Find the clan creator in the user list",
+    "how_to_join_step2": "Add them as a friend",
+    "how_to_join_step3": "Wait for a clan invitation from the creator",
+    "benefits_title": "Clan Benefits",
+    "benefit_1": "👥 Participation in group quests",
+    "benefit_2": "🏆 Access to clan competitions",
+    "benefit_3": "💬 Clan chat for communication",
+    "benefit_4": "🎁 Special rewards for participants"
   }
 }
 

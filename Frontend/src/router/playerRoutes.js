@@ -26,6 +26,24 @@ const playerRoutes = [
       order: 13,
     },
   },
+  {
+    path: "/session/role/:id",
+    name: "session-role-with-id",
+    component: () => import("../views/SessionRoleView.vue"),
+    meta: {
+      title: "Моя роль",
+      order: 12,
+    },
+  },
+  {
+    path: "/session/friends/:id",
+    name: "session-friends-with-id",
+    component: () => import("../views/SessionFriendsView.vue"),
+    meta: {
+      title: "Список друзей",
+      order: 13,
+    },
+  },
 ];
 
 export default playerRoutes;

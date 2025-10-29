@@ -47,8 +47,9 @@ const isAdmin = computed(() => userInfo.value?.isAdmin || false)
 
 // Определяем, находится ли пользователь в контексте сессии
 const isInSession = computed(() => {
-  return route.path.startsWith('/session/') ||
-         (route.path.startsWith('/sessions/') && route.params.id)
+  // Проверяем, что это маршрут сессии, связанный с конкретной сессией
+  return (route.path.startsWith('/session/') && !route.path.startsWith('/session/qr-scanner')) ||
+         route.path.startsWith('/sessions/') && route.params.id
 })
 
 // Получаем ID сессии из текущего маршрута
@@ -58,10 +59,16 @@ const sessionId = computed(() => {
     return route.params.id
   }
   
-  // Если нет, пытаемся получить из пути
-  const sessionPathMatch = route.path.match(/\/sessions\/([^\/]+)/)
+  // Если нет, пытаемся получить из пути /session/my-qr/:id
+  const sessionPathMatch = route.path.match(/\/session\/my-qr\/([^\/]+)/)
   if (sessionPathMatch && sessionPathMatch[1]) {
     return sessionPathMatch[1]
+  }
+  
+  // Также проверяем путь /sessions/:id
+  const sessionDetailMatch = route.path.match(/\/sessions\/([^\/]+)/)
+  if (sessionDetailMatch && sessionDetailMatch[1]) {
+    return sessionDetailMatch[1]
   }
   
   // Если не удалось определить, возвращаем null
@@ -70,22 +77,19 @@ const sessionId = computed(() => {
 
 // Навигационные элементы для сессии с передачей ID
 const sessionNavItemsWithId = computed(() => {
-  // Если у нас нет ID сессии, возвращаем стандартные элементы
-  if (!sessionId.value) {
-    return [
-      { path: '/session/role', label: t('bottom_nav.my_role'), icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' },
-      { path: '/session/friends', label: t('bottom_nav.friends_list'), icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' },
-      { path: '/session/my-qr', label: t('bottom_nav.my_qr'), icon: 'M3 11h8V3H3v8zm2-6h4v4H5V5zm8 14h8v-8h-8v8zm2-6h4v4h-4v-4zm-8 2v4h8v-4H3zm10 0v4h8v-4h-8z' },
-      { path: '/session/qr-scanner', label: t('bottom_nav.qr_scanner'), icon: 'M4 4h16v16H4V4zm2 2v12h12V6H6zm3 3h6v2H9V9zm0 4h6v2H9v-2z' }
-    ]
-  }
-  
-  // Если у нас есть ID сессии, добавляем его к путям, где это необходимо
-  return [
-    { path: '/session/role', label: t('bottom_nav.my_role'), icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' },
-    { path: '/session/friends', label: t('bottom_nav.friends_list'), icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' },
-    { path: `/session/my-qr/${sessionId.value}`, label: t('bottom_nav.my_qr'), icon: 'M3 11h8V3H3v8zm2-6h4v4H5V5zm8 14h8v-8h-8v8zm2-6h4v4h-4v-4zm-8 2v4h8v-4H3zm10 0v4h8v-4h-8z' },
+  // Базовые элементы навигации для сессии
+  const baseItems = [
+    { path: sessionId.value ? `/sessions/${sessionId.value}` : '/sessions', label: t('bottom_nav.sessions'), icon: 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z' },
+    { path: sessionId.value ? `/session/role/${sessionId.value}` : '/session/role', label: t('bottom_nav.my_role'), icon: 'M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z' },
+    { path: sessionId.value ? `/session/friends/${sessionId.value}` : '/session/friends', label: t('bottom_nav.friends_list'), icon: 'M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z' },
+    { path: sessionId.value ? `/session/my-qr/${sessionId.value}` : '/session/my-qr', label: t('bottom_nav.my_qr'), icon: 'M3 11h8V3H3v8zm2-6h4v4H5V5zm8 14h8v-8h-8v8zm2-6h4v4h-4v-4zm-8 2v4h8v-4H3zm10 0v4h8v-4h-8z' },
     { path: '/session/qr-scanner', label: t('bottom_nav.qr_scanner'), icon: 'M4 4h16v16H4V4zm2 2v12h12V6H6zm3 3h6v2H9V9zm0 4h6v2H9v-2z' }
+  ]
+  
+  // Добавляем кнопку клана в конец
+  return [
+    ...baseItems,
+    { path: '/clan', label: t('bottom_nav.clan'), icon: 'M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z' }
   ]
 })
 

@@ -32,8 +32,19 @@
 <script setup>
 import { useLocalization } from '@/locales/index.js'
 import ThemedCard from '../components/ThemedCard.vue'
+import { useRoute } from 'vue-router'
+import { onMounted } from 'vue'
 
 const { t } = useLocalization()
+const route = useRoute()
+
+// При монтировании компонента можно получить ID сессии из параметров маршрута
+onMounted(() => {
+  if (route.params.id) {
+    console.log('Session ID from route params:', route.params.id)
+    // Здесь можно добавить логику для загрузки данных о роли в сессии
+  }
+})
 </script>
 
 <style scoped>

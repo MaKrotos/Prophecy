@@ -41,23 +41,32 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useLocalization } from '@/locales/index.js'
 import AnimatedCardList from '../components/AnimatedCardList.vue'
 import { useApi } from '@/telegram/composables/useApi.js'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 const { t } = useLocalization()
 const { apiGet, apiPost, apiDelete } = useApi()
 const route = useRoute()
+const router = useRouter()
 
 const friends = ref([])
 const loading = ref(false)
 
 // Функция для сканирования QR кода
 const scanQRCode = () => {
-  // Переход на страницу сканирования QR кода
-  window.location.hash = `#/session/${route.params.id}/qr-scanner`
+  // Получаем ID сессии из параметров маршрута
+  const sessionId = route.params.id
+  
+  // Если есть ID сессии, переходим на страницу сканирования QR кода с этим ID
+  if (sessionId) {
+    router.push(`/session/qr-scanner`)
+  } else {
+    // Если нет ID сессии, переходим на общую страницу сканирования
+    router.push('/scan')
+  }
 }
 
 // Получение списка друзей с бэкенда
@@ -67,6 +76,13 @@ const loadFriends = async () => {
   try {
     // Получаем ID сессии из параметров маршрута
     const sessionId = route.params.id
+    
+    // Если нет ID сессии, очищаем список друзей и выходим
+    if (!sessionId) {
+      friends.value = []
+      loading.value = false
+      return
+    }
     
     // Запрашиваем данные у бэкенда
     const response = await apiGet(`/sessions/${sessionId}/friends`)
@@ -91,6 +107,12 @@ const loadFriends = async () => {
 const addFriend = async (friendId) => {
   try {
     const sessionId = route.params.id
+    // Проверяем, что есть ID сессии
+    if (!sessionId) {
+      console.error('No session ID provided')
+      return
+    }
+    
     await apiPost(`/sessions/${sessionId}/friends?friend_id=${friendId}`, {})
     // После добавления друга перезагружаем список
     await loadFriends()
@@ -108,6 +130,12 @@ const removeFriend = async (friendId) => {
   
   try {
     const sessionId = route.params.id
+    // Проверяем, что есть ID сессии
+    if (!sessionId) {
+      console.error('No session ID provided')
+      return
+    }
+    
     await apiDelete(`/sessions/${sessionId}/friends?friend_id=${friendId}`)
     // После успешного удаления удаляем друга из списка
     friends.value = friends.value.filter(friend => friend.id !== friendId)
@@ -118,8 +146,16 @@ const removeFriend = async (friendId) => {
   }
 }
 
+// Загружаем список друзей при монтировании компонента
 onMounted(() => {
   loadFriends()
+})
+
+// Следим за изменением параметров маршрута и перезагружаем список друзей
+watch(() => route.params.id, (newId, oldId) => {
+  if (newId !== oldId) {
+    loadFriends()
+  }
 })
 </script>
 
