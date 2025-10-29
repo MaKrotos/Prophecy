@@ -33,8 +33,6 @@ WORKDIR /root/
 # Установка зависимостей для goose и SSL
 RUN apk add --no-cache ca-certificates
 
-# Создание директории для сертификатов
-RUN mkdir -p /etc/letsencrypt/live/prophecy.makrotos.ru
 
 # Копирование бинарного файла из builder образа
 COPY --from=builder /app/main .

@@ -51,18 +51,6 @@ func main() {
 		}
 	}()
 
-	// Запуск HTTPS сервера (если включен)
-	if cfg.UseHTTPS {
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			httpsPort := ":8443" // используйте другой порт для HTTPS
-			fmt.Println("Starting HTTPS server on port 8443")
-			if err := http.ListenAndServeTLS(httpsPort, cfg.SSLCertPath, cfg.SSLKeyPath, router); err != nil {
-				log.Printf("HTTPS server error: %v", err)
-			}
-		}()
-	}
 
 	// Ожидаем завершения всех серверов
 	wg.Wait()

@@ -19,7 +19,7 @@ docker-compose up -d
 
 Эта команда запустит все необходимые сервисы:
 
-- Фронтенд приложение на порту 80 (HTTP) и 443 (HTTPS)
+- Фронтенд приложение на порту 80 (HTTP)
 - Бэкенд API на порту 8080
 - Базу данных PostgreSQL на порту 5432
 
@@ -37,15 +37,10 @@ services:
     container_name: frontend
     ports:
       - "80:80"
-      - "443:443"
     environment:
       - NODE_ENV=production
-      - DOMAIN=Prophecy.ru
     networks:
       - Prophecy-network
-    volumes:
-      - ./nginx/ssl:/etc/letsencrypt
-      - ./nginx/www:/var/www/certbot
 
   backend:
     build:
@@ -114,7 +109,7 @@ docker-compose up
 
 | Сервис       | Порт(ы) | Описание                     |
 | ------------ | ------- | ---------------------------- |
-| frontend     | 80, 443 | Основное фронтенд приложение |
+| frontend     | 80      | Основное фронтенд приложение |
 | backend      | 8080    | API бэкенд                   |
 | postgres     | 5432    | База данных PostgreSQL       |
 | frontend-dev | 5173    | Фронтенд для разработки      |
@@ -126,7 +121,6 @@ docker-compose up
 | Переменная | Значение по умолчанию | Описание                |
 | ---------- | --------------------- | ----------------------- |
 | NODE_ENV   | production            | Режим работы приложения |
-| DOMAIN     | Prophecy.ru           | Домен приложения        |
 
 ### Frontend Development
 
