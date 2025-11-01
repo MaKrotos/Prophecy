@@ -79,7 +79,7 @@ const joinSession = async () => {
 
   try {
     joining.value = true
-    const response = await apiPost(`sessions/join/${route.params.referral_link}`)
+    const response = await apiPost(`joinSession/${route.params.referral_link}`)
     console.log("🔍 Ответ от сервера при присоединении к сессии:", response.status);
 
     if (response.ok) {
@@ -120,7 +120,7 @@ const loadSessionInfo = async () => {
     console.log("🔍 Все параметры маршрута в loadSessionInfo:", route.params);
     loading.value = true
     // Сначала получаем информацию о сессии по реферальной ссылке
-    const sessionResponse = await apiGet(`sessions/join/${route.params.referral_link}`)
+    const sessionResponse = await apiGet(`joinSession/${route.params.referral_link}`)
 
     if (sessionResponse.ok) {
       const sessionData = await sessionResponse.json()

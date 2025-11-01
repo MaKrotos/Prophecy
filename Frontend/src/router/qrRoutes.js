@@ -5,7 +5,6 @@ const qrRoutes = [
     component: () => import("../views/ScanView.vue"),
     meta: {
       title: "Сканер",
-      order: 5,
     },
   },
   {
@@ -14,7 +13,6 @@ const qrRoutes = [
     component: () => import("../views/SessionMyQRView.vue"),
     meta: {
       title: "Мой QR код",
-      order: 14,
     },
   },
   {
@@ -23,7 +21,6 @@ const qrRoutes = [
     component: () => import("../views/SessionQRScannerView.vue"),
     meta: {
       title: "Сканер QR кодов",
-      order: 15,
     },
   },
 ];

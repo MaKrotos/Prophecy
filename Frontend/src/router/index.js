@@ -6,25 +6,13 @@ import qrRoutes from "./qrRoutes";
 import otherRoutes from "./otherRoutes";
 import clanRoutes from "./clanRoutes";
 
-// Объединяем маршруты в правильном порядке
-// Важно, чтобы /sessions/join/:referral_link шел перед /sessions/:id
 const routes = [
   ...mainRoutes,
-  playerRoutes[0], // /player-sessions
-  sessionRoutes[0], // /sessions
-  sessionRoutes[1], // /sessions/create
-  qrRoutes[0], // /scan
-  qrRoutes[1], // /session/my-qr/:id
-  qrRoutes[2], // /session/qr-scanner
-  otherRoutes[0], // /users
-  otherRoutes[1], // /rules
-  otherRoutes[2], // /sessions/join/:referral_link (важно, чтобы шел перед /sessions/:id)
-  playerRoutes[1], // /session/role
-  playerRoutes[2], // /session/friends
-  playerRoutes[3], // /session/role/:id
-  playerRoutes[4], // /session/friends/:id
-  sessionRoutes[2], // /sessions/:id (должен идти после /sessions/join/:referral_link)
-  clanRoutes[0], // /clan
+  ...sessionRoutes,
+  ...playerRoutes,
+  ...qrRoutes,
+  ...otherRoutes,
+  ...clanRoutes
 ];
 
 const router = createRouter({

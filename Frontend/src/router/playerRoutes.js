@@ -5,7 +5,6 @@ const playerRoutes = [
     component: () => import("../views/PlayerSessionsView.vue"),
     meta: {
       title: "Мои Сессии",
-      order: 2,
     },
   },
   {
@@ -14,7 +13,6 @@ const playerRoutes = [
     component: () => import("../views/SessionRoleView.vue"),
     meta: {
       title: "Моя роль",
-      order: 12,
     },
   },
   {
@@ -23,7 +21,6 @@ const playerRoutes = [
     component: () => import("../views/SessionFriendsView.vue"),
     meta: {
       title: "Список друзей",
-      order: 13,
     },
   },
   {
@@ -32,7 +29,6 @@ const playerRoutes = [
     component: () => import("../views/SessionRoleView.vue"),
     meta: {
       title: "Моя роль",
-      order: 12,
     },
   },
   {
@@ -41,7 +37,6 @@ const playerRoutes = [
     component: () => import("../views/SessionFriendsView.vue"),
     meta: {
       title: "Список друзей",
-      order: 13,
     },
   },
 ];

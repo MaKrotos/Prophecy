@@ -7,7 +7,6 @@ const mainRoutes = [
     component: HomeView,
     meta: {
       title: "Главная",
-      order: 1,
     },
   },
   {
@@ -16,7 +15,6 @@ const mainRoutes = [
     component: () => import("../views/ProfileView.vue"),
     meta: {
       title: "Профиль",
-      order: 3,
     },
   },
   {
@@ -25,7 +23,6 @@ const mainRoutes = [
     component: () => import("../views/SettingsView.vue"),
     meta: {
       title: "Настройки",
-      order: 4,
     },
   },
 ];

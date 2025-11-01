@@ -5,7 +5,14 @@ const clanRoutes = [
     component: () => import("../views/ClanView.vue"),
     meta: {
       title: "Клан",
-      order: 6,
+    },
+  },
+  {
+    path: "/sessions/:id/clan",
+    name: "session-clan",
+    component: () => import("../views/ClanView.vue"),
+    meta: {
+      title: "Клан",
     },
   },
 ];

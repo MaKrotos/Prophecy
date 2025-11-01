@@ -5,7 +5,6 @@ const sessionRoutes = [
     component: () => import("../views/SessionsView.vue"),
     meta: {
       title: "Сессии",
-      order: 7,
     },
   },
   {
@@ -14,16 +13,14 @@ const sessionRoutes = [
     component: () => import("../views/CreateSessionView.vue"),
     meta: {
       title: "Создать сессию",
-      order: 8,
     },
   },
   {
-    path: "/sessions/:id",
+    path: "/sessions/:id(\\d+)",
     name: "session-detail",
     component: () => import("../views/SessionDetailView.vue"),
     meta: {
       title: "Детали сессии",
-      order: 9,
     },
   },
 ];

@@ -37,10 +37,6 @@ func RegisterSessionRoutes(router gin.IRouter) {
 		// Получение всех игроков в сессии
 		sessionGroup.GET("/:id/players", handlers.GetSessionPlayers)
 
-		// Присоединение к сессии по реферальной ссылке
-		sessionGroup.POST("/join/:referral_link", handlers.JoinSessionByReferral)
-		sessionGroup.GET("/join/:referral_link", handlers.JoinSessionByReferral)
-
 		// Получение данных для QR-кода
 		sessionGroup.GET("/:id/qr-data", handlers.GetQRCodeData)
 
@@ -50,6 +46,15 @@ func RegisterSessionRoutes(router gin.IRouter) {
 		// Управление списком друзей в сессии
 		sessionGroup.POST("/:id/friends", handlers.AddFriendToSession)
 		sessionGroup.DELETE("/:id/friends", handlers.RemoveFriendFromSession)
+	}
+
+	// Отдельный маршрут для присоединения к сессии по реферальной ссылке
+	joinGroup := router.Group("/joinSession")
+	joinGroup.Use(auth.JWTAuthMiddleware())
+	{
+		// Присоединение к сессии по реферальной ссылке
+		joinGroup.POST("/:referral_link", handlers.JoinSessionByReferral)
+		joinGroup.GET("/:referral_link", handlers.JoinSessionByReferral)
 	}
 
 	// Группа маршрутов для получения сессий игрока
