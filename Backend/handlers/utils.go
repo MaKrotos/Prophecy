@@ -60,7 +60,7 @@ func checkSessionAccess(user *models.TelegramUser, session *models.Session, acce
 			return fmt.Errorf("failed to check player status: %v", err)
 		}
 
-		if !user.IsAdmin && user.Role != "Архитектор" && session.ArchitectID != user.ID && !isPlayer {
+		if !user.IsAdmin && user.Role != models.RoleArchitect && session.ArchitectID != user.ID && !isPlayer {
 			return fmt.Errorf("access denied")
 		}
 	case "modify":
@@ -132,7 +132,7 @@ func GetQRCodeData(c *gin.Context) {
 	}
 
 	// Если пользователь не участник сессии и не админ, возвращаем ошибку
-	if !isPlayer && !user.IsAdmin && user.Role != "Архитектор" {
+	if !isPlayer && !user.IsAdmin && user.Role != models.RoleArchitect {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
 	}

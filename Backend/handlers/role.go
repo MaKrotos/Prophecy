@@ -21,7 +21,7 @@ func SetUserRole(c *gin.Context) {
 
 	// Получение роли из тела запроса
 	var requestData struct {
-		Role string `json:"role"`
+		Role int `json:"role"`
 	}
 
 	if err := c.ShouldBindJSON(&requestData); err != nil {
@@ -30,13 +30,16 @@ func SetUserRole(c *gin.Context) {
 	}
 
 	// Проверка допустимых значений роли
-	if requestData.Role != "Архитектор" && requestData.Role != "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role. Allowed values: 'Архитектор' or empty"})
+	if requestData.Role != 1 && requestData.Role != 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role. Allowed values: 1 (Архитектор) or 0 (Пользователь)"})
 		return
 	}
 
+	// Преобразуем числовое значение в тип UserRole
+	role := models.ParseRoleFromInt(requestData.Role)
+
 	// Установка роли пользователю
-	err = models.SetUserRole(userID, requestData.Role)
+	err = models.SetUserRole(userID, role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to set user role"})
 		return

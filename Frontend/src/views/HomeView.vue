@@ -51,7 +51,8 @@ const userInfo = ref(null)
 const isAdmin = computed(() => userInfo.value?.isAdmin || false)
 const isArchitect = computed(() => {
   if (!userInfo.value) return false
-  return userInfo.value.role && userInfo.value.role === 'Архитектор'
+  // Проверяем как числовое, так и строковое значение роли
+  return userInfo.value.role && (userInfo.value.role === 'Архитектор' || userInfo.value.role === 1)
 })
 
 const goToCreateSession = () => {

@@ -114,7 +114,9 @@
     "set_role": "Set role",
     "remove_role": "Remove role",
     "role_updated": "User role updated",
-    "role_update_error": "Failed to update user role"
+    "role_update_error": "Failed to update user role",
+    "role_0": "User",
+    "role_1": "Architect"
   },
   "user_stats": {
     "title": "📊 User Statistics",

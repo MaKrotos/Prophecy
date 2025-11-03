@@ -76,7 +76,7 @@ func GetSessions(c *gin.Context) {
 	// Если пользователь админ, получаем все сессии
 	if user.IsAdmin {
 		sessions, sessionsErr = models.GetAllSessions()
-	} else if user.Role == "Архитектор" {
+	} else if user.Role == models.RoleArchitect {
 		// Если пользователь архитектор, получаем только его сессии
 		sessions, sessionsErr = models.GetSessionsByArchitectID(user.ID)
 	} else {

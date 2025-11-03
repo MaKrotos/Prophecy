@@ -64,7 +64,7 @@ export function getUserInfoFromToken() {
     telegramId: payload.telegram_id,
     generatedName: payload.generated_name,
     isAdmin: payload.is_admin || false,
-    role: payload.role || null,
+    role: payload.role !== undefined ? payload.role : null,
     issuedAt: payload.iat,
     expiresAt: payload.exp,
     issuer: payload.iss,

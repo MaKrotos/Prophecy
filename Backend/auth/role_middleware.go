@@ -3,6 +3,8 @@ package auth
 import (
 	"net/http"
 
+	"prophecy/backend/models"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,8 +27,16 @@ func ArchitectOrAdminMiddleware() gin.HandlerFunc {
 			return
 		}
 
+		// Преобразуем роль в тип UserRole
+		userRole, ok := role.(models.UserRole)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid role type in context"})
+			c.Abort()
+			return
+		}
+
 		// Проверка, является ли пользователь администратором или архитектором
-		if !isAdmin.(bool) && role.(string) != "Архитектор" {
+		if !isAdmin.(bool) && userRole != models.RoleArchitect {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Access denied. Only architects or admins can perform this action."})
 			c.Abort()
 			return

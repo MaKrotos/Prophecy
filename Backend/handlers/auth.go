@@ -121,6 +121,7 @@ func ValidateTelegramToken(c *gin.Context) {
 			"photo_url":      telegramUser.PhotoURL,
 			"auth_date":      telegramUser.AuthDate,
 			"created_at":     telegramUser.CreatedAt,
+			"role":           telegramUser.Role.Int(),
 		},
 	})
 }
@@ -177,6 +178,7 @@ func VerifyJWT(c *gin.Context) {
 			"photo_url":      telegramUser.PhotoURL,
 			"auth_date":      telegramUser.AuthDate,
 			"created_at":     telegramUser.CreatedAt,
+			"role":           telegramUser.Role.Int(),
 		},
 	})
 }

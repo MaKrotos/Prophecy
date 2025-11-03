@@ -48,7 +48,8 @@ const userInfo = ref(null)
 // Проверяем, является ли пользователь архитектором
 const isArchitect = computed(() => {
   if (!userInfo.value) return false
-  return userInfo.value.role && userInfo.value.role.String === 'Архитектор'
+  // Проверяем как числовое, так и строковое значение роли
+  return userInfo.value.role && (userInfo.value.role.String === 'Архитектор' || userInfo.value.role === 1)
 })
 
 // Загрузка сессий

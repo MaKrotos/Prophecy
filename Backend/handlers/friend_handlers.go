@@ -63,7 +63,7 @@ func AddFriendToSession(c *gin.Context) {
 	}
 
 	// Если пользователь не участник сессии и не админ, возвращаем ошибку
-	if !isPlayer && !user.IsAdmin && user.Role != "Архитектор" {
+	if !isPlayer && !user.IsAdmin && user.Role != models.RoleArchitect {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
 	}
@@ -137,7 +137,7 @@ func RemoveFriendFromSession(c *gin.Context) {
 	}
 
 	// Если пользователь не участник сессии и не админ, возвращаем ошибку
-	if !isPlayer && !user.IsAdmin && user.Role != "Архитектор" {
+	if !isPlayer && !user.IsAdmin && user.Role != models.RoleArchitect {
 		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
 		return
 	}

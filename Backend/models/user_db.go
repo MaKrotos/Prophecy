@@ -68,7 +68,7 @@ func CreateTelegramUser(telegramUser *TelegramUser) error {
 		telegramUser.AuthDate,
 		telegramUser.GeneratedName,
 		telegramUser.IsAdmin,
-		telegramUser.Role,
+		telegramUser.Role.Int(),
 		now,
 	).Scan(&telegramUser.ID)
 
@@ -84,6 +84,7 @@ func CreateTelegramUser(telegramUser *TelegramUser) error {
 // GetTelegramUserByTelegramID получает пользователя Telegram по его Telegram ID
 func GetTelegramUserByTelegramID(telegramID int64) (*TelegramUser, error) {
 	var telegramUser TelegramUser
+	var roleInt int
 	query := `
 		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, role, created_at
 		FROM telegram_users
@@ -99,7 +100,7 @@ func GetTelegramUserByTelegramID(telegramID int64) (*TelegramUser, error) {
 		&telegramUser.AuthDate,
 		&telegramUser.GeneratedName,
 		&telegramUser.IsAdmin,
-		&telegramUser.Role,
+		&roleInt,
 		&telegramUser.CreatedAt,
 	)
 
@@ -109,6 +110,9 @@ func GetTelegramUserByTelegramID(telegramID int64) (*TelegramUser, error) {
 		}
 		return nil, err
 	}
+
+	// Преобразуем числовое значение роли в тип UserRole
+	telegramUser.Role = ParseRoleFromInt(roleInt)
 
 	return &telegramUser, nil
 }
@@ -130,6 +134,7 @@ func GetAllTelegramUsers(limit, offset int) ([]TelegramUser, error) {
 
 	for rows.Next() {
 		var user TelegramUser
+		var roleInt int
 		err := rows.Scan(
 			&user.ID,
 			&user.TelegramID,
@@ -140,12 +145,14 @@ func GetAllTelegramUsers(limit, offset int) ([]TelegramUser, error) {
 			&user.AuthDate,
 			&user.GeneratedName,
 			&user.IsAdmin,
-			&user.Role,
+			&roleInt,
 			&user.CreatedAt,
 		)
 		if err != nil {
 			return nil, err
 		}
+		// Преобразуем числовое значение роли в тип UserRole
+		user.Role = ParseRoleFromInt(roleInt)
 		users = append(users, user)
 	}
 
@@ -157,9 +164,9 @@ func GetAllTelegramUsers(limit, offset int) ([]TelegramUser, error) {
 }
 
 // SetUserRole устанавливает роль пользователю по его ID
-func SetUserRole(userID int, role string) error {
+func SetUserRole(userID int, role UserRole) error {
 	query := `UPDATE telegram_users SET role = $1 WHERE id = $2`
-	_, err := database.DB.Exec(query, role, userID)
+	_, err := database.DB.Exec(query, role.Int(), userID)
 	return err
 }
 
@@ -184,15 +191,15 @@ func GetUserStats() (map[string]interface{}, error) {
 	stats["admin_users"] = adminUsers
 
 	// Получаем количество пользователей по ролям
-	roleStats := make(map[string]int)
-	rows, err := database.DB.Query("SELECT role, COUNT(*) FROM telegram_users WHERE role != '' GROUP BY role")
+	roleStats := make(map[int]int)
+	rows, err := database.DB.Query("SELECT role, COUNT(*) FROM telegram_users WHERE role != 0 GROUP BY role")
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var role string
+		var role int
 		var count int
 		err := rows.Scan(&role, &count)
 		if err != nil {
@@ -213,6 +220,7 @@ func GetUserStats() (map[string]interface{}, error) {
 // GetTelegramUserByID получает пользователя Telegram по его внутреннему ID
 func GetTelegramUserByID(id int) (*TelegramUser, error) {
 	var telegramUser TelegramUser
+	var roleInt int
 	query := `
 		SELECT id, telegram_id, first_name, last_name, username, photo_url, auth_date, generated_name, is_admin, role, created_at
 		FROM telegram_users
@@ -228,7 +236,7 @@ func GetTelegramUserByID(id int) (*TelegramUser, error) {
 		&telegramUser.AuthDate,
 		&telegramUser.GeneratedName,
 		&telegramUser.IsAdmin,
-		&telegramUser.Role,
+		&roleInt,
 		&telegramUser.CreatedAt,
 	)
 
@@ -238,6 +246,9 @@ func GetTelegramUserByID(id int) (*TelegramUser, error) {
 		}
 		return nil, err
 	}
+
+	// Преобразуем числовое значение роли в тип UserRole
+	telegramUser.Role = ParseRoleFromInt(roleInt)
 
 	return &telegramUser, nil
 }

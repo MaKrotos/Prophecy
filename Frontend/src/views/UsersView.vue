@@ -13,8 +13,8 @@
           </div>
           <div class="user-controls">
             <div class="user-badge"
-              :class="{ 'admin-badge': user.is_admin, 'architect-badge': user.role && user.role.String === 'Архитектор' }">
-              <span v-if="user.role && user.role.String === 'Архитектор'">{{ t('users_view.architect') }}</span>
+              :class="{ 'admin-badge': user.is_admin, 'architect-badge': user.role && (user.role.String === 'Архитектор' || user.role === 1) }">
+              <span v-if="user.role && (user.role.String === 'Архитектор' || user.role === 1)">{{ t('users_view.architect') }}</span>
               <span v-else-if="user.is_admin">{{ t('users_view.admin') }}</span>
               <span v-else>{{ t('users_view.user') }}</span>
             </div>
@@ -87,7 +87,17 @@ const loadUsers = async () => {
           // Нормализуем данные пользователей, чтобы убедиться, что role имеет правильную структуру
           const normalizedData = data.map(user => {
             // Убедимся, что у пользователя есть корректная структура role
-            if (user.role && typeof user.role === 'string') {
+            if (typeof user.role === 'number') {
+              // Если role - число, преобразуем в строку для отображения
+              const roleString = user.role === 1 ? 'Архитектор' : ''
+              return {
+                ...user,
+                role: {
+                  String: roleString,
+                  Valid: user.role === 1
+                }
+              }
+            } else if (user.role && typeof user.role === 'string') {
               // Если role - строка, преобразуем в ожидаемую структуру
               return {
                 ...user,
@@ -149,7 +159,15 @@ const loadUsers = async () => {
 // Установка роли пользователя
 const setUserRole = async (user, newRole) => {
   try {
-    const response = await apiPut(`users/${user.id}/role`, { role: newRole })
+    // Преобразуем строковое значение роли в числовое
+    let roleValue
+    if (newRole === 'Архитектор' || newRole === 1) {
+      roleValue = 1
+    } else {
+      roleValue = 0
+    }
+    
+    const response = await apiPut(`users/${user.id}/role`, { role: roleValue })
 
     if (response.ok) {
       // Обновляем роль пользователя в списке
@@ -176,7 +194,13 @@ const setUserRole = async (user, newRole) => {
 
 // Показ меню управления ролью пользователя
 const showRoleMenu = (user) => {
-  const role = user.role && user.role.String ? user.role.String : ''
+  // Определяем текущую роль пользователя
+  let role = ''
+  if (typeof user.role === 'number') {
+    role = user.role === 1 ? 'Архитектор' : ''
+  } else if (user.role && user.role.String) {
+    role = user.role.String
+  }
 
   if (role === 'Архитектор') {
     if (window.Telegram && window.Telegram.WebApp) {
@@ -184,7 +208,7 @@ const showRoleMenu = (user) => {
         t('users_view.remove_role') + '?',
         (confirmed) => {
           if (confirmed) {
-            setUserRole(user, '')
+            setUserRole(user, 0) // 0 - обычная роль пользователя
           }
         }
       )
@@ -196,7 +220,7 @@ const showRoleMenu = (user) => {
         t('users_view.set_role') + ' ' + t('users_view.architect') + '?',
         (confirmed) => {
           if (confirmed) {
-            setUserRole(user, 'Архитектор')
+            setUserRole(user, 1) // 1 - роль архитектора
           }
         }
       )

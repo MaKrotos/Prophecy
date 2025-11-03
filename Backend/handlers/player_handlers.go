@@ -45,7 +45,7 @@ func AddPlayerToSession(c *gin.Context) {
 	// Проверяем права доступа
 	// Игроки могут присоединяться к сессиям, админы и архитекторы могут добавлять игроков
 	var playerID int
-	if user.IsAdmin || user.Role == "Архитектор" {
+	if user.IsAdmin || user.Role == models.RoleArchitect {
 		// Админы и архитекторы могут добавлять любого игрока
 		playerIDParam := c.Query("player_id")
 		if playerIDParam == "" {
@@ -113,7 +113,7 @@ func RemovePlayerFromSession(c *gin.Context) {
 
 	// Определяем, какого игрока нужно удалить
 	var playerID int
-	if user.IsAdmin || (user.Role == "Архитектор" && session.ArchitectID == user.ID) {
+	if user.IsAdmin || (user.Role == models.RoleArchitect && session.ArchitectID == user.ID) {
 		// Админы и архитекторы своей сессии могут удалить любого игрока
 		playerIDParam := c.Query("player_id")
 		if playerIDParam == "" {

@@ -12,7 +12,7 @@
           <span class="stat-value">{{ adminUsers }}</span>
         </div>
         <div v-for="(count, role) in roleStats" :key="role" class="stat-item">
-          <span class="stat-label">👤 {{ role }}</span>
+          <span class="stat-label">👤 {{ getRoleName(role) }}</span>
           <span class="stat-value">{{ count }}</span>
         </div>
       </div>
@@ -53,6 +53,18 @@ const totalUsers = ref(0)
 const adminUsers = ref(0)
 const roleStats = ref({})
 const loading = ref(false)
+
+// Функция для получения названия роли по числовому значению
+const getRoleName = (role) => {
+  switch (parseInt(role)) {
+    case 1:
+      return t('users_view.role_1')
+    case 0:
+      return t('users_view.role_0')
+    default:
+      return t('users_view.user')
+  }
+}
 
 // Переход к просмотру всех пользователей
 const viewAllUsers = () => {
