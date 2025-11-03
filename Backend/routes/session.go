@@ -28,6 +28,9 @@ func RegisterSessionRoutes(router gin.IRouter) {
 		// Удаление сессии
 		sessionGroup.DELETE("/:id", handlers.DeleteSession)
 
+		// Обновление реферальной ссылки
+		sessionGroup.PUT("/:id/referral-link", handlers.UpdateReferralLink)
+
 		// Добавление игрока к сессии
 		sessionGroup.POST("/:id/players", handlers.AddPlayerToSession)
 

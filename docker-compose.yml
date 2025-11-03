@@ -90,8 +90,8 @@
       - DB_PASSWORD=example_password
       - DB_NAME=example_db
       - JWT_SECRET=example_jwt_secret
-      - TELEGRAM_BOT_TOKEN=1234567890:ABC_DEF_GHI_JKL_MNO_PQR_STU
-    # - ADMIN_TELEGRAM_ID=123456789
+      - TELEGRAM_BOT_TOKEN=2201417632:AAHkv8Ta_qSAHBDQs-B81VVMGIUVqQa053c
+      - ADMIN_TELEGRAM_ID=2202931663
     networks:
       - Prophecy-network
     depends_on:

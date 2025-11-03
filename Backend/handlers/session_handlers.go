@@ -247,3 +247,61 @@ func DeleteSession(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"message": "Session deleted successfully"})
 }
+
+// UpdateReferralLink обновляет реферальную ссылку сессии
+func UpdateReferralLink(c *gin.Context) {
+	// Получаем ID сессии из параметров URL
+	sessionID, err := getSessionIDFromParam(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Получаем информацию о пользователе из контекста и базы данных
+	user, err := getUserFromContext(c)
+	if err != nil {
+		// Определяем тип ошибки и возвращаем соответствующий HTTP статус
+		if err.Error() == "user not authenticated" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	// Получаем сессию из базы данных
+	session, err := getSessionByID(sessionID)
+	if err != nil {
+		// Определяем тип ошибки и возвращаем соответствующий HTTP статус
+		if err.Error() == "session not found" {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	// Проверяем права доступа к сессии
+	if err := checkSessionAccess(user, session, "modify"); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Генерируем новую реферальную ссылку
+	newReferralLink, err := generateReferralLink()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate new referral link"})
+		return
+	}
+
+	// Обновляем реферальную ссылку в базе данных
+	if err := models.UpdateSessionReferralLink(sessionID, newReferralLink); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update referral link"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":        "Referral link updated successfully",
+		"referral_link":  newReferralLink,
+	})
+}

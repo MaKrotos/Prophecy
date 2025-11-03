@@ -275,5 +275,16 @@ func GetSessionByReferralLink(referralLink string) (*Session, error) {
 		return nil, err
 	}
 
-	return &session, nil
+		return &session, nil
+}
+
+// UpdateSessionReferralLink обновляет реферальную ссылку сессии
+func UpdateSessionReferralLink(sessionID int, referralLink string) error {
+	query := `
+		UPDATE sessions
+		SET referral_link = $1, updated_at = CURRENT_TIMESTAMP
+		WHERE id = $2`
+
+	_, err := database.DB.Exec(query, referralLink, sessionID)
+	return err
 }

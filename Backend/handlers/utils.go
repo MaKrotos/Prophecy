@@ -14,7 +14,7 @@ import (
 
 // generateReferralLink генерирует случайную строку для реферальной ссылки
 func generateReferralLink() (string, error) {
-	bytes := make([]byte, 16)
+	bytes := make([]byte, 32)
 	if _, err := rand.Read(bytes); err != nil {
 		return "", err
 	}

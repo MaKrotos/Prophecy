@@ -21,6 +21,9 @@
       <div class="referral-section">
         <h3 class="section-title">🔗 {{ t('sessions_view.referral_link') }}</h3>
         <ReferralLink :session="session" action-prefix="joinSession" />
+        <ThemedButton v-if="canManageSession" button-type="secondary" @click="updateReferralLink" class="update-referral-button">
+          🔄 {{ t('session_detail_view.update_referral_link') }}
+        </ThemedButton>
       </div>
 
       <!-- QR код -->
@@ -167,6 +170,40 @@ const loadPlayers = async () => {
 // Переход к странице QR-кода
 const goToQRCode = () => {
   router.push(`/session/my-qr/${route.params.id}`)
+}
+
+// Обновление реферальной ссылки
+const updateReferralLink = async () => {
+  if (window.Telegram && window.Telegram.WebApp) {
+    window.Telegram.WebApp.showConfirm(
+      t('session_detail_view.update_referral_link_confirm'),
+      async (confirmed) => {
+        if (confirmed) {
+          try {
+            const response = await apiPut(`sessions/${route.params.id}/referral-link`)
+            
+            if (response.ok) {
+              const data = await response.json()
+              // Обновляем реферальную ссылку в объекте сессии
+              session.value.referral_link = data.referral_link
+              if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.showAlert(t('session_detail_view.update_referral_link_success'))
+              }
+            } else {
+              if (window.Telegram && window.Telegram.WebApp) {
+                window.Telegram.WebApp.showAlert(t('session_detail_view.update_referral_link_error'))
+              }
+            }
+          } catch (error) {
+            console.error('Ошибка при обновлении реферальной ссылки:', error)
+            if (window.Telegram && window.Telegram.WebApp) {
+              window.Telegram.WebApp.showAlert(t('session_detail_view.update_referral_link_error_general'))
+            }
+          }
+        }
+      }
+    )
+  }
 }
 
 // Редактирование сессии
@@ -443,6 +480,9 @@ onMounted(() => {
   padding: 16px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .referral-link-container {

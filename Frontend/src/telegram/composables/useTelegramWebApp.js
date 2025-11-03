@@ -193,12 +193,12 @@ export function useTelegramWebApp() {
           // Добавляем в обработанные
           processedStartParams.value.add(param);
 
-          router.push(`/sessions/join/${sessionId}`);
+          router.push(`/joinSession/${sessionId}`);
              } else {
-          console.log("⚠️ Не указан sessionId для действия join_session");
+          console.log("⚠️ Не указан sessionId для действия joinSession");
              }
         // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
-        console.log("🧹 Обнуление startParam после обработки join_session");
+        console.log("🧹 Обнуление startParam после обработки joinSession");
         startParam.value = null;
       },
       // Примеры других обработчиков

@@ -222,7 +222,12 @@
     "player_id": "ID игрока",
     "session_id": "ID сессии",
     "timestamp": "Время",
-    "show_qr_code": "Показать QR код"
+    "show_qr_code": "Показать QR код",
+    "update_referral_link": "Обновить ссылку",
+    "update_referral_link_confirm": "Вы уверены, что хотите обновить реферальную ссылку? Старая ссылка перестанет работать.",
+    "update_referral_link_success": "Реферальная ссылка успешно обновлена",
+    "update_referral_link_error": "Не удалось обновить реферальную ссылку",
+    "update_referral_link_error_general": "Произошла ошибка при обновлении реферальной ссылки"
   },
   "session_join_view": {
     "description": "Описание",

@@ -222,7 +222,12 @@
     "player_id": "Player ID",
     "session_id": "Session ID",
     "timestamp": "Timestamp",
-    "show_qr_code": "Show QR Code"
+    "show_qr_code": "Show QR Code",
+    "update_referral_link": "Update Link",
+    "update_referral_link_confirm": "Are you sure you want to update the referral link? The old link will stop working.",
+    "update_referral_link_success": "Referral link successfully updated",
+    "update_referral_link_error": "Failed to update referral link",
+    "update_referral_link_error_general": "An error occurred while updating the referral link"
   },
   "session_join_view": {
     "description": "Description",
