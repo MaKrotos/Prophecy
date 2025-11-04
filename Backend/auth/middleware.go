@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strings"
 
+	"prophecy/backend/models"
+
 	"github.com/gin-gonic/gin"
 )
 
