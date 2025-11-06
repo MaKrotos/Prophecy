@@ -30,6 +30,14 @@ const otherRoutes = [
       next();
     },
   },
+  {
+    path: "/auth-error",
+    name: "auth-error",
+    component: () => import("../views/AuthErrorView.vue"),
+    meta: {
+      title: "Ошибка авторизации",
+    },
+  },
 ];
 
 export default otherRoutes;

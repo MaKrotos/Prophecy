@@ -4,6 +4,7 @@ import { retryWithBackoff } from '../utils/retry.js';
 import { saveJWTToken, clearJWTToken } from '../auth/jwt.js';
 import { getUserInfoFromToken } from '../auth/user.js';
 import { prepareAuthPayload } from '../auth/server.js';
+import router from '/src/router/index.js';
 
 /**
  * Композиция для управления аутентификацией Telegram
@@ -131,6 +132,13 @@ export function useTelegramAuth(telegramUser, getTelegramAuthData, hasValidToken
       return result;
     } catch (error) {
       authError.value = error.message;
+      
+      // Сохраняем сообщение об ошибке в localStorage
+      localStorage.setItem('authErrorMessage', error.message);
+      
+      // Перенаправляем на страницу ошибки авторизации
+      router.push({ name: 'auth-error', query: { error: encodeURIComponent(error.message) } });
+      
       throw error;
     } finally {
       isAuthenticating.value = false;

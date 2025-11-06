@@ -2,14 +2,10 @@
   <div id="app">
     <!-- Показываем основной layout только если в Telegram WebApp и есть JWT токен -->
     <MainLayout v-if="isTelegram && isInitialized && hasValidToken" />
-
-    <!-- Показываем страницу ошибки авторизации, если есть ошибка -->
-    <AuthErrorLayout v-else-if="isTelegram && isInitialized && authError && authError.value" :error-message="authError.value"
-      @retry="handleRetryAuth" @try-later="handleTryLater" />
-
+    
     <!-- Показываем сообщение о необходимости Telegram, если не в WebApp -->
     <TelegramOnlyLayout v-else-if="!isTelegram && isInitialized" :telegram-link="telegramBotLink" />
-
+    
     <!-- Лоадер во время инициализации -->
     <div v-else class="app-loader">
       <div class="loader-content">
@@ -24,7 +20,6 @@
 import { ref, onMounted } from 'vue'
 import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
-import AuthErrorLayout from '/src/layouts/AuthErrorLayout.vue'
 import { useTelegramWebAppSingleton } from '/src/telegram/composables/useTelegramWebAppSingleton'
 import { useLocalization, initLocalization } from '/src/locales/index.js'
 
@@ -39,10 +34,7 @@ const {
   sendAuthToServer,
   waitForTelegramReady,
   hasValidToken,
-  checkTelegramIdConsistency,
-  retryAuth,
-  clearAuthError,
-  authError
+  checkTelegramIdConsistency
 } = useTelegramWebAppSingleton()
 
 const isInitialized = ref(false)
@@ -111,26 +103,6 @@ const initializeTelegramApp = async () => {
   }
 }
 
-/**
- * Обработка повторной авторизации
- */
-const handleRetryAuth = async () => {
-  loaderMessage.value = t('app.retryAuth')
-  isInitialized.value = false
-
-  await new Promise(resolve => setTimeout(resolve, 500))
-  await retryAuth('auth/telegram', 3)
-
-  isInitialized.value = true
-}
-
-/**
- * Обработка отложенной попытки
- */
-const handleTryLater = () => {
-  clearAuthError()
-  console.log('🕒 Пользователь выбрал "Попробовать позже"')
-}
 
 onMounted(() => {
   initializeApp()
