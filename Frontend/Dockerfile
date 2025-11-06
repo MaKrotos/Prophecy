@@ -5,11 +5,13 @@ WORKDIR /app
 # Копируем package.json и package-lock.json
 COPY package*.json ./
 
-# Устанавливаем ВСЕ зависимости (включая devDependencies для сборки)
-RUN npm ci --include=dev
+# Устанавливаем только production зависимости
+RUN npm ci --only=production
 
 # Копируем всё остальное (исходный код)
 COPY . .
+
+# Собираем приложение
 RUN npm run build
 
 # Stage 2: Production (nginx)

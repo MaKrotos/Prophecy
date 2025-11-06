@@ -1,0 +1,11 @@
+.git
+.gitignore
+README.md
+Dockerfile
+.dockerignore
+*.log
+.env
+.vscode
+.tmp
+go.mod
+go.sum
