@@ -59,10 +59,33 @@ const goToCreateSession = () => {
   router.push('/sessions/create')
 }
 
+/**
+ * Проверяет, первый ли раз пользователь открывает приложение
+ * @returns {boolean} true, если первый раз, false если нет
+ */
+const isFirstTimeUser = () => {
+  const hasVisited = localStorage.getItem('hasVisitedApp');
+  return !hasVisited;
+}
+
+/**
+ * Отмечает, что пользователь уже посещал приложение
+ */
+const markAsVisited = () => {
+  localStorage.setItem('hasVisitedApp', 'true');
+}
+
 onMounted(() => {
   // Получаем информацию о пользователе из JWT токена
   userInfo.value = getUserInfoFromToken()
   console.log('User Info:', userInfo.value)
+  
+  // Проверяем, первый ли раз пользователь открывает приложение
+  if (isFirstTimeUser()) {
+    console.log('Первый раз открывает приложение, перенаправляем на страницу правил');
+    markAsVisited();
+    router.push('/rules');
+  }
 })
 </script>
 
