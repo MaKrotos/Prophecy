@@ -5,14 +5,17 @@ WORKDIR /app
 # Копируем package.json и package-lock.json
 COPY package*.json ./
 
-# Устанавливаем только production зависимости
-RUN npm ci --only=production
+# Устанавливаем все зависимости (включая devDependencies для сборки)
+RUN npm ci
 
 # Копируем всё остальное (исходный код)
 COPY . .
 
 # Собираем приложение
 RUN npm run build
+
+# Удаляем devDependencies для уменьшения размера образа
+RUN npm prune --production
 
 # Stage 2: Production (nginx)
 FROM nginx:alpine AS prod
