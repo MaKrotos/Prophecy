@@ -1,18 +1,22 @@
 <template>
   <div id="app">
-    <!-- Показываем основной layout только если в Telegram WebApp и есть JWT токен -->
-    <MainLayout v-if="isTelegram && isInitialized && hasValidToken" />
-    
-    <!-- Показываем сообщение о необходимости Telegram, если не в WebApp -->
-    <TelegramOnlyLayout v-else-if="!isTelegram && isInitialized" :telegram-link="telegramBotLink" />
-    
-    <!-- Лоадер во время инициализации -->
-    <div v-else class="app-loader">
-      <div class="loader-content">
-        <div class="loader-spinner"></div>
-        <p class="loader-text">{{ loaderMessage }}</p>
+    <transition name="fade" mode="out-in">
+      <!-- Показываем основной layout только если в Telegram WebApp и есть JWT токен -->
+      <MainLayout v-if="isTelegram && isInitialized && hasValidToken" />
+      
+      <!-- Показываем сообщение о необходимости Telegram, если не в WebApp -->
+      <TelegramOnlyLayout v-else-if="!isTelegram && isInitialized" :telegram-link="telegramBotLink" />
+      
+      <!-- Лоадер во время инициализации -->
+      <div v-else class="app-loader">
+        <ThemedCard card-type="default" class="loader-card">
+          <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <p class="loader-text">{{ loaderMessage }}</p>
+          </div>
+        </ThemedCard>
       </div>
-    </div>
+    </transition>
   </div>
 </template>
 
@@ -20,6 +24,7 @@
 import { ref, onMounted } from 'vue'
 import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
+import ThemedCard from '/src/components/ThemedCard.vue'
 import { useTelegramWebAppSingleton } from '/src/telegram/composables/useTelegramWebAppSingleton'
 import { useLocalization, initLocalization } from '/src/locales/index.js'
 import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp.js'
@@ -246,27 +251,41 @@ body {
   justify-content: center;
   height: 100vh;
   width: 100vw;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background-color: var(--tg-theme-bg-color, #ffffff);
+  padding: 20px;
+}
+
+.loader-card {
+  background: var(--tg-theme-secondary-bg-color, white);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--tg-theme-secondary-bg-color, #e0e0e0);
+  max-width: 300px;
+  width: 100%;
+  text-align: center;
 }
 
 .loader-content {
-  text-align: center;
-  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .loader-spinner {
-  width: 50px;
-  height: 50px;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  border-top: 4px solid white;
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--tg-theme-secondary-bg-color, #f0f0f0);
+  border-top: 3px solid var(--tg-theme-button-color, #667eea);
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  margin: 0 auto 20px;
+  margin-bottom: 20px;
 }
 
 .loader-text {
+  color: var(--tg-theme-text-color, #000000);
   font-size: 16px;
-  opacity: 0.9;
+  font-weight: 500;
 }
 
 @keyframes spin {
