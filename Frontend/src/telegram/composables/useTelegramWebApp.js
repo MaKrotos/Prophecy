@@ -7,6 +7,91 @@ import { waitForCondition } from "../utils/retry.js";
 import { useRouter } from "vue-router";
 
 /**
+ * Парсинг и обработка параметра startParam
+ */
+const parseAndHandleStartParam = (param, router, processedStartParams, startParam) => {
+  console.log("🔍 Начало обработки параметра startParam:", param);
+  if (!param) {
+    console.log("⚠️ Параметр startParam пустой или отсутствует");
+    return;
+  }
+
+  // Разбиваем параметр на части по "_"
+  const parts = param.split("_");
+  const action = parts[0];
+  const args = parts.slice(1);
+
+  console.log("🔧 Обработка параметра startParam:", { action, args });
+
+  // Обработчики для разных действий
+  const handlers = {
+    joinSession: (sessionId) => {
+      console.log(
+        "🔍 Обработка действия joinSession с sessionId:",
+        sessionId
+      );
+      if (sessionId) {
+        console.log(
+          "🔗 Перенаправление на страницу присоединения к сессии:",
+          sessionId
+        );
+
+        if (processedStartParams.value.has(param)) {
+          console.log("⚠️ Этот startParam уже был обработан в текущей сессии");
+          startParam.value = null;
+          return;
+        } else {
+          console.log("Join alr sessions", processedStartParams);
+        }
+
+        // Добавляем в обработанные
+        processedStartParams.value.add(param);
+
+        router.push(`/joinSession/${sessionId}`);
+      } else {
+        console.log("⚠️ Не указан sessionId для действия joinSession");
+      }
+      // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
+      console.log("🧹 Обнуление startParam после обработки joinSession");
+      startParam.value = null;
+    },
+    // Примеры других обработчиков
+    invite_user: (userId) => {
+      if (userId) {
+        console.log("👥 Приглашение пользователя:", userId);
+        // Здесь можно добавить логику приглашения пользователя
+        // Например, показать модальное окно с подтверждением приглашения
+      }
+      // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
+      console.log("🧹 Обнуление startParam после обработки invite_user");
+      startParam.value = null;
+    },
+    share_content: (contentId) => {
+      if (contentId) {
+        console.log("📤 Общий доступ к контенту:", contentId);
+        // Здесь можно добавить логику общего доступа к контенту
+        // Например, перенаправить на страницу контента и показать опции общего доступа
+      }
+      // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
+      console.log("🧹 Обнуление startParam после обработки share_content");
+      startParam.value = null;
+    },
+  };
+
+  // Вызываем соответствующий обработчик
+  if (handlers[action]) {
+    console.log("✅ Вызов обработчика для действия:", action);
+    handlers[action](...args);
+    console.log("✅ Обработчик для действия завершен:", action);
+  } else {
+    console.warn("⚠️ Неизвестное действие в параметре startParam:", action);
+    // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
+    console.log("🧹 Обнуление startParam после неизвестного действия");
+    startParam.value = null;
+  }
+};
+
+/**
  * Главная композиция для работы с Telegram WebApp
  */
 export function useTelegramWebApp() {
@@ -140,100 +225,11 @@ export function useTelegramWebApp() {
       console.log("🔗 Найден параметр startParam:", startParam.value);
       console.log("🔍 Начинаем обработку startParam при инициализации");
       // Парсим и обрабатываем параметр
-      parseAndHandleStartParam(startParam.value);
+      parseAndHandleStartParam(startParam.value, router, processedStartParams, startParam);
       console.log("✅ Обработка startParam при инициализации завершена");
       console.log("🔍 Значение startParam после обработки:", startParam.value);
     } else {
       console.log("⚠️ Параметр startParam отсутствует");
-    }
-  };
-
-  /**
-   * Парсинг и обработка параметра startParam
-   */
-  const parseAndHandleStartParam = (param) => {
-    console.log("🔍 Начало обработки параметра startParam:", param);
-    if (!param) {
-      console.log("⚠️ Параметр startParam пустой или отсутствует");
-      return;
-    }
-
-
-
-    // Разбиваем параметр на части по "_"
-    const parts = param.split("_");
-    const action = parts[0];
-    const args = parts.slice(1);
-
-    console.log("🔧 Обработка параметра startParam:", { action, args });
-
-    // Обработчики для разных действий
-    const handlers = {
-      joinSession: (sessionId) => {
-        console.log(
-          "🔍 Обработка действия joinSession с sessionId:",
-          sessionId
-        );
-        if (sessionId) {
-          console.log(
-            "🔗 Перенаправление на страницу присоединения к сессии:",
-            sessionId
-          );
-
-              if (processedStartParams.value.has(param)) {
-                console.log("⚠️ Этот startParam уже был обработан в текущей сессии");
-                startParam.value = null;
-                return;
-              }else
-              {
-
-                console.log("Join alr sessions", processedStartParams)
-              }
-
-          // Добавляем в обработанные
-          processedStartParams.value.add(param);
-
-          router.push(`/joinSession/${sessionId}`);
-             } else {
-          console.log("⚠️ Не указан sessionId для действия joinSession");
-             }
-        // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
-        console.log("🧹 Обнуление startParam после обработки joinSession");
-        startParam.value = null;
-      },
-      // Примеры других обработчиков
-      invite_user: (userId) => {
-        if (userId) {
-          console.log("👥 Приглашение пользователя:", userId);
-          // Здесь можно добавить логику приглашения пользователя
-          // Например, показать модальное окно с подтверждением приглашения
-        }
-        // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
-        console.log("🧹 Обнуление startParam после обработки invite_user");
-        startParam.value = null;
-      },
-      share_content: (contentId) => {
-        if (contentId) {
-          console.log("📤 Общий доступ к контенту:", contentId);
-          // Здесь можно добавить логику общего доступа к контенту
-          // Например, перенаправить на страницу контента и показать опции общего доступа
-        }
-        // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
-        console.log("🧹 Обнуление startParam после обработки share_content");
-        startParam.value = null;
-      },
-    };
-
-    // Вызываем соответствующий обработчик
-    if (handlers[action]) {
-      console.log("✅ Вызов обработчика для действия:", action);
-      handlers[action](...args);
-      console.log("✅ Обработчик для действия завершен:", action);
-    } else {
-      console.warn("⚠️ Неизвестное действие в параметре startParam:", action);
-      // Обнуляем startParam, чтобы он не срабатывал при повторной инициализации
-      console.log("🧹 Обнуление startParam после неизвестного действия");
-      startParam.value = null;
     }
   };
 
@@ -316,5 +312,12 @@ export function useTelegramWebApp() {
     checkTelegramIdConsistency,
     retryAuth,
     clearAuthError,
+    // Передаем функцию parseAndHandleStartParam как часть возвращаемого объекта
+    parseAndHandleStartParam: (param) => parseAndHandleStartParam(param, router, processedStartParams, startParam),
   };
 }
+
+// Экспортируем функцию для использования вне композабла
+// ВНИМАНИЕ: При использовании вне композабла необходимо передавать все параметры:
+// parseAndHandleStartParam(param, router, processedStartParams, startParam)
+export { parseAndHandleStartParam };

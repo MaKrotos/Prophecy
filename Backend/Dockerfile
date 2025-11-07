@@ -24,11 +24,14 @@ RUN go build -a -installsuffix cgo -o main .
 # Установка goose для миграций
 RUN go install github.com/pressly/goose/v3/cmd/goose@latest
 
-# Используем минимальный образ Distroless для запуска
-FROM gcr.io/distroless/static-debian11
+# Используем минимальный образ Alpine для запуска
+FROM alpine:latest
 
 # Установка рабочей директории
 WORKDIR /root/
+
+# Установка зависимостей для goose и SSL
+RUN apk add --no-cache ca-certificates
 
 # Копирование бинарного файла из builder образа
 COPY --from=builder /app/main .

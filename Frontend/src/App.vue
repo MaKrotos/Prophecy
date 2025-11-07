@@ -22,6 +22,7 @@ import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
 import { useTelegramWebAppSingleton } from '/src/telegram/composables/useTelegramWebAppSingleton'
 import { useLocalization, initLocalization } from '/src/locales/index.js'
+import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp.js'
 
 const { t } = useLocalization()
 
@@ -37,10 +38,79 @@ const {
   checkTelegramIdConsistency
 } = useTelegramWebAppSingleton()
 
+const {
+  parseAndHandleStartParam
+} = useTelegramWebApp()
+
 const isInitialized = ref(false)
 const loaderMessage = ref(t('app.initializing'))
 const telegramBotLink = ref(`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'}`)
 const startParam = ref(null)
+
+/**
+ * Извлечение параметров Telegram WebApp из URL
+ */
+const extractTelegramParamsFromUrl = () => {
+  try {
+    // Получаем текущий URL
+    const url = window.location.href;
+    console.log('🔍 Текущий URL:', url);
+    
+    // Проверяем, содержит ли URL параметры Telegram WebApp после хэша
+    const hashIndex = url.indexOf('#');
+    if (hashIndex !== -1) {
+      const hashPart = url.substring(hashIndex + 1);
+      console.log('🔍 Часть URL после хэша:', hashPart);
+      
+      // Проверяем, содержит ли часть после хэша параметры Telegram WebApp
+      if (hashPart.includes('tgWebAppData=') || hashPart.includes('tgWebAppStartParam=')) {
+        console.log('🔍 Найдены параметры Telegram WebApp в URL');
+        
+        // Извлекаем параметры из части после хэша
+        // Обрабатываем различные форматы URL
+        let paramsString = '';
+        if (hashPart.includes('?')) {
+          // Формат: /#/path?param1=value1&param2=value2
+          paramsString = hashPart.split('?')[1];
+        } else if (hashPart.includes('&') || hashPart.includes('=')) {
+          // Формат: /#/param1=value1&param2=value2
+          paramsString = hashPart;
+        } else {
+          // Формат: /#/tgWebAppData=value1&tgWebAppStartParam=value2
+          // Ищем начало параметров
+          const tgWebAppDataIndex = hashPart.indexOf('tgWebAppData=');
+          const tgWebAppStartParamIndex = hashPart.indexOf('tgWebAppStartParam=');
+          
+          if (tgWebAppDataIndex !== -1) {
+            paramsString = hashPart.substring(tgWebAppDataIndex);
+          } else if (tgWebAppStartParamIndex !== -1) {
+            paramsString = hashPart.substring(tgWebAppStartParamIndex);
+          }
+        }
+        
+        if (paramsString) {
+          try {
+            const params = new URLSearchParams(paramsString);
+            const tgWebAppData = params.get('tgWebAppData');
+            const tgWebAppStartParam = params.get('tgWebAppStartParam');
+            
+            console.log('🔍 Извлеченные параметры:', { tgWebAppData, tgWebAppStartParam });
+            
+            // Если есть параметры, сохраняем их для дальнейшей обработки
+            if (tgWebAppStartParam) {
+              startParam.value = tgWebAppStartParam;
+              console.log('✅ Сохранен параметр startParam из URL:', startParam.value);
+            }
+          } catch (parseError) {
+            console.error('❌ Ошибка при парсинге параметров из URL:', parseError);
+          }
+        }
+      }
+    }
+  } catch (error) {
+    console.error('❌ Ошибка при извлечении параметров Telegram WebApp из URL:', error);
+  }
+};
 
 /**
  * Инициализация приложения
@@ -49,6 +119,16 @@ const initializeApp = async () => {
   console.log('🚀 App mounted, initializing...')
 
   try {
+    // Извлекаем параметры Telegram WebApp из URL перед инициализацией
+    extractTelegramParamsFromUrl();
+    
+    // Логируем состояние параметров перед инициализацией
+    console.log('🔍 Состояние параметров перед инициализацией:', {
+      isTelegram: isTelegram.value,
+      startParam: startParam.value,
+      hasAuthHash: !!authHash.value
+    });
+    
     // Инициализируем локализацию
     await initLocalization()
 
@@ -56,6 +136,25 @@ const initializeApp = async () => {
     if (isTelegram.value) {
       await initializeTelegramApp()
     } else {
+      // Даже если это не Telegram WebApp, передаем параметр startParam если он есть
+      if (startParam.value) {
+        console.log('🔗 Найден параметр startParam вне Telegram:', startParam.value);
+        // Параметр startParam будет использован композаблом useTelegramWebApp при инициализации
+        // даже если приложение запущено не в Telegram WebApp
+        
+        // Пытаемся обработать параметр startParam даже вне Telegram
+        try {
+          // Используем функцию из композабла для обработки параметра
+          if (typeof parseAndHandleStartParam === 'function') {
+            parseAndHandleStartParam(startParam.value);
+            console.log('✅ Параметр startParam обработан вне Telegram');
+          } else {
+            console.warn('⚠️ Функция parseAndHandleStartParam недоступна');
+          }
+        } catch (error) {
+          console.error('❌ Ошибка при обработке startParam вне Telegram:', error);
+        }
+      }
       console.log('🌐 Это не Telegram WebApp')
     }
 
@@ -64,7 +163,8 @@ const initializeApp = async () => {
       isTelegram: isTelegram.value,
       isTelegramReady: isTelegramReady?.value,
       authHash: !!authHash.value,
-      hasValidToken: hasValidToken()
+      hasValidToken: hasValidToken(),
+      startParam: startParam.value
     })
 
   } catch (error) {
@@ -91,12 +191,23 @@ const initializeTelegramApp = async () => {
     console.log('🔄 Необходима повторная авторизация из-за несоответствия Telegram ID')
   }
 
+  // Проверяем, есть ли параметр startParam
+  if (startParam.value) {
+    console.log('🔗 Параметр startParam доступен при инициализации Telegram:', startParam.value);
+  }
+
   // Авторизация только если Telegram готов и есть хэш
   if (isTelegramReady?.value && authHash.value) {
     loaderMessage.value = t('app.loading')
     console.log('📡 Отправка данных аутентификации на сервер...')
 
-    await sendAuthToServer('auth/telegram', 3)
+    try {
+      await sendAuthToServer('auth/telegram', 3)
+      console.log('✅ Данные аутентификации успешно отправлены на сервер')
+    } catch (error) {
+      console.error('❌ Ошибка при отправке данных аутентификации на сервер:', error)
+      throw new Error(t('auth.error.message'))
+    }
   } else if (!authHash.value) {
     console.warn('⚠️ Нет хэша аутентификации')
     throw new Error(t('auth.error.message'))
