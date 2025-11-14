@@ -20,7 +20,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import HeaderNav from '../components/HeaderNav.vue'
 import BottomNav from '../components/BottomNav.vue'
@@ -99,6 +99,28 @@ const sessionNavItemsWithId = computed(() => {
   ]
 })
 
+onMounted(() => {
+
+  
+})
+
+/**
+ * Отмечает, что пользователь уже посещал приложение
+ */
+const markAsVisited = () => {
+  localStorage.setItem('hasVisitedApp', 'true');
+}
+
+
+/**
+ * Проверяет, первый ли раз пользователь открывает приложение
+ * @returns {boolean} true, если первый раз, false если нет
+ */
+const isFirstTimeUser = () => {
+  const hasVisited = localStorage.getItem('hasVisitedApp');
+  return !hasVisited;
+}
+
 // Получаем пути маршрутов из meta данных
 // Параметр order больше не используется
 const getRoutesOrder = () => {
@@ -135,7 +157,7 @@ watch(telegramUser, (newUser) => {
 
 // Заголовок страницы из meta данных текущего route
 const pageTitle = computed(() => {
-  return route.meta?.title || 'Мое Приложение'
+  return route.meta?.title || 'Prophecy'
 })
 </script>
 

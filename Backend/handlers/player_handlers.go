@@ -65,8 +65,8 @@ func AddPlayerToSession(c *gin.Context) {
 
 	// Проверяем, не является ли пользователь архитектором этой сессии
 	if session.ArchitectID == playerID {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Architect cannot be added as player"})
-		return
+	//	c.JSON(http.StatusBadRequest, gin.H{"error": "Architect cannot be added as player"})
+	//	return
 	}
 
 	// Добавляем игрока к сессии
@@ -253,8 +253,8 @@ func JoinSessionByReferral(c *gin.Context) {
 
 		// Проверяем, не является ли пользователь архитектором этой сессии
 		if session.ArchitectID == user.ID {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Architect cannot be added as player"})
-			return
+		//	c.JSON(http.StatusBadRequest, gin.H{"error": "Architect cannot be added as player"})
+		//	return
 		}
 
 		// Проверяем, не участвует ли пользователь уже в сессии

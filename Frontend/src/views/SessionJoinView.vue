@@ -43,6 +43,7 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -65,6 +66,21 @@ const error = ref('')
 const sessionName = ref('')
 const sessionDescription = ref('')
 
+/**
+ * Проверяет, первый ли раз пользователь открывает приложение
+ * @returns {boolean} true, если первый раз, false если нет
+ */
+const isFirstTimeUser = () => {
+  const hasVisited = localStorage.getItem('hasVisitedApp');
+  return !hasVisited;
+}
+
+/**
+ * Отмечает, что пользователь уже посещал приложение
+ */
+const markAsVisited = () => {
+  localStorage.setItem('hasVisitedApp', 'true');
+}
 // Функция для повторной загрузки информации о сессии
 const retryLoad = () => {
   error.value = ''
@@ -88,7 +104,14 @@ const joinSession = async () => {
       setTimeout(() => {
         // Обнуляем startParam, чтобы окно подтверждения не открывалось повторно
         startParam.value = null
-        router.push('/')
+        // Проверяем, первый ли раз пользователь открывает приложение
+        if (isFirstTimeUser()) {
+          console.log('Первый раз открывает приложение, перенаправляем на страницу правил');
+          markAsVisited();
+          router.push('/rules');
+        } else {
+          router.push('/');
+        }
       }, 2000)
     } else {
       const errorData = await response.json()

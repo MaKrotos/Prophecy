@@ -80,12 +80,6 @@ onMounted(() => {
   userInfo.value = getUserInfoFromToken()
   console.log('User Info:', userInfo.value)
   
-  // Проверяем, первый ли раз пользователь открывает приложение
-  if (isFirstTimeUser()) {
-    console.log('Первый раз открывает приложение, перенаправляем на страницу правил');
-    markAsVisited();
-    router.push('/rules');
-  }
 })
 </script>
 

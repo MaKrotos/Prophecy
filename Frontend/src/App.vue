@@ -21,6 +21,8 @@
 </template>
 
 <script setup>
+import { useRouter } from 'vue-router'
+
 import { ref, onMounted } from 'vue'
 import MainLayout from '/src/layouts/MainLayout.vue'
 import TelegramOnlyLayout from '/src/layouts/onlyTelegramUse.vue'
@@ -30,6 +32,7 @@ import { useLocalization, initLocalization } from '/src/locales/index.js'
 import { useTelegramWebApp } from '/src/telegram/composables/useTelegramWebApp.js'
 
 const { t } = useLocalization()
+const router = useRouter()
 
 const {
   telegramUser,
@@ -51,6 +54,22 @@ const isInitialized = ref(false)
 const loaderMessage = ref(t('app.initializing'))
 const telegramBotLink = ref(`https://t.me/${import.meta.env.VITE_TELEGRAM_BOT_USERNAME || 'your_bot_username'}`)
 const startParam = ref(null)
+
+/**
+ * Проверяет, первый ли раз пользователь открывает приложение
+ * @returns {boolean} true, если первый раз, false если нет
+ */
+const isFirstTimeUser = () => {
+  const hasVisited = localStorage.getItem('hasVisitedApp');
+  return !hasVisited;
+}
+
+/**
+ * Отмечает, что пользователь уже посещал приложение
+ */
+const markAsVisited = () => {
+  localStorage.setItem('hasVisitedApp', 'true');
+}
 
 /**
  * Извлечение параметров Telegram WebApp из URL
@@ -161,6 +180,25 @@ const initializeApp = async () => {
         }
       }
       console.log('🌐 Это не Telegram WebApp')
+    }
+
+    // Проверяем, первый ли раз пользователь открывает приложение
+    // Делаем это только если нет startParam (пользователь не переходит по реферальной ссылке)
+    // и только для Telegram WebApp
+    if (!startParam.value && isTelegram.value) {
+      if (isFirstTimeUser()) {
+        console.log('Первый раз открывает приложение, перенаправляем на страницу правил');
+        markAsVisited();
+        // Перенаправляем на страницу правил, но только если мы не на ней уже
+        if (window.location.hash !== '#/rules') {
+          router.push('/rules');
+        }
+      }
+
+      else
+      {
+        router.push('/');
+      }
     }
 
     isInitialized.value = true

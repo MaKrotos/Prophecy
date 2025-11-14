@@ -29,7 +29,7 @@ router.beforeEach((to, from, next) => {
     to.path
   );
   // Можно также установить заголовок документа здесь
-  document.title = to.meta.title || "Мое Приложение";
+  document.title = to.meta.title || 'Prophecy';
   next();
 });
 
